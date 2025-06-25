@@ -1,13 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Search,
-  Plus,
-  Globe,
-  Bell,
-  ChevronDown,
-  User,
-  Menu,
-} from "lucide-react";
+import { Globe, Bell, ChevronDown, Menu } from "lucide-react";
 import SearchInput from "./search-input";
 import CreateAdvertisementButton from "./create-advertisement-button";
 import SignInSignUpButton from "./sign-in-sign-up-button";

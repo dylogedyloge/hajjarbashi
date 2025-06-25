@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/shared/header";
 import Footer from "@/components/shared/footer";
 import { ThemeProvider } from "next-themes";
+import MobileBottomNav from "@/components/shared/footer/mobile-bottom-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
+          <MobileBottomNav />
         </ThemeProvider>
       </body>
     </html>

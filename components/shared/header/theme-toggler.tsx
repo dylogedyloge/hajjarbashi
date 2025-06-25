@@ -20,7 +20,7 @@ const ThemeToggler = () => {
       size="icon"
       aria-label="Toggle theme"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="rounded-full border border-border"
+      className="rounded-full"
     >
       {resolvedTheme === "dark" ? (
         <Sun className="size-5" />

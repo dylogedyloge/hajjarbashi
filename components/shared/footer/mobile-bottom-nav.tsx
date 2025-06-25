@@ -1,6 +1,7 @@
 "use client";
-import { Home, MessageSquare, Bookmark, User, Plus } from "lucide-react";
+import { Home, MessageSquare, Bookmark, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CreateAdvertisementButton from "@/components/shared/header/create-advertisement-button";
 
 const MobileBottomNav = () => {
   return (
@@ -28,13 +29,7 @@ const MobileBottomNav = () => {
         <div className="w-12" aria-hidden />
         {/* Plus Floating */}
         <div className="absolute left-1/2 -translate-x-1/2 -top-7 flex flex-col items-center">
-          <Button
-            className="bg-primary text-primary-foreground rounded-full size-15 flex items-center justify-center shadow-lg border-4 border-background hover:bg-primary p-0"
-            tabIndex={0}
-            style={{ boxShadow: "0 4px 16px 0 rgba(0,0,0,0.10)" }}
-          >
-            <Plus className="size-6" />
-          </Button>
+          <CreateAdvertisementButton floating />
         </div>
         {/* Spacer for Plus Floating */}
         <div className="w-12" aria-hidden />

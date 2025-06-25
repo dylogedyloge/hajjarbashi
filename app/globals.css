@@ -120,3 +120,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Font classes */
+.font-poppins {
+  font-family: var(--font-poppins), system-ui, sans-serif !important;
+}
+
+.font-yekan {
+  font-family: var(--font-yekan), system-ui, sans-serif !important;
+}

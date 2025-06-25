@@ -5,7 +5,7 @@ const SignInSignUpButton = () => {
     <Button
       variant="default"
       size="lg"
-      className="cursor-pointer rounded-full px-8 font-semibold"
+      className="cursor-pointer rounded-full px-8 "
     >
       Sign In / Sign Up
     </Button>

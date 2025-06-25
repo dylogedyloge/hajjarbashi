@@ -2,7 +2,7 @@ import { Facebook, Instagram, Linkedin, X } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="w-full border-t border bg-background pt-8 pb-4 px-4 md:px-12">
+    <footer className="hidden sm:block w-full border-t border bg-background pt-8 pb-4 px-4 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-start gap-8 md:gap-4">
           {/* Stock Images */}

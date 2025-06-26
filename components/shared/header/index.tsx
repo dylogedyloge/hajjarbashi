@@ -69,7 +69,7 @@ const Header = () => {
       </div>
 
       {/* Right Controls (always visible, but layout changes) */}
-      <div className="flex items-center gap-4 ml-0 md:ml-6">
+      <div className="flex items-center gap-4 mx-0 md:mx-6">
         <div className="flex items-center gap-1   text-sm cursor-pointer select-none text-foreground">
           {t("metric")}
           <ChevronDown size={16} className="text-foreground" />
@@ -106,7 +106,7 @@ const Header = () => {
           </SelectContent>
         </Select>
         <ThemeToggler />
-        <Bell size={20} className="text-muted-foreground cursor-pointer" />
+        <Bell size={20} className="cursor-pointer" />
         {/* Desktop: Sign In/Up Button */}
         <div className="hidden md:block">
           <SignInSignUpButton />

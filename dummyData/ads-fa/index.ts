@@ -1,7 +1,7 @@
 export const adsFa =[
     {
       "id": "ad-001",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "مرمر",
       "origin": "یزد",
       "form": "اسلب",
@@ -18,7 +18,7 @@ export const adsFa =[
     },
     {
       "id": "ad-002",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "گرانیت",
       "origin": "زنجان",
       "form": "تایل",
@@ -34,7 +34,7 @@ export const adsFa =[
     },
     {
       "id": "ad-003",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "تراورتن",
       "origin": "محلات",
       "form": "بلوک",
@@ -50,7 +50,7 @@ export const adsFa =[
     },
     {
       "id": "ad-004",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "مرمریت",
       "origin": "دهبید",
       "form": "اسلب",
@@ -67,7 +67,7 @@ export const adsFa =[
     },
     {
       "id": "ad-005",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "مرمر",
       "origin": "کاشان",
       "form": "تایل",
@@ -84,7 +84,7 @@ export const adsFa =[
     },
     {
       "id": "ad-006",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "بازالت",
       "origin": "تبریز",
       "form": "بلوک",
@@ -100,7 +100,7 @@ export const adsFa =[
     },
     {
       "id": "ad-007",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "تراورتن",
       "origin": "همدان",
       "form": "تایل",
@@ -117,7 +117,7 @@ export const adsFa =[
     },
     {
       "id": "ad-008",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "کریستال",
       "origin": "نی‌ریز",
       "form": "اسلب",
@@ -134,7 +134,7 @@ export const adsFa =[
     },
     {
       "id": "ad-009",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "مرمریت",
       "origin": "کرمان",
       "form": "تایل",
@@ -151,7 +151,7 @@ export const adsFa =[
     },
     {
       "id": "ad-010",
-      "image": "https://via.placeholder.com/300x225",
+      "image": "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       "stone_type": "سنداستون",
       "origin": "اصفهان",
       "form": "بلوک",

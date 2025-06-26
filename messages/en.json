@@ -1,5 +1,64 @@
 {
     "Header": {
-      "appName": "Hajjar Bashi"
+      "appName": "Hajjar Bashi",
+      "home": "Home",
+      "bookmark": "Bookmark",
+      "metric": "Metric",
+      "english": "English",
+      "persian": "Persian",
+      "createAd": "Create Advertisement",
+      "searchPlaceholder": "Search Anything..",
+      "clear": "Clear",
+      "signInSignUp": "Sign In / Sign Up"
+    },
+    "Footer": {
+      "stockImage": "Stock Image",
+      "usefulLinks": "Useful Links",
+      "documentation": "Documentation",
+      "support": "Support",
+      "communityForum": "Community Forum",
+      "loremIpsum": "Lorem Ipsum",
+      "comprehensiveGuides": "Comprehensive guides and resources",
+      "accessForAll": "Access for all users",
+      "getHelp": "Get help from our support team",
+      "available247": "Available 24/7",
+      "joinDiscussions": "Join discussions with other users",
+      "shareTips": "Share tips and tricks",
+      "byMe": "@ by Me",
+      "followUs": "Follow Us"
+    },
+    "AdCard": {
+      "new": "NEW",
+      "usd": "USD",
+      "overview": "Overview:",
+      "form": "Form",
+      "origin": "Origin",
+      "color": "Color",
+      "surface": "Surface",
+      "size": "Size",
+      "weight": "Weight",
+      "kg": "KG",
+      "sourcePort": "Source Port"
+    },
+    "Filters": {
+      "form": "Form",
+      "color": "Color",
+      "origin": "Origin",
+      "surface": "Surface",
+      "size": "Size",
+      "price": "Price",
+      "deliveryDestination": "Delivery Destination",
+      "shipmentFrom": "Shipment From",
+      "grade": "Grade",
+      "option1": "Option 1",
+      "option2": "Option 2"
+    },
+    "SortFilters": {
+      "sortByLatest": "Sort By: Latest",
+      "latest": "Latest",
+      "priceLowToHigh": "Price: Low to High",
+      "priceHighToLow": "Price: High to Low",
+      "expressDelivery": "Express Delivery",
+      "featuredOnly": "Featured Only"
     }
   }

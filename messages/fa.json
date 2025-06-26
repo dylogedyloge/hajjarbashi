@@ -1,5 +1,64 @@
 {
     "Header": {
-      "appName": "حجار باشی"
+      "appName": "حجار باشی",
+      "home": "خانه",
+      "bookmark": "نشان شده‌ها",
+      "metric": "متریک",
+      "english": "انگلیسی",
+      "persian": "فارسی",
+      "createAd": "ایجاد آگهی",
+      "searchPlaceholder": "جستجو...",
+      "clear": "پاک کردن",
+      "signInSignUp": "ورود / ثبت‌نام"
+    },
+    "Footer": {
+      "stockImage": "تصویر نمونه",
+      "usefulLinks": "لینک‌های مفید",
+      "documentation": "مستندات",
+      "support": "پشتیبانی",
+      "communityForum": "انجمن کاربران",
+      "loremIpsum": "لورم ایپسوم",
+      "comprehensiveGuides": "راهنماها و منابع جامع",
+      "accessForAll": "دسترسی برای همه کاربران",
+      "getHelp": "دریافت کمک از تیم پشتیبانی ما",
+      "available247": "24 ساعته در دسترس",
+      "joinDiscussions": "شرکت در بحث‌ها با سایر کاربران",
+      "shareTips": "اشتراک‌گذاری نکات و ترفندها",
+      "byMe": "@ توسط من",
+      "followUs": "ما را دنبال کنید"
+    },
+    "AdCard": {
+      "new": "جدید",
+      "usd": "دلار",
+      "overview": "بررسی:",
+      "form": "فرم",
+      "origin": "مبدا",
+      "color": "رنگ",
+      "surface": "سطح",
+      "size": "سایز",
+      "weight": "وزن",
+      "kg": "کیلوگرم",
+      "sourcePort": "مبدا ارسال"
+    },
+    "Filters": {
+      "form": "فرم",
+      "color": "رنگ",
+      "origin": "مبدا",
+      "surface": "سطح",
+      "size": "سایز",
+      "price": "قیمت",
+      "deliveryDestination": "مقصد تحویل",
+      "shipmentFrom": "مبدا ارسال",
+      "grade": "درجه",
+      "option1": "گزینه ۱",
+      "option2": "گزینه ۲"
+    },
+    "SortFilters": {
+      "sortByLatest": "مرتب‌سازی: جدیدترین",
+      "latest": "جدیدترین",
+      "priceLowToHigh": "قیمت: کم به زیاد",
+      "priceHighToLow": "قیمت: زیاد به کم",
+      "expressDelivery": "ارسال فوری",
+      "featuredOnly": "فقط ویژه‌ها"
     }
   }

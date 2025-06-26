@@ -1,7 +1,7 @@
 export const adsEn = [
     {
       id: "ad-001",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Marble",
       origin: "Yazd",
       form: "Slab",
@@ -19,7 +19,7 @@ export const adsEn = [
     },
     {
       id: "ad-002",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Granite",
       origin: "Zanjan",
       form: "Tile",
@@ -36,7 +36,7 @@ export const adsEn = [
     },
     {
       id: "ad-003",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Travertine",
       origin: "Mahallat",
       form: "Block",
@@ -53,7 +53,7 @@ export const adsEn = [
     },
     {
       id: "ad-004",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Marble Limestone",
       origin: "Dehbid",
       form: "Slab",
@@ -71,7 +71,7 @@ export const adsEn = [
     },
     {
       id: "ad-005",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Marble",
       origin: "Kashan",
       form: "Tile",
@@ -89,7 +89,7 @@ export const adsEn = [
     },
     {
       id: "ad-006",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Basalt",
       origin: "Tabriz",
       form: "Block",
@@ -106,7 +106,7 @@ export const adsEn = [
     },
     {
       id: "ad-007",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Travertine",
       origin: "Hamedan",
       form: "Tile",
@@ -124,7 +124,7 @@ export const adsEn = [
     },
     {
       id: "ad-008",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Crystal",
       origin: "Neyriz",
       form: "Slab",
@@ -142,7 +142,7 @@ export const adsEn = [
     },
     {
       id: "ad-009",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Marble Limestone",
       origin: "Kerman",
       form: "Tile",
@@ -160,7 +160,7 @@ export const adsEn = [
     },
     {
       id: "ad-010",
-      image: "https://via.placeholder.com/300x225",
+      image: "https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins",
       stone_type: "Sandstone",
       origin: "Isfahan",
       form: "Block",

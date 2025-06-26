@@ -8,7 +8,6 @@ import SignInSignUpButton from "./sign-in-sign-up-button";
 import ThemeToggler from "./theme-toggler";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import Link from "next/link";
 import {
@@ -28,7 +27,6 @@ const Header = () => {
   const params = useParams();
   const currentLocale = (params?.locale as string) || "en";
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
-  const { isRTL } = useLocaleDirection();
   // Update language state when locale changes
   useEffect(() => {
     setLanguage(currentLocale.toUpperCase());

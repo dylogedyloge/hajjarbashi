@@ -8,7 +8,6 @@ import SignInSignUpButton from "./sign-in-sign-up-button";
 import ThemeToggler from "./theme-toggler";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
-import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import Link from "next/link";
 import {
   Select,

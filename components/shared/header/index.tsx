@@ -6,6 +6,10 @@ import SearchInput from "./search-input";
 import CreateAdvertisementButton from "./create-advertisement-button";
 import SignInSignUpButton from "./sign-in-sign-up-button";
 import ThemeToggler from "./theme-toggler";
+import { useTranslations } from "next-intl";
+import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
+import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import Link from "next/link";
 import {
   Select,
@@ -14,16 +18,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
 const Header = () => {
-  const [language, setLanguage] = useState("EN");
+  const t = useTranslations("Header");
+  const intlRouter = useIntlRouter();
+  const pathname = usePathname();
+  const params = useParams();
+  const currentLocale = (params?.locale as string) || "en";
+  const [language, setLanguage] = useState(currentLocale.toUpperCase());
+  const { isRTL } = useLocaleDirection();
+  // Update language state when locale changes
+  useEffect(() => {
+    setLanguage(currentLocale.toUpperCase());
+  }, [currentLocale]);
+
+  // Handle language change
+  const handleLanguageChange = (newLanguage: string) => {
+    const locale = newLanguage.toLowerCase();
+    intlRouter.replace(pathname, { locale });
+  };
+
   return (
     <header className="w-full flex items-center justify-between px-4 md:px-8 py-4 bg-background border-b border">
       {/* Desktop: Logo and Nav */}
       <div className="hidden md:flex items-center gap-8">
         <Link className="  text-lg text-foreground" href="/">
-          Hajjar Bashi
+          {t("appName")}
         </Link>
         <div className="flex items-center gap-2 bg-muted rounded-full px-2 py-1">
           <Button variant="default" size="sm" className="rounded-full px-6 ">
@@ -60,27 +82,17 @@ const Header = () => {
         <span className="text-sm font-medium flex items-center gap-1 text-foreground">
           EN <ChevronDown size={16} className="inline text-foreground" />
         </span> */}
-        <Select
-          //  value={language} onValueChange={handleLanguageChange}
-          value={language}
-          onValueChange={() => {
-            setLanguage(language === "EN" ? "FA" : "EN");
-          }}
-        >
+        <Select value={language} onValueChange={handleLanguageChange}>
           <SelectTrigger className="border-none bg-transparent">
             <SelectValue>
               <div className="flex items-center gap-2">
                 {language === "EN" ? (
                   <>
                     <GB className="w-4 h-4" />
-                    {/* <span>{t("english")}</span> */}
-                    {/* English */}
                   </>
                 ) : (
                   <>
                     <IR className="w-4 h-4" />
-                    {/* <span>{t("persian")}</span> */}
-                    {/* Persian */}
                   </>
                 )}
               </div>
@@ -90,14 +102,12 @@ const Header = () => {
             <SelectItem value="EN">
               <div className="flex items-center gap-2">
                 <GB className="w-4 h-4" />
-                {/* <span>{t("english")}</span> */}
                 English
               </div>
             </SelectItem>
             <SelectItem value="FA">
               <div className="flex items-center gap-2">
                 <IR className="w-4 h-4" />
-                {/* <span>{t("persian")}</span> */}
                 Persian
               </div>
             </SelectItem>

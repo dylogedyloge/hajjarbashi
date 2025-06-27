@@ -1,24 +1,20 @@
 stages:
+  - build
   - deploy
 
-variables:
-  DEPLOY_USER: root
-  DEPLOY_HOST: 192.168.10.6
-  DEPLOY_PATH: /home/gitlab-runner/hajjar/site
+build:
+  stage: build
+  image: node:20
+  script:
+    - npm install
+    - npm run build
+    - docker build -t hajjar-site .
 
 deploy:
-  image: node:20
   stage: deploy
-  script:
-    - tar czf deploy.tar.gz ./*
-    - scp -i ~/.ssh/id_ed25519 deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/
+  image: docker:latest
 
-    - ssh -i ~/.ssh/id_ed25519 $DEPLOY_USER@$DEPLOY_HOST "
-        cd $DEPLOY_PATH &&
-        rm -rf * &&
-        tar xzf deploy.tar.gz &&
-        docker-compose down &&
-        docker-compose up -d --build
-      "
-  only:
-    - main
+  script:
+    - docker stop hajjar-site || true
+    - docker rm hajjar-site || true
+    - docker run -d --name hajjar-site -p 3000:3000 hajjar-site

@@ -17,9 +17,9 @@ deploy:
   stage: deploy
   script:
     - tar czf deploy.tar.gz ./*
-    - scp -i ~/.ssh/id_rsa deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/
+    - scp -i ~/.ssh/gitlab_deploy deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/
 
-    - ssh -i ~/.ssh/id_rsa $DEPLOY_USER@$DEPLOY_HOST "
+    - ssh -i ~/.ssh/gitlab_deploy $DEPLOY_USER@$DEPLOY_HOST "
         cd $DEPLOY_PATH &&
         rm -rf * &&
         tar xzf deploy.tar.gz &&

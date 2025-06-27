@@ -13,7 +13,7 @@ before_script:
   - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
 
 deploy:
-  image: 192.168.10.6:5000/node:20
+  image: node:20
   stage: deploy
   script:
     - tar czf deploy.tar.gz ./*

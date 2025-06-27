@@ -8,8 +8,8 @@ variables:
 
 before_script:
   - mkdir -p ~/.ssh
-  - echo "$SSH_PRIVATE_KEY" > ~/.ssh/gitlab_deploy
-  - chmod 600 ~/.ssh/gitlab_deploy
+  - echo "$SSH_PRIVATE_KEY" > ~/.ssh/gitlab_runner
+  - chmod 600 ~/.ssh/gitlab_runner
   - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
 
 deploy:
@@ -17,9 +17,9 @@ deploy:
   stage: deploy
   script:
     - tar czf deploy.tar.gz ./*
-    - scp -i ~/.ssh/gitlab_deploy deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/
+    - scp -i ~/.ssh/gitlab_runner deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/
 
-    - ssh -i ~/.ssh/gitlab_deploy $DEPLOY_USER@$DEPLOY_HOST "
+    - ssh -i ~/.ssh/gitlab_runner $DEPLOY_USER@$DEPLOY_HOST "
         cd $DEPLOY_PATH &&
         rm -rf * &&
         tar xzf deploy.tar.gz &&

@@ -2,6 +2,9 @@ stages:
   - build
   - deploy
 
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+
 build:
   stage: build
   image: node:20
@@ -13,7 +16,8 @@ build:
 deploy:
   stage: deploy
   image: docker:latest
-
+  services:
+    - docker:dind
   script:
     - docker stop hajjar-site || true
     - docker rm hajjar-site || true

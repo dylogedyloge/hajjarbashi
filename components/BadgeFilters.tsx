@@ -1,14 +1,15 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-
-const badgeCategories = ["Marble", "Granite", "Quartz", "Limestone", "Slate"];
+import { useTranslations } from "next-intl";
 
 const BadgeFilters = () => {
+  const t = useTranslations("BadgeFilters");
+  const badgeCategories = t.raw("categories") as string[];
   const [selected, setSelected] = useState(0);
   return (
     <div className="flex gap-2 w-full overflow-x-auto py-2">
-      {badgeCategories.map((cat, i) => (
+      {badgeCategories.map((cat: string, i: number) => (
         <Button
           key={cat}
           variant={i === selected ? "default" : "outline"}

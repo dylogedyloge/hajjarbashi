@@ -60,5 +60,46 @@
       "priceHighToLow": "Price: High to Low",
       "expressDelivery": "Express Delivery",
       "featuredOnly": "Featured Only"
+    },
+    "BadgeFilters": {
+      "categories": ["Marble", "Granite", "Quartz", "Limestone", "Slate"]
+    },
+    "SearchAndFilter": {
+      "searchPlaceholder": "Search anything...\nstones, marble and more",
+      "filterTitle": "Filter",
+      "resetAll": "Reset all",
+      "apply": "Apply"
+    },
+    "CategoryFilter": {
+      "header": "Store Categories",
+      "descriptionLabel": "Description:",
+      "colorsLabel": "Colors:",
+      "imageLabel": "Image",
+      "categories": [
+        {
+          "name": "Marble",
+          "description": "Lorem Ipsum is dummy text Lorem Ipsum is dummy text Lorem Ipsum is dummy text",
+          "colors": ["#F87171", "#FB923C", "#FBBF24", "#F87171"],
+          "images": [1, 2, 3, 4]
+        },
+        {
+          "name": "Granite",
+          "description": "Granite is a hard, granular, crystalline igneous rock used in construction.",
+          "colors": ["#A3A3A3", "#71717A", "#F59E42", "#F87171"],
+          "images": [1, 2, 3, 4]
+        },
+        {
+          "name": "Quartz",
+          "description": "Quartz is a hard, crystalline mineral composed of silicon and oxygen atoms.",
+          "colors": ["#FBBF24", "#A3A3A3", "#FB923C", "#F87171"],
+          "images": [1, 2, 3, 4]
+        },
+        {
+          "name": "Slate",
+          "description": "Slate is a fine-grained, foliated, homogeneous metamorphic rock.",
+          "colors": ["#64748B", "#334155", "#A3A3A3", "#F87171"],
+          "images": [1, 2, 3, 4]
+        }
+      ]
     }
   }

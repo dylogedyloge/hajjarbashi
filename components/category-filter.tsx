@@ -7,88 +7,24 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-
-const categories = [
-  {
-    name: "Marble",
-    description:
-      "Lorem Ipsum is dummy text Lorem Ipsum is dummy text Lorem Ipsum is dummy text",
-    colors: ["#F87171", "#FB923C", "#FBBF24", "#F87171"],
-    images: [1, 2, 3, 4],
-  },
-  {
-    name: "Granite",
-    description:
-      "Granite is a hard, granular, crystalline igneous rock used in construction.",
-    colors: ["#A3A3A3", "#71717A", "#F59E42", "#F87171"],
-    images: [1, 2, 3, 4],
-  },
-  {
-    name: "Quartz",
-    description:
-      "Quartz is a hard, crystalline mineral composed of silicon and oxygen atoms.",
-    colors: ["#FBBF24", "#A3A3A3", "#FB923C", "#F87171"],
-    images: [1, 2, 3, 4],
-  },
-  {
-    name: "Slate",
-    description:
-      "Slate is a fine-grained, foliated, homogeneous metamorphic rock.",
-    colors: ["#64748B", "#334155", "#A3A3A3", "#F87171"],
-    images: [1, 2, 3, 4],
-  },
-];
-
-const CategoryDetails = ({
-  category,
-}: {
-  category: (typeof categories)[0];
-}) => (
-  <div className="mb-2">
-    <div className="mb-2">
-      <span className="font-semibold text-sm">Description:</span>
-      <div className="text-xs text-muted-foreground mt-1">
-        {category.description}
-      </div>
-    </div>
-    <div className="mb-2">
-      <span className="font-semibold text-sm">Colors:</span>
-      <div className="flex items-center gap-2 mt-1">
-        {category.colors.map((color, i) => (
-          <span
-            key={i}
-            className="w-4 h-4 rounded-full border border-muted"
-            style={{ backgroundColor: color }}
-          />
-        ))}
-      </div>
-    </div>
-    <div className="grid grid-cols-2 gap-2 mt-2">
-      {category.images.map((img, i) => (
-        <div
-          key={i}
-          className="bg-muted rounded-lg flex items-center justify-center h-24 text-xs text-muted-foreground border border-muted"
-        >
-          Image
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-// Helper to merge class names
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { useTranslations } from "next-intl";
 
 const CategoryFilter = () => {
+  const t = useTranslations("CategoryFilter");
+  const categories = t.raw("categories") as Array<{
+    name: string;
+    description: string;
+    colors: string[];
+    images: number[];
+  }>;
+
   return (
     <aside className="w-[350px] bg-background rounded-xl p-4 flex flex-col gap-4 border border-border max-h-[95vh] overflow-y-auto">
       {/* Header */}
       <div className="flex items-center gap-2 mb-2">
         <LayoutGrid className="text-muted-foreground" size={22} />
         <span className="font-medium text-foreground flex-1">
-          Store Categories
+          {t("header")}
         </span>
         <Button variant="ghost" size="icon" className="ml-auto rounded-full">
           <X size={20} />
@@ -113,7 +49,40 @@ const CategoryFilter = () => {
               {cat.name}
             </AccordionTrigger>
             <AccordionContent>
-              <CategoryDetails category={cat} />
+              <div className="mb-2">
+                <div className="mb-2">
+                  <span className="font-semibold text-sm">
+                    {t("descriptionLabel")}
+                  </span>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {cat.description}
+                  </div>
+                </div>
+                <div className="mb-2">
+                  <span className="font-semibold text-sm">
+                    {t("colorsLabel")}
+                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    {cat.colors.map((color, i) => (
+                      <span
+                        key={i}
+                        className="w-4 h-4 rounded-full border border-muted"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {cat.images.map((img, i) => (
+                    <div
+                      key={i}
+                      className="bg-muted rounded-lg flex items-center justify-center h-24 text-xs text-muted-foreground border border-muted"
+                    >
+                      {t("imageLabel")}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
         ))}
@@ -121,5 +90,10 @@ const CategoryFilter = () => {
     </aside>
   );
 };
+
+// Helper to merge class names
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(" ");
+}
 
 export default CategoryFilter;

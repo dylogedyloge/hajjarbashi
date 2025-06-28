@@ -1,42 +1,23 @@
 import { Checkbox } from "@/components/ui/checkbox";
-
-const filterSections = [
-  {
-    title: "Form",
-    options: [
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-    ],
-  },
-  {
-    title: "Color",
-    options: [
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-    ],
-  },
-  {
-    title: "Origin",
-    options: [
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-      "Lorem Ipsum",
-    ],
-  },
-];
+import { useTranslations } from "next-intl";
 
 const MobileDrawerFilters = () => {
+  const t = useTranslations("MobileDrawerFilters");
+  const filterSections = [
+    {
+      title: t("form.title"),
+      options: t.raw("form.options") as string[],
+    },
+    {
+      title: t("color.title"),
+      options: t.raw("color.options") as string[],
+    },
+    {
+      title: t("origin.title"),
+      options: t.raw("origin.options") as string[],
+    },
+  ];
+
   return (
     <form className="px-6 pb-4">
       {filterSections.map((section) => (
@@ -45,7 +26,7 @@ const MobileDrawerFilters = () => {
             {section.title}
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-            {section.options.map((label, idx) => (
+            {section.options.map((label: string, idx: number) => (
               <label
                 key={idx}
                 className="flex items-center gap-2 text-[15px] font-medium text-muted-foreground"

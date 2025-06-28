@@ -9,7 +9,7 @@ const AdsList = () => {
   const locale = useLocale();
   const ads = locale === "fa" ? adsFa : adsEn;
   return (
-    <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto">
+    <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto">
       <Filters />
       <SortAndCheckboxFilters />
       {ads.map((ad) => (

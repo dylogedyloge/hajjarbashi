@@ -108,7 +108,7 @@ const Header = () => {
         <ThemeToggler />
         <Bell size={20} className="cursor-pointer" />
         {/* Desktop: Sign In/Up Button */}
-        <div className="hidden md:block">
+        <div>
           <SignInSignUpButton />
         </div>
       </div>

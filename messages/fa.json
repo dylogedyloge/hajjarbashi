@@ -40,7 +40,7 @@
       "kg": "کیلوگرم",
       "sourcePort": "مبدا ارسال"
     },
-    "Filters": {
+"DesktopFilters": {
       "form": "فرم",
       "color": "رنگ",
       "origin": "مبدا",
@@ -53,7 +53,7 @@
       "option1": "گزینه ۱",
       "option2": "گزینه ۲"
     },
-    "SortFilters": {
+    "DesktopSortAndCheckboxFilters":{
       "sortByLatest": "مرتب‌سازی: جدیدترین",
       "latest": "جدیدترین",
       "priceLowToHigh": "قیمت: کم به زیاد",
@@ -61,6 +61,68 @@
       "expressDelivery": "ارسال فوری",
       "featuredOnly": "فقط ویژه‌ها"
     },
+    "MobileCategoryFilters": {
+      "categories": ["مرمر", "گرانیت", "کوارتز", "سنگ آهک", "اسلیت"]
+    },
+    "MobileSearchAndFilter": {
+      "searchPlaceholder": "جستجو کنید...\nگرانیت، مرمر و غیره",
+      "filterTitle": "فیلتر",
+      "resetAll": "پاک‌سازی همه",
+      "apply": "اعمال"
+    },
+    "MobileDrawerFilters": {
+      "form": {
+        "title": "فرم",
+        "options": ["گزینه ۱", "گزینه ۲", "گزینه ۳", "گزینه ۴", "گزینه ۵", "گزینه ۶"]
+      },
+      "color": {
+        "title": "رنگ",
+        "options": ["گزینه ۱", "گزینه ۲", "گزینه ۳", "گزینه ۴", "گزینه ۵", "گزینه ۶"]
+      },
+      "origin": {
+        "title": "مبدا",
+        "options": ["گزینه ۱", "گزینه ۲", "گزینه ۳", "گزینه ۴", "گزینه ۵", "گزینه ۶"]
+      }
+    },
+    "DesktopCategoryFilters": {
+      "header": "دسته‌بندی فروشگاه",
+      "descriptionLabel": "توضیحات:",
+      "colorsLabel": "رنگ‌ها:",
+      "imageLabel": "تصویر",
+      "categories": [
+        {
+          "name": "مرمر",
+          "description": "متن ساختگی برای مرمر متن ساختگی برای مرمر متن ساختگی برای مرمر",
+          "colors": ["#F87171", "#FB923C", "#FBBF24", "#F87171"],
+          "images": [1, 2, 3, 4]
+        },
+        {
+          "name": "گرانیت",
+          "description": "گرانیت یک سنگ آذرین دانه‌ریز و سخت است که در ساخت و ساز استفاده می‌شود.",
+          "colors": ["#A3A3A3", "#71717A", "#F59E42", "#F87171"],
+          "images": [1, 2, 3, 4]
+        },
+        {
+          "name": "کوارتز",
+          "description": "کوارتز یک کانی سخت و بلوری است که از اتم‌های سیلیسیم و اکسیژن تشکیل شده است.",
+          "colors": ["#FBBF24", "#A3A3A3", "#FB923C", "#F87171"],
+          "images": [1, 2, 3, 4]
+        },
+        {
+          "name": "اسلیت",
+          "description": "اسلیت یک سنگ دگرگونی ریزدانه و همگن است.",
+          "colors": ["#64748B", "#334155", "#A3A3A3", "#F87171"],
+          "images": [1, 2, 3, 4]
+        }
+      ]
+    },
+    "MobileBottomNav": {
+    "home": "خانه",
+    "chat": "چت",
+    "bookmark": "نشان شده‌ها",
+    "profile": "پروفایل"
+  },
+  
     "AuthDialog": {
       "welcome": "به حجار باشی خوش آمدید",
       "continueWithPhone": "ادامه با شماره موبایل",

@@ -27,6 +27,12 @@
       "byMe": "@ by Me",
       "followUs": "Follow Us"
     },
+    "MobileBottomNav": {
+      "home": "Home",
+      "chat": "Chat",
+      "bookmark": "Bookmark",
+      "profile": "Profile"
+    },
     "AdCard": {
       "new": "NEW",
       "usd": "USD",

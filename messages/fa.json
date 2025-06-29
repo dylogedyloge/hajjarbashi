@@ -27,6 +27,12 @@
       "byMe": "@ توسط من",
       "followUs": "ما را دنبال کنید"
     },
+    "MobileBottomNav": {
+      "home": "خانه",
+      "chat": "چت",
+      "bookmark": "نشان شده‌ها",
+      "profile": "پروفایل"
+    },
     "AdCard": {
       "new": "جدید",
       "usd": "دلار",
@@ -84,7 +90,7 @@
         "options": ["گزینه ۱", "گزینه ۲", "گزینه ۳", "گزینه ۴", "گزینه ۵", "گزینه ۶"]
       }
     },
-    "CategoryFilter": {
+    "DesktopCategoryFilters": {
       "header": "دسته‌بندی فروشگاه",
       "descriptionLabel": "توضیحات:",
       "colorsLabel": "رنگ‌ها:",

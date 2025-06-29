@@ -1,11 +1,4 @@
 import AdCard from "./ad-card";
-<<<<<<< HEAD
-import Filters from "./filters";
-import SortAndCheckboxFilters from "./sort-and-checkbox-filters";
-import { useLocale } from "next-intl";
-import { adsEn } from "../dummyData/ads-en";
-import { adsFa } from "../dummyData/ads-fa";
-=======
 import DesktopFilters from "./sortSearchFilters/desktop/desktop-filters";
 import DesktopSortAndCheckboxFilters from "./sortSearchFilters/desktop/desktop-sort-and-checkbox-filters";
 import { useLocale } from "next-intl";
@@ -13,7 +6,6 @@ import { adsEn } from "../dummyData/ads-en";
 import { adsFa } from "../dummyData/ads-fa";
 import MobileSearchAndFilter from "./sortSearchFilters/mobile/mobile-search-and-filter";
 import MobileCategoryFilters from "./sortSearchFilters/mobile/mobile-category-filters";
->>>>>>> 5c02b4e141f922317fbffb67e446b6978a417093
 
 const AdsList = () => {
   const locale = useLocale();

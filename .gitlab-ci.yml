@@ -1,0 +1,19 @@
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: node:20
+  script:
+    - npm install
+    - npm run build
+    - docker build -t hajjar-site .
+
+deploy:
+  stage: deploy
+  image: docker:latest
+  script:
+    - docker stop hajjar-site || true
+    - docker rm hajjar-site || true
+    - docker run -d --name hajjar-site -p 3000:3000 hajjar-site

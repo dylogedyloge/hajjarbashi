@@ -2,8 +2,11 @@
 import { Home, MessageSquare, Bookmark, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateAdvertisementButton from "@/components/shared/header/create-advertisement-button";
+import { useTranslations } from "next-intl";
 
 const MobileBottomNav = () => {
+  const t = useTranslations("MobileBottomNav");
+
   return (
     <nav className="fixed bottom-0 left-0 w-full z-50 md:hidden bg-background border-t border flex justify-center items-end pt-1.5 pb-3">
       <div className="relative w-full max-w-md flex justify-between items-end gap-x-4 ">
@@ -14,7 +17,9 @@ const MobileBottomNav = () => {
           tabIndex={0}
         >
           <Home className="size-5 mb-0.5" strokeWidth={2} />
-          <span className="text-xs mt-0.5 font-medium leading-none">Home</span>
+          <span className="text-xs mt-0.5 font-medium leading-none">
+            {t("home")}
+          </span>
         </Button>
         {/* Chat */}
         <Button
@@ -23,7 +28,9 @@ const MobileBottomNav = () => {
           tabIndex={0}
         >
           <MessageSquare className="size-5 mb-0.5" strokeWidth={2} />
-          <span className="text-xs mt-0.5 font-medium leading-none">Chat</span>
+          <span className="text-xs mt-0.5 font-medium leading-none">
+            {t("chat")}
+          </span>
         </Button>
         {/* Spacer for Plus Floating */}
         <div className="w-12" aria-hidden />
@@ -41,7 +48,7 @@ const MobileBottomNav = () => {
         >
           <Bookmark className="size-5 mb-0.5" strokeWidth={2} />
           <span className="text-xs mt-0.5 font-medium leading-none">
-            Bookmark
+            {t("bookmark")}
           </span>
         </Button>
         {/* Profile */}
@@ -52,7 +59,7 @@ const MobileBottomNav = () => {
         >
           <User className="size-5 mb-0.5" strokeWidth={2} />
           <span className="text-xs mt-0.5 font-medium leading-none">
-            Profile
+            {t("profile")}
           </span>
         </Button>
       </div>

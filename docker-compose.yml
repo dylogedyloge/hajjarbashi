@@ -1,0 +1,9 @@
+services:
+  next-app:
+    build: .
+    container_name: next-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production

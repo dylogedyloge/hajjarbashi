@@ -10,11 +10,11 @@ import {
   DrawerClose,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import MobileDrawerFilters from "./MobileDrawerFilters";
+import MobileDrawerFilters from "./mobile-drawer-filters";
 import { useTranslations } from "next-intl";
 
-const SearchAndFilter = () => {
-  const t = useTranslations("SearchAndFilter");
+const MobileSearchAndFilter = () => {
+  const t = useTranslations("MobileSearchAndFilter");
   return (
     <Drawer direction="bottom">
       <div className="flex items-center bg-background border border-border rounded-full px-3 py-2 w-full shadow-sm">
@@ -57,4 +57,4 @@ const SearchAndFilter = () => {
   );
 };
 
-export default SearchAndFilter;
+export default MobileSearchAndFilter;

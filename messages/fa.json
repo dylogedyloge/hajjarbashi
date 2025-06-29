@@ -40,7 +40,7 @@
       "kg": "کیلوگرم",
       "sourcePort": "مبدا ارسال"
     },
-    "Filters": {
+    "DesktopFilters": {
       "form": "فرم",
       "color": "رنگ",
       "origin": "مبدا",
@@ -53,7 +53,7 @@
       "option1": "گزینه ۱",
       "option2": "گزینه ۲"
     },
-    "SortFilters": {
+    "DesktopSortAndCheckboxFilters":{
       "sortByLatest": "مرتب‌سازی: جدیدترین",
       "latest": "جدیدترین",
       "priceLowToHigh": "قیمت: کم به زیاد",
@@ -61,10 +61,10 @@
       "expressDelivery": "ارسال فوری",
       "featuredOnly": "فقط ویژه‌ها"
     },
-    "BadgeFilters": {
+    "MobileCategoryFilters": {
       "categories": ["مرمر", "گرانیت", "کوارتز", "سنگ آهک", "اسلیت"]
     },
-    "SearchAndFilter": {
+    "MobileSearchAndFilter": {
       "searchPlaceholder": "جستجو کنید...\nگرانیت، مرمر و غیره",
       "filterTitle": "فیلتر",
       "resetAll": "پاک‌سازی همه",

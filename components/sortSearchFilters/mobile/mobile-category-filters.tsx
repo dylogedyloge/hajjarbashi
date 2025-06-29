@@ -3,13 +3,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 
-const BadgeFilters = () => {
-  const t = useTranslations("BadgeFilters");
-  const badgeCategories = t.raw("categories") as string[];
+const MobileCategoryFilters = () => {
+  const t = useTranslations("MobileCategoryFilters");
+  const mobileCategories = t.raw("categories") as string[];
   const [selected, setSelected] = useState(0);
   return (
     <div className="flex gap-2 w-full overflow-x-auto py-2">
-      {badgeCategories.map((cat: string, i: number) => (
+      {mobileCategories.map((cat: string, i: number) => (
         <Button
           key={cat}
           variant={i === selected ? "default" : "outline"}
@@ -28,4 +28,4 @@ const BadgeFilters = () => {
   );
 };
 
-export default BadgeFilters;
+export default MobileCategoryFilters;

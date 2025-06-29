@@ -19,8 +19,8 @@ const filterFields = [
   { label: "grade", options: ["option1", "option2"] },
 ];
 
-const Filters = () => {
-  const t = useTranslations("Filters");
+const DesktopFilters = () => {
+  const t = useTranslations("DesktopFilters");
   return (
     <div className="w-full flex flex-row gap-4 justify-center items-center py-4 overflow-x-auto scrollbar-none">
       {filterFields.map((field) => (
@@ -41,4 +41,4 @@ const Filters = () => {
   );
 };
 
-export default Filters;
+export default DesktopFilters;

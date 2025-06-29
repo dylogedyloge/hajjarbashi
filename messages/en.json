@@ -40,7 +40,7 @@
       "kg": "KG",
       "sourcePort": "Source Port"
     },
-    "Filters": {
+    "DesktopFilters": {
       "form": "Form",
       "color": "Color",
       "origin": "Origin",
@@ -53,7 +53,7 @@
       "option1": "Option 1",
       "option2": "Option 2"
     },
-    "SortFilters": {
+    "DesktopSortAndCheckboxFilters":{
       "sortByLatest": "Sort By: Latest",
       "latest": "Latest",
       "priceLowToHigh": "Price: Low to High",
@@ -61,16 +61,31 @@
       "expressDelivery": "Express Delivery",
       "featuredOnly": "Featured Only"
     },
-    "BadgeFilters": {
+    "MobileCategoryFilters": {
       "categories": ["Marble", "Granite", "Quartz", "Limestone", "Slate"]
     },
-    "SearchAndFilter": {
+    "MobileSearchAndFilter": {
       "searchPlaceholder": "Search anything...\nstones, marble and more",
       "filterTitle": "Filter",
       "resetAll": "Reset all",
       "apply": "Apply"
     },
-    "CategoryFilter": {
+    "MobileDrawerFilters": {
+      "form": {
+        "title": "Form",
+        "options": ["option 1","option 2","option 3","option 4", "option 5", "option 6"]
+      },
+      "color": {
+        "title": "Color",
+        "options": ["option 1","option 2","option 3","option 4", "option 5", "option 6"]
+      },
+      "origin": {
+        "title": "Origin",
+        "options": ["option 1","option 2","option 3","option 4", "option 5", "option 6"]
+      }
+    },
+   
+    "DesktopCategoryFilters":{
       "header": "Store Categories",
       "descriptionLabel": "Description:",
       "colorsLabel": "Colors:",

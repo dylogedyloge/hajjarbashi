@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/accordion";
 import { useTranslations } from "next-intl";
 
-const CategoryFilter = () => {
-  const t = useTranslations("CategoryFilter");
+const DesktopCategoryFilters = () => {
+  const t = useTranslations("DesktopCategoryFilters");
   const categories = t.raw("categories") as Array<{
     name: string;
     description: string;
@@ -96,4 +96,4 @@ function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default CategoryFilter;
+export default DesktopCategoryFilters;

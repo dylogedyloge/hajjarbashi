@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/select";
 import { useTranslations } from "next-intl";
 
-const SortAndCheckboxFilters = () => {
-  const t = useTranslations("SortFilters");
+const DesktopSortAndCheckboxFilters = () => {
+  const t = useTranslations("DesktopSortAndCheckboxFilters");
   return (
     <div className="w-full flex flex-row items-center gap-6 py-2 px-2">
       <Select>
@@ -46,4 +46,4 @@ const SortAndCheckboxFilters = () => {
   );
 };
 
-export default SortAndCheckboxFilters;
+export default DesktopSortAndCheckboxFilters;

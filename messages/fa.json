@@ -60,5 +60,39 @@
       "priceHighToLow": "قیمت: زیاد به کم",
       "expressDelivery": "ارسال فوری",
       "featuredOnly": "فقط ویژه‌ها"
+    },
+    "AuthDialog": {
+      "welcome": "به حجار باشی خوش آمدید",
+      "continueWithPhone": "ادامه با شماره موبایل",
+      "continueWithGoogle": "ادامه با گوگل",
+      "continueWithEmail": "ادامه با ایمیل",
+      "enterPhoneNumber": "شماره موبایل خود را وارد کنید",
+      "phonePlaceholder": "۱۱-۲۳۴-۴۵۶۷",
+      "continue": "ادامه",
+      "signInWithGoogle": "ورود با گوگل",
+      "loggingInWithGoogle": "در حال ورود با گوگل...",
+      "back": "بازگشت",
+      "signInWithEmail": "ورود با ایمیل",
+      "emailAddress": "آدرس ایمیل",
+      "password": "رمز عبور",
+      "signIn": "ورود",
+      "dontHaveAccount": "حساب کاربری ندارید؟",
+      "signUp": "ثبت‌نام",
+      "forgotPassword": "رمز عبور خود را فراموش کرده‌اید؟",
+      "resetHere": "بازیابی کنید",
+      "enterPersonalInfo": "اطلاعات شخصی خود را وارد کنید",
+      "passwordConfirmation": "تکرار رمز عبور",
+      "resetPassword": "بازیابی رمز عبور",
+      "enterYourEmail": "ایمیل خود را وارد کنید",
+      "sendResetPasswordLink": "ارسال لینک بازیابی رمز عبور",
+      "resendResetPasswordLink": "ارسال مجدد لینک بازیابی رمز عبور",
+      "enterOtpCode": "کد تایید را وارد کنید",
+      "enter6DigitsCode": "کد ۶ رقمی خود را وارد کنید",
+      "resendOtpCodeIn": "ارسال مجدد کد تایید تا {time}",
+      "resendOtpCode": "ارسال مجدد کد تایید"
+    },
+    "PhoneInput": {
+      "searchCountry": "جستجوی کشور...",
+      "noCountryFound": "کشوری یافت نشد."
     }
   }

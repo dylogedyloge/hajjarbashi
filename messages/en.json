@@ -60,5 +60,39 @@
       "priceHighToLow": "Price: High to Low",
       "expressDelivery": "Express Delivery",
       "featuredOnly": "Featured Only"
+    },
+    "AuthDialog": {
+      "welcome": "Welcome to HajjarBashi",
+      "continueWithPhone": "Continue with Phone Number",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithEmail": "Continue with Email",
+      "enterPhoneNumber": "Enter Your Phone Number",
+      "phonePlaceholder": "11-234-4567",
+      "continue": "Continue",
+      "signInWithGoogle": "Sign in with Google",
+      "loggingInWithGoogle": "Logging you in with Google...",
+      "back": "Back",
+      "signInWithEmail": "Sign In With Email",
+      "emailAddress": "Email Address",
+      "password": "Password",
+      "signIn": "Sign In",
+      "dontHaveAccount": "Don't have an account?",
+      "signUp": "Sign Up",
+      "forgotPassword": "Forgot your password?",
+      "resetHere": "Reset Here",
+      "enterPersonalInfo": "Enter Your Personal Information",
+      "passwordConfirmation": "Password Confirmation",
+      "resetPassword": "Reset Password",
+      "enterYourEmail": "Enter your email Address",
+      "sendResetPasswordLink": "Send Reset Password Link",
+      "resendResetPasswordLink": "Re-send Reset Password Link",
+      "enterOtpCode": "Enter Your OTP Code",
+      "enter6DigitsCode": "Enter your 6 Digits Code",
+      "resendOtpCodeIn": "Re-send OTP Code in {time}",
+      "resendOtpCode": "Re-send OTP Code"
+    },
+    "PhoneInput": {
+      "searchCountry": "Search country...",
+      "noCountryFound": "No country found."
     }
   }

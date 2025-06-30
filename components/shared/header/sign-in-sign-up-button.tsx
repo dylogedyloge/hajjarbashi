@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority";
 import { useTranslations } from "next-intl";
 import { useState, ReactNode } from "react";
 import AuthDialog from "./auth-dialog";
@@ -6,8 +8,8 @@ import AuthDialog from "./auth-dialog";
 interface SignInSignUpButtonProps {
   icon?: ReactNode;
   className?: string;
-  variant?: string;
-  size?: string;
+  variant?: VariantProps<typeof buttonVariants>["variant"];
+  size?: VariantProps<typeof buttonVariants>["size"];
   labelClassName?: string;
 }
 
@@ -23,8 +25,8 @@ const SignInSignUpButton = ({
   return (
     <>
       <Button
-        variant={variant as any}
-        size={size as any}
+        variant={variant}
+        size={size}
         className={className}
         onClick={() => setOpen(true)}
       >

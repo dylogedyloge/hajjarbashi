@@ -19,10 +19,8 @@ import { useAuth } from "@/lib/auth-context";
 import {
   authService,
   SignupRequest,
-  VerifyEmailRequest,
   LoginRequest,
   SendVerificationSmsRequest,
-  VerifyPhoneRequest,
 } from "@/lib/auth";
 import { PhoneInput } from "@/components/ui/phone-input";
 
@@ -57,13 +55,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [resetEmail, setResetEmail] = useState<string>("");
 
   // OTP state for email verification
-  const [emailOtpCode, setEmailOtpCode] = useState<string>("");
   const [emailForOtp, setEmailForOtp] = useState<string>("");
   const [otpInputValue, setOtpInputValue] = useState<string>("");
   const [isOtpLoading, setIsOtpLoading] = useState(false);
 
   // OTP state for phone verification
-  const [phoneOtpCode, setPhoneOtpCode] = useState<string>("");
   const [phoneForOtp, setPhoneForOtp] = useState<string>("");
 
   const t = useTranslations("AuthDialog");
@@ -81,7 +77,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       setSigninData({ email: "", password: "" });
       setResetEmail("");
       setPhone("");
-      setEmailOtpCode("");
       setEmailForOtp("");
       setOtpInputValue("");
       setError("");
@@ -124,7 +119,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       const response = await authService.signup(signupData);
       console.log("Signup successful:", response);
       // Store the verification code and email for OTP verification
-      setEmailOtpCode(response.data.code.toString());
       setEmailForOtp(signupData.email);
       // Show success message
       toast.success(
@@ -261,7 +255,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       const response = await authService.sendVerificationSms({
         phone,
       } as SendVerificationSmsRequest);
-      setPhoneOtpCode(response.data.code.toString());
       setPhoneForOtp(phone);
       toast.success(
         `${t("smsSentSuccessfully")} ${t("verificationCode", {

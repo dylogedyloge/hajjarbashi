@@ -8,11 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Phone, Mail, Circle, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
-import { useAuth } from '@/lib/auth-context';
-import { authService, SignupRequest, VerifyEmailRequest, LoginRequest, SendVerificationSmsRequest, VerifyPhoneRequest } from '@/lib/auth';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
+import {
+  authService,
+  SignupRequest,
+  VerifyEmailRequest,
+  LoginRequest,
+  SendVerificationSmsRequest,
+  VerifyPhoneRequest,
+} from "@/lib/auth";
 import { PhoneInput } from "@/components/ui/phone-input";
 
 interface AuthDialogProps {
@@ -21,39 +32,41 @@ interface AuthDialogProps {
 }
 
 const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
-  const [view, setView] = useState<'main' | 'email' | 'phone' | 'google' | 'signup' | 'reset' | 'otp'>("main");
+  const [view, setView] = useState<
+    "main" | "email" | "phone" | "google" | "signup" | "reset" | "otp"
+  >("main");
   const [phone, setPhone] = useState<string>("");
   const [otpTimer, setOtpTimer] = useState(114);
 
   // Signup form state
   const [signupData, setSignupData] = useState<SignupRequest>({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
-  const [passwordConfirmation, setPasswordConfirmation] = useState<string>('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   // Email signin form state
   const [signinData, setSigninData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   // Reset password form state
-  const [resetEmail, setResetEmail] = useState<string>('');
+  const [resetEmail, setResetEmail] = useState<string>("");
 
   // OTP state for email verification
-  const [emailOtpCode, setEmailOtpCode] = useState<string>('');
-  const [emailForOtp, setEmailForOtp] = useState<string>('');
-  const [otpInputValue, setOtpInputValue] = useState<string>('');
+  const [emailOtpCode, setEmailOtpCode] = useState<string>("");
+  const [emailForOtp, setEmailForOtp] = useState<string>("");
+  const [otpInputValue, setOtpInputValue] = useState<string>("");
   const [isOtpLoading, setIsOtpLoading] = useState(false);
 
   // OTP state for phone verification
-  const [phoneOtpCode, setPhoneOtpCode] = useState<string>('');
-  const [phoneForOtp, setPhoneForOtp] = useState<string>('');
+  const [phoneOtpCode, setPhoneOtpCode] = useState<string>("");
+  const [phoneForOtp, setPhoneForOtp] = useState<string>("");
 
-  const t = useTranslations('AuthDialog');
+  const t = useTranslations("AuthDialog");
   const { login } = useAuth();
 
   // Helper: Validate phone number
@@ -63,15 +76,15 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     if (!open) {
       setView("main"); // Reset view when dialog closes
       // Reset form data
-      setSignupData({ email: '', password: '' });
-      setPasswordConfirmation('');
-      setSigninData({ email: '', password: '' });
-      setResetEmail('');
-      setPhone('');
-      setEmailOtpCode('');
-      setEmailForOtp('');
-      setOtpInputValue('');
-      setError('');
+      setSignupData({ email: "", password: "" });
+      setPasswordConfirmation("");
+      setSigninData({ email: "", password: "" });
+      setResetEmail("");
+      setPhone("");
+      setEmailOtpCode("");
+      setEmailForOtp("");
+      setOtpInputValue("");
+      setError("");
     }
     onOpenChange(open);
   };
@@ -79,12 +92,12 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // Handle signup form submission
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     // Validation
     if (!signupData.email || !signupData.password || !passwordConfirmation) {
-      const errorMsg = t('fillAllFields');
+      const errorMsg = t("fillAllFields");
       setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
@@ -92,7 +105,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     }
 
     if (signupData.password !== passwordConfirmation) {
-      const errorMsg = t('passwordsDoNotMatch');
+      const errorMsg = t("passwordsDoNotMatch");
       setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
@@ -100,7 +113,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     }
 
     if (signupData.password.length < 6) {
-      const errorMsg = t('passwordTooShort');
+      const errorMsg = t("passwordTooShort");
       setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
@@ -109,17 +122,22 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
 
     try {
       const response = await authService.signup(signupData);
-      console.log('Signup successful:', response);
+      console.log("Signup successful:", response);
       // Store the verification code and email for OTP verification
       setEmailOtpCode(response.data.code.toString());
       setEmailForOtp(signupData.email);
       // Show success message
-      toast.success(`${t('signupSuccessful')} ${t('verificationCode', { code: response.data.code })}`);
+      toast.success(
+        `${t("signupSuccessful")} ${t("verificationCode", {
+          code: response.data.code,
+        })}`
+      );
       // Switch to OTP view for email verification
-      setView('otp');
+      setView("otp");
     } catch (err) {
-      console.error('Signup error:', err);
-      const errorMessage = err instanceof Error ? err.message : t('signupFailed');
+      console.error("Signup error:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : t("signupFailed");
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -128,20 +146,23 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   };
 
   // Handle input changes for signup form
-  const handleSignupInputChange = (field: keyof SignupRequest, value: string) => {
-    setSignupData(prev => ({
+  const handleSignupInputChange = (
+    field: keyof SignupRequest,
+    value: string
+  ) => {
+    setSignupData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   // Handle OTP verification
   const handleOtpVerification = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('OTP SUBMIT', { phoneForOtp, emailForOtp, otpInputValue });
+    console.log("OTP SUBMIT", { phoneForOtp, emailForOtp, otpInputValue });
 
     if (!otpInputValue) {
-      toast.error(t('pleaseEnterOtpCode'));
+      toast.error(t("pleaseEnterOtpCode"));
       return;
     }
 
@@ -156,9 +177,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
         };
         const response = await authService.verifyEmail(verificationData);
         // Ensure email is a string for context
-        const userData = { ...response.data, email: response.data.email || '' };
+        const userData = { ...response.data, email: response.data.email || "" };
         login(userData, response.data.token);
-        toast.success(t('emailVerifiedSuccessfully'));
+        toast.success(t("emailVerifiedSuccessfully"));
         handleDialogChange(false);
       } else if (phoneForOtp) {
         // Phone verification
@@ -168,16 +189,17 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
         };
         const response = await authService.verifyPhone(verificationData);
         // Ensure email is a string for context
-        const userData = { ...response.data, email: response.data.email || '' };
+        const userData = { ...response.data, email: response.data.email || "" };
         login(userData, response.data.token);
-        toast.success(t('phoneVerifiedSuccessfully'));
+        toast.success(t("phoneVerifiedSuccessfully"));
         handleDialogChange(false);
       } else {
-        toast.error(t('pleaseEnterOtpCode'));
+        toast.error(t("pleaseEnterOtpCode"));
       }
     } catch (err) {
-      console.error('OTP verification error:', err);
-      const errorMessage = err instanceof Error ? err.message : t('otpVerificationFailed');
+      console.error("OTP verificatio error:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : t("otpVerificationFailed");
       toast.error(errorMessage);
     } finally {
       setIsOtpLoading(false);
@@ -187,11 +209,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // Handle login form submission
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     if (!signinData.email || !signinData.password) {
-      const errorMsg = t('fillAllFields');
+      const errorMsg = t("fillAllFields");
       setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
@@ -201,11 +223,12 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     try {
       const response = await authService.login(signinData as LoginRequest);
       login(response.data, response.data.token);
-      toast.success(t('loginSuccessful'));
+      toast.success(t("loginSuccessful"));
       handleDialogChange(false);
     } catch (err) {
-      console.error('Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : t('loginFailed');
+      console.error("Login error:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : t("loginFailed");
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -216,18 +239,18 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // Handle phone login form submission
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     if (!phone) {
-      const errorMsg = t('fillAllFields');
+      const errorMsg = t("fillAllFields");
       setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
       return;
     }
     if (!isValidPhone(phone)) {
-      const errorMsg = t('invalidPhone');
+      const errorMsg = t("invalidPhone");
       setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
@@ -235,14 +258,21 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     }
 
     try {
-      const response = await authService.sendVerificationSms({ phone } as SendVerificationSmsRequest);
+      const response = await authService.sendVerificationSms({
+        phone,
+      } as SendVerificationSmsRequest);
       setPhoneOtpCode(response.data.code.toString());
       setPhoneForOtp(phone);
-      toast.success(`${t('smsSentSuccessfully')} ${t('verificationCode', { code: response.data.code })}`);
-      setView('otp');
+      toast.success(
+        `${t("smsSentSuccessfully")} ${t("verificationCode", {
+          code: response.data.code,
+        })}`
+      );
+      setView("otp");
     } catch (err) {
-      console.error('Send SMS error:', err);
-      const errorMessage = err instanceof Error ? err.message : t('smsSendFailed');
+      console.error("Send SMS error:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : t("smsSendFailed");
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -269,7 +299,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <>
             <DialogHeader>
               <DialogTitle className="text-center text-2xl font-bold mb-6">
-                {t('welcome')}
+                {t("welcome")}
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-4">
@@ -279,7 +309,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 onClick={() => setView("phone")}
               >
                 <Phone className="text-red-500 w-5 h-5" />
-                {t('continueWithPhone')}
+                {t("continueWithPhone")}
               </Button>
               <Button
                 variant="outline"
@@ -287,7 +317,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 onClick={() => setView("google")}
               >
                 <Circle className="text-red-500 w-5 h-5" />
-                {t('continueWithGoogle')}
+                {t("continueWithGoogle")}
               </Button>
               <Button
                 variant="outline"
@@ -295,11 +325,13 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 onClick={() => setView("email")}
               >
                 <Mail className="text-blue-500 w-5 h-5" />
-                {t('continueWithEmail')}
+                {t("continueWithEmail")}
               </Button>
             </div>
             <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
-              <span className="  text-foreground cursor-pointer">Terms of conditions</span>
+              <span className="  text-foreground cursor-pointer">
+                Terms of conditions
+              </span>
               <span className="mx-1">•</span>
               <span className="  text-foreground cursor-pointer">Support</span>
             </div>
@@ -308,10 +340,13 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <>
             <DialogHeader>
               <DialogTitle className="text-center text-2xl font-bold mb-6">
-                {t('enterPhoneNumber')}
+                {t("enterPhoneNumber")}
               </DialogTitle>
             </DialogHeader>
-            <form className="flex flex-col items-center gap-6" onSubmit={handlePhoneLogin}>
+            <form
+              className="flex flex-col items-center gap-6"
+              onSubmit={handlePhoneLogin}
+            >
               {error && (
                 <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
                   {error}
@@ -339,7 +374,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 value={phone}
                 onChange={setPhone}
                 className="w-full"
-                placeholder={t('phonePlaceholder')}
+                placeholder={t("phonePlaceholder")}
               />
               <div className="flex w-full gap-4 mt-2">
                 <Button
@@ -358,20 +393,38 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        ></path>
                       </svg>
-                      {t('sendingSms')}
+                      {t("sendingSms")}
                     </div>
                   ) : (
-                    t('continue')
+                    t("continue")
                   )}
                 </Button>
               </div>
             </form>
             <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
-              <span className="  text-foreground cursor-pointer">Terms of conditions</span>
+              <span className="  text-foreground cursor-pointer">
+                Terms of conditions
+              </span>
               <span className="mx-1">•</span>
               <span className="  text-foreground cursor-pointer">Support</span>
             </div>
@@ -380,20 +433,57 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <>
             <DialogHeader>
               <DialogTitle className="text-center text-2xl font-bold mb-6">
-                {t('signInWithGoogle')}
+                {t("signInWithGoogle")}
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center gap-6">
               <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-2">
                 {/* Google SVG icon */}
-                <svg width="32" height="32" viewBox="0 0 48 48"><g><path fill="#4285F4" d="M43.611 20.083H42V20H24v8h11.303C34.73 32.364 29.807 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c2.69 0 5.175.886 7.19 2.367l6.062-6.062C33.527 6.053 28.977 4 24 4 12.954 4 4 12.954 4 24s8.954 20 20 20c11.045 0 19.824-8.955 19.824-20 0-1.341-.138-2.651-.213-3.917z" /><path fill="#34A853" d="M6.306 14.691l6.571 4.819C14.655 16.104 19.002 13 24 13c2.69 0 5.175.886 7.19 2.367l6.062-6.062C33.527 6.053 28.977 4 24 4c-7.732 0-14.41 4.388-17.694 10.691z" /><path fill="#FBBC05" d="M24 44c5.607 0 10.305-1.863 13.74-5.064l-6.342-5.207C29.807 36 24 36 24 36c-5.807 0-10.73-3.636-12.303-8.917l-6.571 5.073C9.59 39.612 16.268 44 24 44z" /><path fill="#EA4335" d="M43.611 20.083H42V20H24v8h11.303C34.73 32.364 29.807 36 24 36c-5.807 0-10.73-3.636-12.303-8.917l-6.571 5.073C9.59 39.612 16.268 44 24 44c7.732 0 14.41-4.388 17.694-10.691z" /></g></svg>
+                <svg width="32" height="32" viewBox="0 0 48 48">
+                  <g>
+                    <path
+                      fill="#4285F4"
+                      d="M43.611 20.083H42V20H24v8h11.303C34.73 32.364 29.807 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c2.69 0 5.175.886 7.19 2.367l6.062-6.062C33.527 6.053 28.977 4 24 4 12.954 4 4 12.954 4 24s8.954 20 20 20c11.045 0 19.824-8.955 19.824-20 0-1.341-.138-2.651-.213-3.917z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M6.306 14.691l6.571 4.819C14.655 16.104 19.002 13 24 13c2.69 0 5.175.886 7.19 2.367l6.062-6.062C33.527 6.053 28.977 4 24 4c-7.732 0-14.41 4.388-17.694 10.691z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M24 44c5.607 0 10.305-1.863 13.74-5.064l-6.342-5.207C29.807 36 24 36 24 36c-5.807 0-10.73-3.636-12.303-8.917l-6.571 5.073C9.59 39.612 16.268 44 24 44z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M43.611 20.083H42V20H24v8h11.303C34.73 32.364 29.807 36 24 36c-5.807 0-10.73-3.636-12.303-8.917l-6.571 5.073C9.59 39.612 16.268 44 24 44c7.732 0 14.41-4.388 17.694-10.691z"
+                    />
+                  </g>
+                </svg>
               </div>
-              <div className="text-lg font-medium text-center">{t('loggingInWithGoogle')}</div>
+              <div className="text-lg font-medium text-center">
+                {t("loggingInWithGoogle")}
+              </div>
               <div className="flex justify-center w-full mt-2">
                 {/* Spinner */}
-                <svg className="animate-spin h-8 w-8 text-[#E0522D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                <svg
+                  className="animate-spin h-8 w-8 text-[#E0522D]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  ></path>
                 </svg>
               </div>
               <Button
@@ -407,7 +497,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               </Button>
             </div>
             <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
-              <span className="  text-foreground cursor-pointer">Terms of conditions</span>
+              <span className="  text-foreground cursor-pointer">
+                Terms of conditions
+              </span>
               <span className="mx-1">•</span>
               <span className="  text-foreground cursor-pointer">Support</span>
             </div>
@@ -416,7 +508,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <>
             <DialogHeader>
               <DialogTitle className="text-center text-2xl font-bold mb-6">
-                {t('signInWithEmail')}
+                {t("signInWithEmail")}
               </DialogTitle>
             </DialogHeader>
             <form className="flex flex-col gap-4" onSubmit={handleLogin}>
@@ -426,51 +518,97 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 </div>
               )}
               <div>
-                <label className="block mb-1 font-medium">{t('emailAddress')}</label>
+                <label className="block mb-1 font-medium">
+                  {t("emailAddress")}
+                </label>
                 <Input
                   type="email"
                   placeholder="email@example.com"
                   value={signinData.email}
-                  onChange={(e) => setSigninData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setSigninData((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
                   required
                 />
               </div>
               <div>
-                <label className="block mb-1 font-medium">{t('password')}</label>
+                <label className="block mb-1 font-medium">
+                  {t("password")}
+                </label>
                 <Input
                   type="password"
                   placeholder=""
                   value={signinData.password}
-                  onChange={(e) => setSigninData(prev => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) =>
+                    setSigninData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
                   required
                 />
               </div>
-              <Button type="submit" className="w-full rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12 mt-2" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12 mt-2"
+                disabled={isLoading}
+              >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8z"
+                      ></path>
                     </svg>
-                    {t('signingIn')}
+                    {t("signingIn")}
                   </div>
                 ) : (
-                  t('signIn')
+                  t("signIn")
                 )}
               </Button>
             </form>
             <div className="flex flex-col items-center gap-1 mt-4 text-base">
               <span>
-                {t('dontHaveAccount')}{' '}
-                <span className="  underline cursor-pointer" onClick={() => setView('signup')}>{t('signUp')}</span>
+                {t("dontHaveAccount")}{" "}
+                <span
+                  className="  underline cursor-pointer"
+                  onClick={() => setView("signup")}
+                >
+                  {t("signUp")}
+                </span>
               </span>
               <span>
-                {t('forgotPassword')}{' '}
-                <span className="  underline cursor-pointer" onClick={() => setView('reset')}>{t('resetHere')}</span>
+                {t("forgotPassword")}{" "}
+                <span
+                  className="  underline cursor-pointer"
+                  onClick={() => setView("reset")}
+                >
+                  {t("resetHere")}
+                </span>
               </span>
             </div>
             <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
-              <span className="  text-foreground cursor-pointer">Terms of conditions</span>
+              <span className="  text-foreground cursor-pointer">
+                Terms of conditions
+              </span>
               <span className="mx-1">•</span>
               <span className="  text-foreground cursor-pointer">Support</span>
             </div>
@@ -488,7 +626,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <>
             <DialogHeader>
               <DialogTitle className="text-center text-2xl font-bold mb-6">
-                {t('enterPersonalInfo')}
+                {t("enterPersonalInfo")}
               </DialogTitle>
             </DialogHeader>
             <form className="flex flex-col gap-4" onSubmit={handleSignup}>
@@ -498,26 +636,36 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 </div>
               )}
               <div>
-                <label className="block mb-1 font-medium">{t('emailAddress')}</label>
+                <label className="block mb-1 font-medium">
+                  {t("emailAddress")}
+                </label>
                 <Input
                   type="email"
                   placeholder="email@example.com"
                   value={signupData.email}
-                  onChange={(e) => handleSignupInputChange('email', e.target.value)}
+                  onChange={(e) =>
+                    handleSignupInputChange("email", e.target.value)
+                  }
                   required
                 />
               </div>
               <div>
-                <label className="block mb-1 font-medium">{t('password')}</label>
+                <label className="block mb-1 font-medium">
+                  {t("password")}
+                </label>
                 <Input
                   type="password"
                   value={signupData.password}
-                  onChange={(e) => handleSignupInputChange('password', e.target.value)}
+                  onChange={(e) =>
+                    handleSignupInputChange("password", e.target.value)
+                  }
                   required
                 />
               </div>
               <div>
-                <label className="block mb-1 font-medium">{t('passwordConfirmation')}</label>
+                <label className="block mb-1 font-medium">
+                  {t("passwordConfirmation")}
+                </label>
                 <Input
                   type="password"
                   value={passwordConfirmation}
@@ -542,20 +690,38 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        ></path>
                       </svg>
-                      {t('continue')}
+                      {t("continue")}
                     </div>
                   ) : (
-                    t('continue')
+                    t("continue")
                   )}
                 </Button>
               </div>
             </form>
             <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
-              <span className="  text-foreground cursor-pointer">Terms of conditions</span>
+              <span className="  text-foreground cursor-pointer">
+                Terms of conditions
+              </span>
               <span className="mx-1">•</span>
               <span className="  text-foreground cursor-pointer">Support</span>
             </div>
@@ -564,12 +730,19 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <>
             <DialogHeader>
               <DialogTitle className="text-center text-2xl font-bold mb-6">
-                {t('resetPassword')}
+                {t("resetPassword")}
               </DialogTitle>
             </DialogHeader>
-            <form className="flex flex-col items-center gap-6" onSubmit={e => { e.preventDefault(); /* handle reset */ }}>
+            <form
+              className="flex flex-col items-center gap-6"
+              onSubmit={(e) => {
+                e.preventDefault(); /* handle reset */
+              }}
+            >
               <div className="w-full">
-                <label className="block mb-1 font-medium">{t('enterYourEmail')}</label>
+                <label className="block mb-1 font-medium">
+                  {t("enterYourEmail")}
+                </label>
                 <Input
                   type="email"
                   placeholder="email@example.com"
@@ -591,7 +764,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                   type="submit"
                   className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base   h-12"
                 >
-                  {t('sendResetPasswordLink')}
+                  {t("sendResetPasswordLink")}
                 </Button>
               </div>
             </form>
@@ -600,13 +773,17 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 type="button"
                 variant="ghost"
                 className="  underline text-base mt-2 p-0 h-auto min-h-0 min-w-0"
-                onClick={() => {/* handle resend */ }}
+                onClick={() => {
+                  /* handle resend */
+                }}
               >
-                {t('resendResetPasswordLink')}
+                {t("resendResetPasswordLink")}
               </Button>
             </div>
             <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
-              <span className="  text-foreground cursor-pointer">Terms of conditions</span>
+              <span className="  text-foreground cursor-pointer">
+                Terms of conditions
+              </span>
               <span className="mx-1">•</span>
               <span className="  text-foreground cursor-pointer">Support</span>
             </div>
@@ -615,20 +792,23 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <>
             <DialogHeader>
               <DialogTitle className="text-center text-2xl font-bold mb-6">
-                {t('enterOtpCode')}
+                {t("enterOtpCode")}
               </DialogTitle>
             </DialogHeader>
-            <form className="flex flex-col items-center gap-6" onSubmit={handleOtpVerification}>
+            <form
+              className="flex flex-col items-center gap-6"
+              onSubmit={handleOtpVerification}
+            >
               <div className="w-full text-center mb-2 font-medium">
                 {emailForOtp ? (
                   <div>
-                    <div>{t('enter6DigitsCode')}</div>
+                    <div>{t("enter6DigitsCode")}</div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      {t('sentToEmail', { email: emailForOtp })}
+                      {t("sentToEmail", { email: emailForOtp })}
                     </div>
                   </div>
                 ) : (
-                  t('enter6DigitsCode')
+                  t("enter6DigitsCode")
                 )}
               </div>
               <div className="flex justify-center gap-4 mb-2">
@@ -639,7 +819,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 >
                   <InputOTPGroup className="gap-4">
                     {[...Array(6)].map((_, i) => (
-                      <InputOTPSlot key={i} index={i} className="h-12 w-12 text-xl text-center border rounded" />
+                      <InputOTPSlot
+                        key={i}
+                        index={i}
+                        className="h-12 w-12 text-xl text-center border rounded"
+                      />
                     ))}
                   </InputOTPGroup>
                 </InputOTP>
@@ -649,7 +833,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                   type="button"
                   variant="outline"
                   className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
-                  onClick={() => emailForOtp ? setView("signup") : setView("phone")}
+                  onClick={() =>
+                    emailForOtp ? setView("signup") : setView("phone")
+                  }
                   disabled={isOtpLoading}
                 >
                   <ArrowLeft className="w-6 h-6" />
@@ -661,14 +847,38 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 >
                   {isOtpLoading ? (
                     <div className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        ></path>
                       </svg>
-                      {emailForOtp ? t('verifying') : phoneForOtp ? t('verifyingPhone') : t('signUp')}
+                      {emailForOtp
+                        ? t("verifying")
+                        : phoneForOtp
+                        ? t("verifyingPhone")
+                        : t("signUp")}
                     </div>
+                  ) : emailForOtp ? (
+                    t("verifyEmail")
+                  ) : phoneForOtp ? (
+                    t("verifyPhone")
                   ) : (
-                    emailForOtp ? t('verifyEmail') : phoneForOtp ? t('verifyPhone') : t('signUp')
+                    t("signUp")
                   )}
                 </Button>
               </div>
@@ -677,8 +887,12 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               {otpTimer > 0 ? (
                 <span className="underline text-base mt-2">
                   {otpTimer > 0
-                    ? t('resendOtpCodeIn', { time: `${Math.floor(otpTimer / 60)}:${(otpTimer % 60).toString().padStart(2, "0")}` })
-                    : t('resendOtpCode')}
+                    ? t("resendOtpCodeIn", {
+                        time: `${Math.floor(otpTimer / 60)}:${(otpTimer % 60)
+                          .toString()
+                          .padStart(2, "0")}`,
+                      })
+                    : t("resendOtpCode")}
                 </span>
               ) : (
                 <Button
@@ -687,12 +901,14 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                   className="underline text-base mt-2 cursor-pointer p-0 h-auto min-h-0 min-w-0"
                   onClick={() => setOtpTimer(114)}
                 >
-                  {t('resendOtpCode')}
+                  {t("resendOtpCode")}
                 </Button>
               )}
             </div>
             <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
-              <span className="  text-foreground cursor-pointer">Terms of conditions</span>
+              <span className="  text-foreground cursor-pointer">
+                Terms of conditions
+              </span>
               <span className="mx-1">•</span>
               <span className="  text-foreground cursor-pointer">Support</span>
             </div>
@@ -703,4 +919,4 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   );
 };
 
-export default AuthDialog; 
+export default AuthDialog;

@@ -3,9 +3,12 @@ import { Home, MessageSquare, Bookmark, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateAdvertisementButton from "@/components/shared/header/create-advertisement-button";
 import { useTranslations } from "next-intl";
+import SignInSignUpButton from "@/components/shared/header/sign-in-sign-up-button";
+import { useAuth } from "@/lib/auth-context";
 
 const MobileBottomNav = () => {
   const t = useTranslations("MobileBottomNav");
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <nav className="fixed bottom-0 left-0 w-full z-50 md:hidden bg-background border-t border flex justify-center items-end pt-1.5 pb-3">
@@ -35,9 +38,11 @@ const MobileBottomNav = () => {
         {/* Spacer for Plus Floating */}
         <div className="w-12" aria-hidden />
         {/* Plus Floating */}
-        <div className="absolute left-1/2 -translate-x-1/2 -top-7 flex flex-col items-center">
-          <CreateAdvertisementButton floating />
-        </div>
+        {isAuthenticated && user && (
+          <div className="absolute left-1/2 -translate-x-1/2 -top-7 flex flex-col items-center">
+            <CreateAdvertisementButton floating />
+          </div>
+        )}
         {/* Spacer for Plus Floating */}
         <div className="w-12" aria-hidden />
         {/* Bookmark */}
@@ -52,16 +57,15 @@ const MobileBottomNav = () => {
           </span>
         </Button>
         {/* Profile */}
-        <Button
-          variant="ghost"
-          className="flex flex-col items-center flex-1 text-foreground py-1 px-0 gap-0"
-          tabIndex={0}
-        >
-          <User className="size-5 mb-0.5" strokeWidth={2} />
-          <span className="text-xs mt-0.5 font-medium leading-none">
-            {t("profile")}
-          </span>
-        </Button>
+        <div className="flex-1 flex justify-center items-center">
+          <SignInSignUpButton
+            icon={<User className="size-5 mb-0.5" strokeWidth={2} />}
+            variant="ghost"
+            size={undefined}
+            className="flex flex-col items-center flex-1 text-foreground py-1 px-0 gap-0"
+            labelClassName="text-xs mt-0.5 font-medium leading-none"
+          />
+        </div>
       </div>
     </nav>
   );

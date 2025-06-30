@@ -28,7 +28,7 @@ const Header = () => {
   const currentLocale = (params?.locale as string) || "en";
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
   const { user, isAuthenticated, logout } = useAuth();
-  
+
   // Update language state when locale changes
   useEffect(() => {
     setLanguage(currentLocale.toUpperCase());
@@ -67,9 +67,11 @@ const Header = () => {
       </div>
 
       {/* Desktop: Create Ad Button */}
-      <div className="hidden md:flex">
-        <CreateAdvertisementButton />
-      </div>
+      {isAuthenticated && user && (
+        <div className="hidden md:flex">
+          <CreateAdvertisementButton />
+        </div>
+      )}
 
       {/* Right Controls (always visible, but layout changes) */}
       <div className="flex items-center gap-4 mx-0 md:mx-6">
@@ -116,24 +118,30 @@ const Header = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 {user.avatar_thumb ? (
-                  <img 
-                    src={user.avatar_thumb} 
-                    alt={user.name || user.email} 
+                  <img
+                    src={user.avatar_thumb}
+                    alt={user.name || user.email}
                     className="w-8 h-8 rounded-full"
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                    {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                    {user.name
+                      ? user.name.charAt(0).toUpperCase()
+                      : user.email.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div className="hidden lg:block">
-                  <div className="text-sm font-medium">{user.name || user.email}</div>
-                  <div className="text-xs text-muted-foreground">{user.email}</div>
+                  <div className="text-sm font-medium">
+                    {user.name || user.email}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {user.email}
+                  </div>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={logout}
                 className="text-xs"
               >
@@ -141,7 +149,9 @@ const Header = () => {
               </Button>
             </div>
           ) : (
-            <SignInSignUpButton />
+            <div className="hidden md:block">
+              <SignInSignUpButton />
+            </div>
           )}
         </div>
       </div>

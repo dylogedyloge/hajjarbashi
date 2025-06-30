@@ -1,6 +1,16 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Bell, ChevronDown, Menu } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  Menu,
+  User,
+  Wallet,
+  FileText,
+  Settings,
+  HelpCircle,
+  LogOut,
+} from "lucide-react";
 import { GB, IR } from "country-flag-icons/react/3x2";
 import SearchInput from "./search-input";
 import CreateAdvertisementButton from "./create-advertisement-button";
@@ -16,6 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -113,45 +128,104 @@ const Header = () => {
         <ThemeToggler />
         <Bell size={20} className="cursor-pointer" />
         {/* Desktop: Sign In/Up Button or User Profile */}
-        <div>
+        <div className="hidden md:block">
           {isAuthenticated && user ? (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                {user.avatar_thumb ? (
-                  <img
-                    src={user.avatar_thumb}
-                    alt={user.name || user.email}
-                    className="w-8 h-8 rounded-full"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                    {user.name
-                      ? user.name.charAt(0).toUpperCase()
-                      : user.email.charAt(0).toUpperCase()}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 p-2 hover:bg-accent rounded-full"
+                >
+                  {user.avatar_thumb ? (
+                    <img
+                      src={user.avatar_thumb}
+                      alt={user.name || user.email}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                      {user.name
+                        ? user.name.charAt(0).toUpperCase()
+                        : user.email.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="hidden lg:block text-left">
+                    <div className="text-sm font-medium">
+                      {user.name || user.email}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {user.email}
+                    </div>
                   </div>
-                )}
-                <div className="hidden lg:block">
-                  <div className="text-sm font-medium">
-                    {user.name || user.email}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {user.email}
-                  </div>
+                  <ChevronDown size={16} className="text-muted-foreground" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="end">
+                <div className="space-y-1">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9"
+                    onClick={() => {
+                      // TODO: Navigate to profile page
+                    }}
+                  >
+                    <User size={16} />
+                    Profile
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9"
+                    onClick={() => {
+                      // TODO: Navigate to balance page
+                    }}
+                  >
+                    <Wallet size={16} />
+                    Balance
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9"
+                    onClick={() => {
+                      // TODO: Navigate to my ads page
+                    }}
+                  >
+                    <FileText size={16} />
+                    My Ads
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9"
+                    onClick={() => {
+                      // TODO: Navigate to settings page
+                    }}
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9"
+                    onClick={() => {
+                      // TODO: Navigate to support page
+                    }}
+                  >
+                    <HelpCircle size={16} />
+                    Support
+                  </Button>
+                  <div className="border-t border-border my-1" />
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9 text-destructive hover:text-destructive"
+                    onClick={logout}
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </Button>
                 </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={logout}
-                className="text-xs"
-              >
-                {t("logout")}
-              </Button>
-            </div>
+              </PopoverContent>
+            </Popover>
           ) : (
-            <div className="hidden md:block">
-              <SignInSignUpButton />
-            </div>
+            <SignInSignUpButton />
           )}
         </div>
       </div>

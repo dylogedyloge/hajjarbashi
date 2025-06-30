@@ -1,5 +1,5 @@
 "use client";
-import { Home, MessageSquare, Bookmark, User } from "lucide-react";
+import { Home, MessageSquare, Bookmark, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateAdvertisementButton from "@/components/shared/header/create-advertisement-button";
 import { useTranslations } from "next-intl";
@@ -8,7 +8,8 @@ import { useAuth } from "@/lib/auth-context";
 
 const MobileBottomNav = () => {
   const t = useTranslations("MobileBottomNav");
-  const { user, isAuthenticated } = useAuth();
+  const headerT = useTranslations("Header");
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <nav className="fixed bottom-0 left-0 w-full z-50 md:hidden bg-background border-t border flex justify-center items-end pt-1.5 pb-3">
@@ -58,13 +59,26 @@ const MobileBottomNav = () => {
         </Button>
         {/* Profile */}
         <div className="flex-1 flex justify-center items-center">
-          <SignInSignUpButton
-            icon={<User className="size-5 mb-0.5" strokeWidth={2} />}
-            variant="ghost"
-            size={undefined}
-            className="flex flex-col items-center flex-1 text-foreground py-1 px-0 gap-0"
-            labelClassName="text-xs mt-0.5 font-medium leading-none"
-          />
+          {isAuthenticated && user ? (
+            <Button
+              variant="ghost"
+              className="flex flex-col items-center flex-1 text-foreground py-1 px-0 gap-0"
+              onClick={logout}
+            >
+              <LogOut className="size-5 mb-0.5" strokeWidth={2} />
+              <span className="text-xs mt-0.5 font-medium leading-none">
+                {headerT("logout")}
+              </span>
+            </Button>
+          ) : (
+            <SignInSignUpButton
+              icon={<User className="size-5 mb-0.5" strokeWidth={2} />}
+              variant="ghost"
+              size={undefined}
+              className="flex flex-col items-center flex-1 text-foreground py-1 px-0 gap-0"
+              labelClassName="text-xs mt-0.5 font-medium leading-none"
+            />
+          )}
         </div>
       </div>
     </nav>

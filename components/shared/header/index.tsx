@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
 const Header = () => {
   const t = useTranslations("Header");
@@ -26,6 +27,8 @@ const Header = () => {
   const params = useParams();
   const currentLocale = (params?.locale as string) || "en";
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
+  const { user, isAuthenticated, logout } = useAuth();
+  
   // Update language state when locale changes
   useEffect(() => {
     setLanguage(currentLocale.toUpperCase());
@@ -107,9 +110,39 @@ const Header = () => {
         </Select>
         <ThemeToggler />
         <Bell size={20} className="cursor-pointer" />
-        {/* Desktop: Sign In/Up Button */}
+        {/* Desktop: Sign In/Up Button or User Profile */}
         <div>
-          <SignInSignUpButton />
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {user.avatar_thumb ? (
+                  <img 
+                    src={user.avatar_thumb} 
+                    alt={user.name || user.email} 
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                    {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="hidden lg:block">
+                  <div className="text-sm font-medium">{user.name || user.email}</div>
+                  <div className="text-xs text-muted-foreground">{user.email}</div>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={logout}
+                className="text-xs"
+              >
+                {t("logout")}
+              </Button>
+            </div>
+          ) : (
+            <SignInSignUpButton />
+          )}
         </div>
       </div>
     </header>

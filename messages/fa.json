@@ -9,7 +9,8 @@
       "createAd": "ایجاد آگهی",
       "searchPlaceholder": "جستجو...",
       "clear": "پاک کردن",
-      "signInSignUp": "ورود / ثبت‌نام"
+      "signInSignUp": "ورود / ثبت‌نام",
+      "logout": "خروج"
     },
     "Footer": {
       "stockImage": "تصویر نمونه",
@@ -151,10 +152,32 @@
       "enterOtpCode": "کد تایید را وارد کنید",
       "enter6DigitsCode": "کد ۶ رقمی خود را وارد کنید",
       "resendOtpCodeIn": "ارسال مجدد کد تایید تا {time}",
-      "resendOtpCode": "ارسال مجدد کد تایید"
+      "resendOtpCode": "ارسال مجدد کد تایید",
+      "fillAllFields": "لطفاً تمام فیلدها را پر کنید",
+      "passwordsDoNotMatch": "رمزهای عبور مطابقت ندارند",
+      "passwordTooShort": "رمز عبور باید حداقل ۶ کاراکتر باشد",
+      "signupFailed": "ثبت‌نام ناموفق بود. لطفاً دوباره تلاش کنید.",
+      "signupSuccessful": "ثبت‌نام موفقیت‌آمیز بود! لطفاً ایمیل خود را برای تایید بررسی کنید.",
+      "verificationCode": "کد تایید: {code}",
+      "sentToEmail": "ارسال شده به {email}",
+      "verifyEmail": "تایید ایمیل",
+      "emailVerifiedSuccessfully": "ایمیل با موفقیت تایید شد! حالا می‌توانید وارد شوید.",
+      "pleaseEnterOtpCode": "لطفاً کد تایید را وارد کنید",
+      "emailVerificationFailed": "تایید ایمیل ناموفق بود. لطفاً دوباره تلاش کنید.",
+      "verifying": "در حال تایید...",
+      "loginSuccessful": "ورود با موفقیت انجام شد!",
+      "loginFailed": "ورود ناموفق بود. لطفاً اطلاعات خود را بررسی کنید.",
+      "signingIn": "در حال ورود...",
+      "verifyPhone": "تایید شماره موبایل",
+      "verifyingPhone": "در حال تایید...",
+      "phoneVerifiedSuccessfully": "شماره موبایل با موفقیت تایید شد! شما وارد شدید."
     },
     "PhoneInput": {
       "searchCountry": "جستجوی کشور...",
       "noCountryFound": "کشوری یافت نشد."
-    }
+    },
+    "smsSentSuccessfully": "کد تایید با پیامک ارسال شد!",
+    "smsSendFailed": "ارسال پیامک تایید ناموفق بود. لطفاً دوباره تلاش کنید.",
+    "sendingSms": "در حال ارسال پیامک...",
+    "invalidPhone": "لطفاً شماره موبایل معتبر وارد کنید که با + و کد کشور شروع شود (۱۱ تا ۱۵ رقم)."
   }

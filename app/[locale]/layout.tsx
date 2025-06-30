@@ -8,6 +8,8 @@ import MobileBottomNav from "@/components/shared/footer/mobile-bottom-nav";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/auth-context";
 
 const poppins = localFont({
   src: "../../public/fonts/Poppins-Medium.ttf",
@@ -51,10 +53,13 @@ export default async function RootLayout({
       <body className={`${font.className} ${isRTL ? "rtl" : ""}`}>
         <NextIntlClientProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <Header />
-            {children}
-            <Footer />
-            <MobileBottomNav />
+            <AuthProvider>
+              <Header />
+              {children}
+              <Footer />
+              <MobileBottomNav />
+              <Toaster />
+            </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

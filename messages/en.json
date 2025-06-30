@@ -9,7 +9,8 @@
       "createAd": "Create Advertisement",
       "searchPlaceholder": "Search Anything..",
       "clear": "Clear",
-      "signInSignUp": "Sign In / Sign Up"
+      "signInSignUp": "Sign In / Sign Up",
+      "logout": "Logout"
     },
     "Footer": {
       "stockImage": "Stock Image",
@@ -151,7 +152,29 @@
       "enterOtpCode": "Enter Your OTP Code",
       "enter6DigitsCode": "Enter your 6 Digits Code",
       "resendOtpCodeIn": "Re-send OTP Code in {time}",
-      "resendOtpCode": "Re-send OTP Code"
+      "resendOtpCode": "Re-send OTP Code",
+      "fillAllFields": "Please fill in all fields",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters long",
+      "signupFailed": "Signup failed. Please try again.",
+      "signupSuccessful": "Signup successful! Please check your email for verification.",
+      "verificationCode": "Verification code: {code}",
+      "sentToEmail": "Sent to {email}",
+      "verifyEmail": "Verify Email",
+      "emailVerifiedSuccessfully": "Email verified successfully! You can now sign in.",
+      "pleaseEnterOtpCode": "Please enter the OTP code",
+      "emailVerificationFailed": "Email verification failed. Please try again.",
+      "verifying": "Verifying...",
+      "loginSuccessful": "Login successful!",
+      "loginFailed": "Login failed. Please check your credentials.",
+      "signingIn": "Signing in...",
+      "smsSentSuccessfully": "Verification SMS sent!",
+      "smsSendFailed": "Failed to send verification SMS. Please try again.",
+      "sendingSms": "Sending SMS...",
+      "invalidPhone": "Please enter a valid phone number starting with + and country code (11-15 digits).",
+      "verifyPhone": "Verify Phone",
+      "verifyingPhone": "Verifying...",
+      "phoneVerifiedSuccessfully": "Phone verified successfully! You are now signed in."
     },
     "PhoneInput": {
       "searchCountry": "Search country...",

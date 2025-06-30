@@ -8,9 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Phone, Mail, Circle, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { PhoneInput2 } from "@/components/ui/phone-input-2";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { useAuth } from '@/lib/auth-context';
+import { authService, SignupRequest, VerifyEmailRequest, LoginRequest, SendVerificationSmsRequest, VerifyPhoneRequest } from '@/lib/auth';
+import { PhoneInput } from "@/components/ui/phone-input";
 
 interface AuthDialogProps {
   open: boolean;
@@ -21,11 +25,230 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [view, setView] = useState<'main' | 'email' | 'phone' | 'google' | 'signup' | 'reset' | 'otp'>("main");
   const [phone, setPhone] = useState<string>("");
   const [otpTimer, setOtpTimer] = useState(114);
+  
+  // Signup form state
+  const [signupData, setSignupData] = useState<SignupRequest>({
+    email: '',
+    password: '',
+  });
+  const [passwordConfirmation, setPasswordConfirmation] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+  
+  // Email signin form state
+  const [signinData, setSigninData] = useState({
+    email: '',
+    password: '',
+  });
+  
+  // Reset password form state
+  const [resetEmail, setResetEmail] = useState<string>('');
+  
+  // OTP state for email verification
+  const [emailOtpCode, setEmailOtpCode] = useState<string>('');
+  const [emailForOtp, setEmailForOtp] = useState<string>('');
+  const [otpInputValue, setOtpInputValue] = useState<string>('');
+  const [isOtpLoading, setIsOtpLoading] = useState(false);
+  
+  // OTP state for phone verification
+  const [phoneOtpCode, setPhoneOtpCode] = useState<string>('');
+  const [phoneForOtp, setPhoneForOtp] = useState<string>('');
+  
   const t = useTranslations('AuthDialog');
+  const { login } = useAuth();
+
+  // Helper: Validate phone number
+  const isValidPhone = (phone: string) => /^\+[1-9]\d{1,14}$/.test(phone);
 
   const handleDialogChange = (open: boolean) => {
-    if (!open) setView("main"); // Reset view when dialog closes
+    if (!open) {
+      setView("main"); // Reset view when dialog closes
+      // Reset form data
+      setSignupData({ email: '', password: '' });
+      setPasswordConfirmation('');
+      setSigninData({ email: '', password: '' });
+      setResetEmail('');
+      setPhone('');
+      setEmailOtpCode('');
+      setEmailForOtp('');
+      setOtpInputValue('');
+      setError('');
+    }
     onOpenChange(open);
+  };
+
+  // Handle signup form submission
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    // Validation
+    if (!signupData.email || !signupData.password || !passwordConfirmation) {
+      const errorMsg = t('fillAllFields');
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setIsLoading(false);
+      return;
+    }
+
+    if (signupData.password !== passwordConfirmation) {
+      const errorMsg = t('passwordsDoNotMatch');
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setIsLoading(false);
+      return;
+    }
+
+    if (signupData.password.length < 6) {
+      const errorMsg = t('passwordTooShort');
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authService.signup(signupData);
+      console.log('Signup successful:', response);
+      // Store the verification code and email for OTP verification
+      setEmailOtpCode(response.data.code.toString());
+      setEmailForOtp(signupData.email);
+      // Show success message
+      toast.success(`${t('signupSuccessful')} ${t('verificationCode', { code: response.data.code })}`);
+      // Switch to OTP view for email verification
+      setView('otp');
+    } catch (err) {
+      console.error('Signup error:', err);
+      const errorMessage = err instanceof Error ? err.message : t('signupFailed');
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle input changes for signup form
+  const handleSignupInputChange = (field: keyof SignupRequest, value: string) => {
+    setSignupData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle OTP verification
+  const handleOtpVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('OTP SUBMIT', { phoneForOtp, emailForOtp, otpInputValue });
+    
+    if (!otpInputValue) {
+      toast.error(t('pleaseEnterOtpCode'));
+      return;
+    }
+
+    setIsOtpLoading(true);
+
+    try {
+      if (emailForOtp) {
+        // Email verification
+        const verificationData = {
+          email: emailForOtp,
+          verification_code: otpInputValue,
+        };
+        const response = await authService.verifyEmail(verificationData);
+        // Ensure email is a string for context
+        const userData = { ...response.data, email: response.data.email || '' };
+        login(userData, response.data.token);
+        toast.success(t('emailVerifiedSuccessfully'));
+        handleDialogChange(false);
+      } else if (phoneForOtp) {
+        // Phone verification
+        const verificationData = {
+          phone: phoneForOtp,
+          otp_code: otpInputValue,
+        };
+        const response = await authService.verifyPhone(verificationData);
+        // Ensure email is a string for context
+        const userData = { ...response.data, email: response.data.email || '' };
+        login(userData, response.data.token);
+        toast.success(t('phoneVerifiedSuccessfully'));
+        handleDialogChange(false);
+      } else {
+        toast.error(t('pleaseEnterOtpCode'));
+      }
+    } catch (err) {
+      console.error('OTP verification error:', err);
+      const errorMessage = err instanceof Error ? err.message : t('otpVerificationFailed');
+      toast.error(errorMessage);
+    } finally {
+      setIsOtpLoading(false);
+    }
+  };
+
+  // Handle login form submission
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    if (!signinData.email || !signinData.password) {
+      const errorMsg = t('fillAllFields');
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authService.login(signinData as LoginRequest);
+      login(response.data, response.data.token);
+      toast.success(t('loginSuccessful'));
+      handleDialogChange(false);
+    } catch (err) {
+      console.error('Login error:', err);
+      const errorMessage = err instanceof Error ? err.message : t('loginFailed');
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle phone login form submission
+  const handlePhoneLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    if (!phone) {
+      const errorMsg = t('fillAllFields');
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setIsLoading(false);
+      return;
+    }
+    if (!isValidPhone(phone)) {
+      const errorMsg = t('invalidPhone');
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authService.sendVerificationSms({ phone } as SendVerificationSmsRequest);
+      setPhoneOtpCode(response.data.code.toString());
+      setPhoneForOtp(phone);
+      toast.success(`${t('smsSentSuccessfully')} ${t('verificationCode', { code: response.data.code })}`);
+      setView('otp');
+    } catch (err) {
+      console.error('Send SMS error:', err);
+      const errorMessage = err instanceof Error ? err.message : t('smsSendFailed');
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -89,46 +312,62 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t('enterPhoneNumber')}
               </DialogTitle>
             </DialogHeader>
-            <form className="flex flex-col items-center gap-6" onSubmit={e => { e.preventDefault(); setView('otp'); }}>
-              <div className="flex flex-row w-full gap-2">
-                <div className="w-36">
-                  <PhoneInput
-                    value={phone}
-                    onChange={setPhone}
-                    defaultCountry="MY"
-                    className="w-full"
-                    international
-                    countryCallingCodeEditable={false}
-                    // Only show the country select, hide the input
-                    inputComponent={() => null}
-                  />
+            <form className="flex flex-col items-center gap-6" onSubmit={handlePhoneLogin}>
+              {error && (
+                <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
+                  {error}
                 </div>
-                <div className="flex-1">
-                  <PhoneInput
+              )}
+              {/* <div className="flex flex-row w-full gap-2">
+                <div className="w-36">
+                  <PhoneInput2
                     value={phone}
                     onChange={setPhone}
-                    defaultCountry="MY"
                     className="w-full"
-                    international
-                    countrySelectComponent={() => null}
                     placeholder={t('phonePlaceholder')}
                   />
                 </div>
-              </div>
+                <div className="flex-1">
+                  <PhoneInput2
+                    value={phone}
+                    onChange={setPhone}
+                    className="w-full"
+                    placeholder={t('phonePlaceholder')}
+                  />
+                </div>
+              </div> */}
+              <PhoneInput
+  value={phone}
+  onChange={setPhone}
+  className="w-full"
+  placeholder={t('phonePlaceholder')}
+/>
               <div className="flex w-full gap-4 mt-2">
                 <Button
                   type="button"
                   variant="outline"
                   className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
                   onClick={() => setView("main")}
+                  disabled={isLoading}
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base   h-12"
+                  className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
+                  disabled={isLoading}
                 >
-                  {t('continue')}
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                      {t('sendingSms')}
+                    </div>
+                  ) : (
+                    t('continue')
+                  )}
                 </Button>
               </div>
             </form>
@@ -181,17 +420,44 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t('signInWithEmail')}
               </DialogTitle>
             </DialogHeader>
-            <form className="flex flex-col gap-4">
+            <form className="flex flex-col gap-4" onSubmit={handleLogin}>
+              {error && (
+                <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="block mb-1 font-medium">{t('emailAddress')}</label>
-                <Input type="email" placeholder="email@example.com" required />
+                <Input 
+                  type="email" 
+                  placeholder="email@example.com" 
+                  value={signinData.email}
+                  onChange={(e) => setSigninData(prev => ({ ...prev, email: e.target.value }))}
+                  required 
+                />
               </div>
               <div>
                 <label className="block mb-1 font-medium">{t('password')}</label>
-                <Input type="password" placeholder="" required />
+                <Input 
+                  type="password" 
+                  placeholder="" 
+                  value={signinData.password}
+                  onChange={(e) => setSigninData(prev => ({ ...prev, password: e.target.value }))}
+                  required 
+                />
               </div>
-              <Button type="submit" className="w-full rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base   h-12 mt-2">
-                {t('signIn')}
+              <Button type="submit" className="w-full rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12 mt-2" disabled={isLoading}>
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    {t('signingIn')}
+                  </div>
+                ) : (
+                  t('signIn')
+                )}
               </Button>
             </form>
             <div className="flex flex-col items-center gap-1 mt-4 text-base">
@@ -226,18 +492,39 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t('enterPersonalInfo')}
               </DialogTitle>
             </DialogHeader>
-            <form className="flex flex-col gap-4">
+            <form className="flex flex-col gap-4" onSubmit={handleSignup}>
+              {error && (
+                <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="block mb-1 font-medium">{t('emailAddress')}</label>
-                <Input type="email" placeholder="email@example.com" required />
+                <Input 
+                  type="email" 
+                  placeholder="email@example.com" 
+                  value={signupData.email}
+                  onChange={(e) => handleSignupInputChange('email', e.target.value)}
+                  required 
+                />
               </div>
               <div>
                 <label className="block mb-1 font-medium">{t('password')}</label>
-                <Input type="password" required />
+                <Input 
+                  type="password" 
+                  value={signupData.password}
+                  onChange={(e) => handleSignupInputChange('password', e.target.value)}
+                  required 
+                />
               </div>
               <div>
                 <label className="block mb-1 font-medium">{t('passwordConfirmation')}</label>
-                <Input type="password" required />
+                <Input 
+                  type="password" 
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  required 
+                />
               </div>
               <div className="flex w-full gap-4 mt-2">
                 <Button
@@ -245,14 +532,26 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                   variant="outline"
                   className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
                   onClick={() => setView("email")}
+                  disabled={isLoading}
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base   h-12"
+                  className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
+                  disabled={isLoading}
                 >
-                  {t('continue')}
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                      {t('continue')}
+                    </div>
+                  ) : (
+                    t('continue')
+                  )}
                 </Button>
               </div>
             </form>
@@ -272,7 +571,13 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
             <form className="flex flex-col items-center gap-6" onSubmit={e => { e.preventDefault(); /* handle reset */ }}>
               <div className="w-full">
                 <label className="block mb-1 font-medium">{t('enterYourEmail')}</label>
-                <Input type="email" placeholder="email@example.com" required />
+                <Input 
+                  type="email" 
+                  placeholder="email@example.com" 
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required 
+                />
               </div>
               <div className="flex w-full gap-4 mt-2">
                 <Button
@@ -314,10 +619,25 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t('enterOtpCode')}
               </DialogTitle>
             </DialogHeader>
-            <form className="flex flex-col items-center gap-6" onSubmit={e => e.preventDefault()}>
-              <div className="w-full text-center mb-2 font-medium">{t('enter6DigitsCode')}</div>
+            <form className="flex flex-col items-center gap-6" onSubmit={handleOtpVerification}>
+              <div className="w-full text-center mb-2 font-medium">
+                {emailForOtp ? (
+                  <div>
+                    <div>{t('enter6DigitsCode')}</div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {t('sentToEmail', { email: emailForOtp })}
+                    </div>
+                  </div>
+                ) : (
+                  t('enter6DigitsCode')
+                )}
+              </div>
               <div className="flex justify-center gap-4 mb-2">
-                <InputOTP maxLength={6}>
+                <InputOTP 
+                  maxLength={6}
+                  value={otpInputValue}
+                  onChange={setOtpInputValue}
+                >
                   <InputOTPGroup className="gap-4">
                     {[...Array(6)].map((_, i) => (
                       <InputOTPSlot key={i} index={i} className="h-12 w-12 text-xl text-center border rounded" />
@@ -330,15 +650,27 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                   type="button"
                   variant="outline"
                   className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
-                  onClick={() => setView("phone")}
+                  onClick={() => emailForOtp ? setView("signup") : setView("phone")}
+                  disabled={isOtpLoading}
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base   h-12"
+                  className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
+                  disabled={isOtpLoading}
                 >
-                  {t('signUp')}
+                  {isOtpLoading ? (
+                    <div className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                      {emailForOtp ? t('verifying') : phoneForOtp ? t('verifyingPhone') : t('signUp')}
+                    </div>
+                  ) : (
+                    emailForOtp ? t('verifyEmail') : phoneForOtp ? t('verifyPhone') : t('signUp')
+                  )}
                 </Button>
               </div>
             </form>

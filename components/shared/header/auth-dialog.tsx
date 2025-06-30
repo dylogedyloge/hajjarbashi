@@ -806,12 +806,12 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               </div>
               <div className="flex justify-center gap-4 mb-2">
                 <InputOTP
-                  maxLength={6}
+                  maxLength={5}
                   value={otpInputValue}
                   onChange={setOtpInputValue}
                 >
                   <InputOTPGroup className="gap-4">
-                    {[...Array(6)].map((_, i) => (
+                    {[...Array(5)].map((_, i) => (
                       <InputOTPSlot
                         key={i}
                         index={i}

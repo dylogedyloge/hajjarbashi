@@ -29,6 +29,23 @@ interface AuthDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Helper: Back button for Dialog views
+interface DialogBackButtonProps {
+  onClick: () => void;
+  size?: string;
+}
+const DialogBackButton = ({ onClick, size = "w-6 h-6" }: DialogBackButtonProps) => (
+  <Button
+    type="button"
+    variant="ghost"
+    className="absolute left-4 top-4 p-2 rounded-full hover:bg-accent"
+    onClick={onClick}
+    aria-label="Back"
+  >
+    <ArrowLeft className={size} />
+  </Button>
+);
+
 const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [view, setView] = useState<
     "main" | "email" | "phone" | "google" | "signup" | "reset" | "otp"
@@ -336,6 +353,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t("enterPhoneNumber")}
               </DialogTitle>
             </DialogHeader>
+            <DialogBackButton onClick={() => setView("main")} />
             <form
               className="flex flex-col items-center gap-6"
               onSubmit={handlePhoneLogin}
@@ -345,24 +363,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                   {error}
                 </div>
               )}
-              {/* <div className="flex flex-row w-full gap-2">
-                <div className="w-36">
-                  <PhoneInput2
-                    value={phone}
-                    onChange={setPhone}
-                    className="w-full"
-                    placeholder={t('phonePlaceholder')}
-                  />
-                </div>
-                <div className="flex-1">
-                  <PhoneInput2
-                    value={phone}
-                    onChange={setPhone}
-                    className="w-full"
-                    placeholder={t('phonePlaceholder')}
-                  />
-                </div>
-              </div> */}
               <PhoneInput
                 value={phone}
                 onChange={setPhone}
@@ -370,15 +370,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 placeholder={t("phonePlaceholder")}
               />
               <div className="flex w-full gap-4 mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
-                  onClick={() => setView("main")}
-                  disabled={isLoading}
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </Button>
                 <Button
                   type="submit"
                   className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
@@ -429,6 +420,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t("signInWithGoogle")}
               </DialogTitle>
             </DialogHeader>
+            <DialogBackButton onClick={() => setView("main")} />
             <div className="flex flex-col items-center gap-6">
               <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-2">
                 {/* Google SVG icon */}
@@ -479,15 +471,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                   ></path>
                 </svg>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded-full w-12 h-12 p-0 flex items-center justify-center mt-2"
-                onClick={() => setView("main")}
-                aria-label="Back"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </Button>
             </div>
             <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
               <span className="  text-foreground cursor-pointer">
@@ -504,6 +487,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t("signInWithEmail")}
               </DialogTitle>
             </DialogHeader>
+            <DialogBackButton onClick={() => setView("main")} size="w-5 h-5" />
             <form className="flex flex-col gap-4" onSubmit={handleLogin}>
               {error && (
                 <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
@@ -605,15 +589,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               <span className="mx-1">•</span>
               <span className="  text-foreground cursor-pointer">Support</span>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              className="absolute left-4 top-4 p-2 rounded-full hover:bg-accent"
-              onClick={() => setView("main")}
-              aria-label="Back"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
           </>
         ) : view === "signup" ? (
           <>
@@ -622,6 +597,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t("enterPersonalInfo")}
               </DialogTitle>
             </DialogHeader>
+            <DialogBackButton onClick={() => setView("email")} />
             <form className="flex flex-col gap-4" onSubmit={handleSignup}>
               {error && (
                 <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
@@ -667,15 +643,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 />
               </div>
               <div className="flex w-full gap-4 mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
-                  onClick={() => setView("email")}
-                  disabled={isLoading}
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </Button>
                 <Button
                   type="submit"
                   className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
@@ -726,6 +693,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t("resetPassword")}
               </DialogTitle>
             </DialogHeader>
+            <DialogBackButton onClick={() => setView("email")} />
             <form
               className="flex flex-col items-center gap-6"
               onSubmit={(e) => {
@@ -745,14 +713,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 />
               </div>
               <div className="flex w-full gap-4 mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
-                  onClick={() => setView("email")}
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </Button>
                 <Button
                   type="submit"
                   className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base   h-12"
@@ -788,6 +748,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {t("enterOtpCode")}
               </DialogTitle>
             </DialogHeader>
+            <DialogBackButton onClick={() => emailForOtp ? setView("signup") : setView("phone")} />
             <form
               className="flex flex-col items-center gap-6"
               onSubmit={handleOtpVerification}
@@ -822,17 +783,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 </InputOTP>
               </div>
               <div className="flex w-full gap-4 mt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-full w-12 h-12 p-0 flex items-center justify-center"
-                  onClick={() =>
-                    emailForOtp ? setView("signup") : setView("phone")
-                  }
-                  disabled={isOtpLoading}
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </Button>
                 <Button
                   type="submit"
                   className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"

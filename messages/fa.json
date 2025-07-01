@@ -168,6 +168,7 @@
       "loginSuccessful": "ورود با موفقیت انجام شد!",
       "loginFailed": "ورود ناموفق بود. لطفاً اطلاعات خود را بررسی کنید.",
       "signingIn": "در حال ورود...",
+      "smsSentSuccessfully": "کد تایید با پیامک ارسال شد!",
       "verifyPhone": "تایید شماره موبایل",
       "verifyingPhone": "در حال تایید...",
       "sendingSms": "در حال ارسال پیامک...",

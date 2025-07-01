@@ -166,11 +166,12 @@ export interface VerifyPhoneResponse {
 const API_BASE_URL = 'https://api.hajjardevs.ir';
 
 export const authService = {
-  async signup(data: SignupRequest): Promise<SignupResponse> {
+  async signup(data: SignupRequest, lang: string = 'en'): Promise<SignupResponse> {
     const response = await fetch(`${API_BASE_URL}/users/sign_up`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-lang': lang,
       },
       body: JSON.stringify(data),
     });
@@ -182,11 +183,12 @@ export const authService = {
     return response.json();
   },
 
-  async verifyEmail(data: VerifyEmailRequest): Promise<VerifyEmailResponse> {
+  async verifyEmail(data: VerifyEmailRequest, lang: string = 'en'): Promise<VerifyEmailResponse> {
     const response = await fetch(`${API_BASE_URL}/users/verify_email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-lang': lang,
       },
       body: JSON.stringify(data),
     });
@@ -198,11 +200,12 @@ export const authService = {
     return response.json();
   },
 
-  async login(data: LoginRequest): Promise<LoginResponse> {
+  async login(data: LoginRequest, lang: string = 'en'): Promise<LoginResponse> {
     const response = await fetch(`${API_BASE_URL}/users/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-lang': lang,
       },
       body: JSON.stringify(data),
     });
@@ -214,11 +217,12 @@ export const authService = {
     return response.json();
   },
 
-  async sendVerificationSms(data: SendVerificationSmsRequest): Promise<SendVerificationSmsResponse> {
+  async sendVerificationSms(data: SendVerificationSmsRequest, lang: string = 'en'): Promise<SendVerificationSmsResponse> {
     const response = await fetch(`${API_BASE_URL}/users/send_verification_sms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-lang': lang,
       },
       body: JSON.stringify(data),
     });
@@ -230,11 +234,12 @@ export const authService = {
     return response.json();
   },
 
-  async verifyPhone(data: VerifyPhoneRequest): Promise<VerifyPhoneResponse> {
+  async verifyPhone(data: VerifyPhoneRequest, lang: string = 'en'): Promise<VerifyPhoneResponse> {
     const response = await fetch(`${API_BASE_URL}/users/verify_phone`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-lang': lang,
       },
       body: JSON.stringify(data),
     });

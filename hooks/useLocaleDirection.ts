@@ -9,5 +9,6 @@ export function useLocaleDirection() {
   return {
     isRTL,
     dir,
+    locale,
   };
 } 

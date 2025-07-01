@@ -172,7 +172,12 @@
       "verifyPhone": "تایید شماره موبایل",
       "verifyingPhone": "در حال تایید...",
       "sendingSms": "در حال ارسال پیامک...",
-      "phoneVerifiedSuccessfully": "شماره موبایل با موفقیت تایید شد! شما وارد شدید."
+      "phoneVerifiedSuccessfully": "شماره موبایل با موفقیت تایید شد! شما وارد شدید.",
+      "invalidEmail": "لطفاً یک ایمیل معتبر وارد کنید.",
+      "passwordTooWeak": "رمز عبور باید حداقل ۸ کاراکتر و شامل حروف بزرگ، کوچک، عدد و کاراکتر ویژه باشد.",
+      "passwordsDoNotMatch": "رمزهای عبور مطابقت ندارند.",
+      "validationError": "خطای اعتبارسنجی",
+      "phoneInvalid": "لطفاً شماره موبایل معتبر وارد کنید که با + و کد کشور شروع شود (۱۱ تا ۱۵ رقم)."
     },
     "PhoneInput": {
       "searchCountry": "جستجوی کشور...",

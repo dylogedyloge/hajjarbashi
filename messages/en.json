@@ -174,7 +174,12 @@
       "invalidPhone": "Please enter a valid phone number starting with + and country code (11-15 digits).",
       "verifyPhone": "Verify Phone",
       "verifyingPhone": "Verifying...",
-      "phoneVerifiedSuccessfully": "Phone verified successfully! You are now signed in."
+      "phoneVerifiedSuccessfully": "Phone verified successfully! You are now signed in.",
+      "invalidEmail": "Please enter a valid email address.",
+      "passwordTooWeak": "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
+      "passwordsDoNotMatch": "Passwords do not match.",
+      "validationError": "Validation Error",
+      "phoneInvalid": "Please enter a valid phone number starting with + and country code (11-15 digits)."
     },
     "PhoneInput": {
       "searchCountry": "Search country...",

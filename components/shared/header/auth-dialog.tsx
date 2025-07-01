@@ -957,7 +957,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-w-sm mx-auto rounded-t-2xl p-6">
+      <DrawerContent className="max-w-sm mx-auto rounded-t-2xl p-6 h-[66vh] flex flex-col justify-center">
         {dialogContent}
       </DrawerContent>
     </Drawer>

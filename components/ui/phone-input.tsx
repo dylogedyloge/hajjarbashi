@@ -43,6 +43,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           countrySelectComponent={CountrySelect}
           inputComponent={InputComponent}
           smartCaret={false}
+          defaultCountry="US"
           value={value || undefined}
           dir="ltr"
           /**

@@ -170,6 +170,7 @@
       "signingIn": "در حال ورود...",
       "verifyPhone": "تایید شماره موبایل",
       "verifyingPhone": "در حال تایید...",
+      "sendingSms": "در حال ارسال پیامک...",
       "phoneVerifiedSuccessfully": "شماره موبایل با موفقیت تایید شد! شما وارد شدید."
     },
     "PhoneInput": {

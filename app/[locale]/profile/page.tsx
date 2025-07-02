@@ -11,6 +11,14 @@ import {
 } from "@/components/ui/select";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar";
 
 const sidebarLinks = [
   { label: "Overview", active: true },
@@ -34,39 +42,36 @@ const Profile = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar */}
-      <aside className="w-80 border-r bg-card flex flex-col items-center py-8 px-6 gap-6">
-        <div className="flex flex-col items-center gap-2">
-          <Avatar className="w-20 h-20">
-            <AvatarImage
-              src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins"
-              alt="John Doe"
-            />
-            <AvatarFallback className="text-2xl font-semibold">
-              JD
-            </AvatarFallback>
-          </Avatar>
-          <div className="text-lg font-semibold">John Doe</div>
-          <div className="text-sm text-muted-foreground">email@example.com</div>
-        </div>
-        <nav className="w-full mt-4">
-          <ul className="flex flex-col gap-1">
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarContent>
+          <div className="flex flex-col items-center gap-2 py-8 px-6">
+            <Avatar className="w-20 h-20">
+              <AvatarImage
+                src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins"
+                alt="John Doe"
+              />
+              <AvatarFallback className="text-2xl font-semibold">
+                JD
+              </AvatarFallback>
+            </Avatar>
+            <div className="text-lg font-semibold">John Doe</div>
+            <div className="text-sm text-muted-foreground">
+              email@example.com
+            </div>
+          </div>
+          <SidebarMenu>
             {sidebarLinks.map((link) => (
-              <li key={link.label}>
-                <Button
-                  variant={link.active ? "default" : "ghost"}
-                  className="w-full justify-start rounded-md px-4 py-2 text-base"
-                >
+              <SidebarMenuItem key={link.label}>
+                <SidebarMenuButton isActive={link.active}>
                   {link.label}
-                </Button>
-              </li>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             ))}
-          </ul>
-        </nav>
-      </aside>
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center py-10 px-8">
+          </SidebarMenu>
+        </SidebarContent>
+      </Sidebar>
+      <main className="min-h-screen bg-background md:ml-64 flex flex-col items-center py-10 px-8">
         <form className="w-full max-w-3xl bg-card rounded-xl border p-8 flex flex-col gap-8">
           {/* Change Avatar */}
           <section className="flex flex-col items-center gap-2 border-b pb-8">
@@ -160,7 +165,7 @@ const Profile = () => {
           </Button>
         </form>
       </main>
-    </div>
+    </SidebarProvider>
   );
 };
 

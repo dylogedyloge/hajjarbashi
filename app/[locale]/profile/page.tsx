@@ -1,4 +1,3 @@
-"use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,9 +9,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Menubar, MenubarItem } from "@/components/ui/menubar";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useState } from "react";
 
 const sidebarLinks = [
   { label: "Overview", active: true },
@@ -25,7 +22,7 @@ const sidebarLinks = [
 
 const Profile = () => {
   // Placeholder state for form fields
-  const [form, setForm] = useState({
+  const form = {
     firstName: "John",
     lastName: "Doe",
     company: "Hajjarbashi",
@@ -33,7 +30,7 @@ const Profile = () => {
     email: "example@domain.com",
     phone: "+989376544675",
     description: "Lorem Ipsum is dummy text...",
-  });
+  };
 
   return (
     <div className="flex min-h-screen bg-background">

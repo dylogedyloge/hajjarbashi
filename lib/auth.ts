@@ -163,6 +163,32 @@ export interface VerifyPhoneResponse {
   timestamp: string;
 }
 
+export interface SendResetPasswordVerificationCodeRequest {
+  email: string;
+}
+
+export interface SendResetPasswordVerificationCodeResponse {
+  success: boolean;
+  message: string;
+  data: {
+    code: number;
+  };
+  timestamp: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  password: string;
+  verification_code: string;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+  data: any;
+  timestamp: string;
+}
+
 const API_BASE_URL = 'https://api.hajjardevs.ir';
 
 export const authService = {
@@ -248,6 +274,36 @@ export const authService = {
       throw new Error(`Phone verification failed: ${response.status} ${response.statusText}`);
     }
 
+    return response.json();
+  },
+
+  async sendResetPasswordVerificationCode(data: SendResetPasswordVerificationCodeRequest, lang: string = 'en'): Promise<SendResetPasswordVerificationCodeResponse> {
+    const response = await fetch(`${API_BASE_URL}/users/send_reset_password_verificaton_code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-lang': lang,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error(`Send reset password verification code failed: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  },
+
+  async resetPassword(data: ResetPasswordRequest, lang: string = 'en'): Promise<ResetPasswordResponse> {
+    const response = await fetch(`${API_BASE_URL}/users/reset_password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-lang': lang,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error(`Reset password failed: ${response.status} ${response.statusText}`);
+    }
     return response.json();
   },
 }; 

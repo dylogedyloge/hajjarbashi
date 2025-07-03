@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, Circle, ArrowLeft } from "lucide-react";
+import { Phone, Mail, Circle, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import {
@@ -27,10 +27,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { z } from "zod";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import {
-  Drawer,
-  DrawerContent
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 
 interface AuthDialogProps {
   open: boolean;
@@ -42,7 +39,10 @@ interface DialogBackButtonProps {
   onClick: () => void;
   size?: string;
 }
-const DialogBackButton = ({ onClick, size = "w-6 h-6" }: DialogBackButtonProps) => (
+const DialogBackButton = ({
+  onClick,
+  size = "w-6 h-6",
+}: DialogBackButtonProps) => (
   <Button
     type="button"
     variant="ghost"
@@ -69,8 +69,14 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [signupValidationErrors, setSignupValidationErrors] = useState<string[]>([]);
-  const [signupTouched, setSignupTouched] = useState<{ email: boolean; password: boolean; passwordConfirmation: boolean }>({
+  const [signupValidationErrors, setSignupValidationErrors] = useState<
+    string[]
+  >([]);
+  const [signupTouched, setSignupTouched] = useState<{
+    email: boolean;
+    password: boolean;
+    passwordConfirmation: boolean;
+  }>({
     email: false,
     password: false,
     passwordConfirmation: false,
@@ -93,33 +99,54 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // OTP state for phone verification
   const [phoneForOtp, setPhoneForOtp] = useState<string>("");
 
+  // Password visibility state for sign in and sign up
+  const [showSigninPassword, setShowSigninPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showSignupPasswordConfirmation, setShowSignupPasswordConfirmation] =
+    useState(false);
+
+  // Add state for reset password flow
+  const [resetStep, setResetStep] = useState<"request" | "verify">("request");
+  const [resetOtp, setResetOtp] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetShowPassword, setResetShowPassword] = useState(false);
+  const [resetShowPasswordConfirmation, setResetShowPasswordConfirmation] =
+    useState(false);
+
   const t = useTranslations("AuthDialog");
   const { login } = useAuth();
-  const { locale } = useLocaleDirection();
+  const { locale, isRTL } = useLocaleDirection();
 
   // Helper: Validate phone number
   const isValidPhone = (phone: string) => /^\+[1-9]\d{1,14}$/.test(phone);
 
   // Zod schema for signup validation (must be inside component to access t)
-  const signupSchema = z.object({
-    email: z.string().email({ message: t('invalidEmail') }),
-    password: z
-      .string()
-      .min(8, { message: t('passwordTooWeak') })
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
-        {
-          message: t('passwordTooWeak'),
-        }
-      ),
-    passwordConfirmation: z.string(),
-  }).refine((data) => data.password === data.passwordConfirmation, {
-    message: t('passwordsDoNotMatch'),
-    path: ["passwordConfirmation"],
-  });
+  const signupSchema = z
+    .object({
+      email: z.string().email({ message: t("invalidEmail") }),
+      password: z
+        .string()
+        .min(8, { message: t("passwordTooWeak") })
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
+          {
+            message: t("passwordTooWeak"),
+          }
+        ),
+      passwordConfirmation: z.string(),
+    })
+    .refine((data) => data.password === data.passwordConfirmation, {
+      message: t("passwordsDoNotMatch"),
+      path: ["passwordConfirmation"],
+    });
 
   // Zod schema for phone validation
-  const phoneSchema = z.string().regex(/^\+[1-9]\d{10,14}$/, { message: t('phoneInvalid') });
+  const phoneSchema = z
+    .string()
+    .regex(/^\+[1-9]\d{10,14}$/, { message: t("phoneInvalid") });
 
   const [phoneValidationError, setPhoneValidationError] = useState<string>("");
   const [phoneTouched, setPhoneTouched] = useState(false);
@@ -139,7 +166,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       setOtpInputValue("");
       setError("");
       setSignupValidationErrors([]);
-      setSignupTouched({ email: false, password: false, passwordConfirmation: false });
+      setSignupTouched({
+        email: false,
+        password: false,
+        passwordConfirmation: false,
+      });
     }
     onOpenChange(open);
   };
@@ -155,7 +186,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     if (!result.success) {
       // Only show errors for touched fields
       const filteredErrors = result.error.errors
-        .filter((err) => err.path[0] === field || signupTouched[err.path[0] as keyof typeof signupTouched])
+        .filter(
+          (err) =>
+            err.path[0] === field ||
+            signupTouched[err.path[0] as keyof typeof signupTouched]
+        )
         .map((err) => err.message);
       setSignupValidationErrors(filteredErrors);
     } else {
@@ -236,7 +271,10 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           email: emailForOtp,
           verification_code: otpInputValue,
         };
-        const response = await authService.verifyEmail(verificationData, locale);
+        const response = await authService.verifyEmail(
+          verificationData,
+          locale
+        );
         // Ensure email is a string for context
         const userData = { ...response.data, email: response.data.email || "" };
         login(userData, response.data.token);
@@ -248,7 +286,10 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           phone: phoneForOtp,
           otp_code: otpInputValue,
         };
-        const response = await authService.verifyPhone(verificationData, locale);
+        const response = await authService.verifyPhone(
+          verificationData,
+          locale
+        );
         // Ensure email is a string for context
         const userData = { ...response.data, email: response.data.email || "" };
         login(userData, response.data.token);
@@ -282,7 +323,10 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     }
 
     try {
-      const response = await authService.login(signinData as LoginRequest, locale);
+      const response = await authService.login(
+        signinData as LoginRequest,
+        locale
+      );
       login(response.data, response.data.token);
       toast.success(t("loginSuccessful"));
       handleDialogChange(false);
@@ -301,7 +345,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const validatePhoneOnBlur = () => {
     setPhoneTouched(true);
     const result = phoneSchema.safeParse(phone);
-    setPhoneValidationError(result.success ? "" : result.error.errors[0].message);
+    setPhoneValidationError(
+      result.success ? "" : result.error.errors[0].message
+    );
   };
 
   // Update handlePhoneLogin to use zod validation
@@ -336,9 +382,12 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     }
 
     try {
-      const response = await authService.sendVerificationSms({
-        phone,
-      } as SendVerificationSmsRequest, locale);
+      const response = await authService.sendVerificationSms(
+        {
+          phone,
+        } as SendVerificationSmsRequest,
+        locale
+      );
       setPhoneForOtp(phone);
       toast.success(
         `${t("smsSentSuccessfully")} ${t("verificationCode", {
@@ -423,7 +472,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <DialogBackButton onClick={() => setView("main")} />
           {phoneValidationError && phoneTouched && (
             <Alert variant="destructive" className="mb-4">
-              <AlertTitle>{t('validationError')}</AlertTitle>
+              <AlertTitle>{t("validationError")}</AlertTitle>
               <AlertDescription>{phoneValidationError}</AlertDescription>
             </Alert>
           )}
@@ -585,12 +634,10 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 required
               />
             </div>
-            <div>
-              <label className="block mb-1 font-medium">
-                {t("password")}
-              </label>
+            <div className="relative">
+              <label className="block mb-1 font-medium">{t("password")}</label>
               <Input
-                type="password"
+                type={showSigninPassword ? "text" : "password"}
                 placeholder=""
                 value={signinData.password}
                 onChange={(e) =>
@@ -601,6 +648,24 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 }
                 required
               />
+              <Button
+                type="button"
+                variant="ghost"
+                tabIndex={-1}
+                className={`absolute ${
+                  isRTL ? "left-1" : "right-1"
+                } inset-y-7 flex items-center h-8 p-0`}
+                onClick={() => setShowSigninPassword((v) => !v)}
+                aria-label={
+                  showSigninPassword ? t("hidePassword") : t("showPassword")
+                }
+              >
+                {showSigninPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </Button>
             </div>
             <Button
               type="submit"
@@ -674,7 +739,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           <DialogBackButton onClick={() => setView("email")} />
           {signupValidationErrors.length > 0 && (
             <Alert variant="destructive" className="mb-4">
-              <AlertTitle>{t('validationError')}</AlertTitle>
+              <AlertTitle>{t("validationError")}</AlertTitle>
               <AlertDescription>
                 <ul className="list-disc pl-5 space-y-1">
                   {signupValidationErrors.map((msg, idx) => (
@@ -698,34 +763,74 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 type="email"
                 placeholder="email@example.com"
                 value={signupData.email}
-                onChange={(e) => handleSignupInputChange("email", e.target.value)}
+                onChange={(e) =>
+                  handleSignupInputChange("email", e.target.value)
+                }
                 onBlur={() => validateSignupOnBlur("email")}
                 required
               />
             </div>
-            <div>
-              <label className="block mb-1 font-medium">
-                {t("password")}
-              </label>
+            <div className="relative">
+              <label className="block mb-1 font-medium">{t("password")}</label>
               <Input
-                type="password"
+                type={showSignupPassword ? "text" : "password"}
                 value={signupData.password}
-                onChange={(e) => handleSignupInputChange("password", e.target.value)}
+                onChange={(e) =>
+                  handleSignupInputChange("password", e.target.value)
+                }
                 onBlur={() => validateSignupOnBlur("password")}
                 required
               />
+              <Button
+                type="button"
+                variant="ghost"
+                tabIndex={-1}
+                className={`absolute ${
+                  isRTL ? "left-1" : "right-1"
+                } inset-y-7 flex items-center h-8 p-0`}
+                onClick={() => setShowSignupPassword((v) => !v)}
+                aria-label={
+                  showSignupPassword ? t("hidePassword") : t("showPassword")
+                }
+              >
+                {showSignupPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </Button>
             </div>
-            <div>
+            <div className="relative">
               <label className="block mb-1 font-medium">
                 {t("passwordConfirmation")}
               </label>
               <Input
-                type="password"
+                type={showSignupPasswordConfirmation ? "text" : "password"}
                 value={passwordConfirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
                 onBlur={() => validateSignupOnBlur("passwordConfirmation")}
                 required
               />
+              <Button
+                type="button"
+                variant="ghost"
+                tabIndex={-1}
+                className={`absolute ${
+                  isRTL ? "left-1" : "right-1"
+                } inset-y-7 flex items-center h-8 p-0`}
+                onClick={() => setShowSignupPasswordConfirmation((v) => !v)}
+                aria-label={
+                  showSignupPasswordConfirmation
+                    ? t("hidePassword")
+                    : t("showPassword")
+                }
+              >
+                {showSignupPasswordConfirmation ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </Button>
             </div>
             <div className="flex w-full gap-4 mt-2">
               <Button
@@ -778,41 +883,230 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               {t("resetPassword")}
             </DialogTitle>
           </DialogHeader>
-          <DialogBackButton onClick={() => setView("email")} />
-          <form
-            className="flex flex-col items-center gap-6"
-            onSubmit={(e) => {
-              e.preventDefault(); /* handle reset */
+          <DialogBackButton
+            onClick={() => {
+              setView("email");
+              setResetStep("request");
+              setResetEmail("");
+              setResetOtp("");
+              setResetNewPassword("");
+              setResetConfirmPassword("");
+              setResetError("");
             }}
-          >
-            <div className="w-full">
-              <label className="block mb-1 font-medium">
-                {t("enterYourEmail")}
-              </label>
-              <Input
-                type="email"
-                placeholder="email@example.com"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex w-full gap-4 mt-2">
-              <Button
-                type="submit"
-                className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base   h-12"
-              >
-                {t("sendResetPasswordLink")}
-              </Button>
-            </div>
-          </form>
+          />
+          {resetStep === "request" ? (
+            <form
+              className="flex flex-col items-center gap-6"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setResetLoading(true);
+                setResetError("");
+                try {
+                  const response =
+                    await authService.sendResetPasswordVerificationCode(
+                      { email: resetEmail },
+                      locale
+                    );
+                  setResetStep("verify");
+                  toast.success(
+                    t("verificationCode", { code: response.data.code })
+                  );
+                } catch (err) {
+                  setResetError(
+                    err instanceof Error ? err.message : t("signupFailed")
+                  );
+                  toast.error(
+                    err instanceof Error ? err.message : t("signupFailed")
+                  );
+                } finally {
+                  setResetLoading(false);
+                }
+              }}
+            >
+              <div className="w-full">
+                <label className="block mb-1 font-medium">
+                  {t("enterYourEmail")}
+                </label>
+                <Input
+                  type="email"
+                  placeholder="email@example.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex w-full gap-4 mt-2">
+                <Button
+                  type="submit"
+                  className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
+                  disabled={resetLoading}
+                >
+                  {resetLoading ? t("sendingSms") : t("sendResetPasswordLink")}
+                </Button>
+              </div>
+              {resetError && (
+                <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded w-full">
+                  {resetError}
+                </div>
+              )}
+            </form>
+          ) : (
+            <form
+              className="flex flex-col items-center gap-6"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setResetLoading(true);
+                setResetError("");
+                if (!resetOtp || !resetNewPassword || !resetConfirmPassword) {
+                  setResetError(t("fillAllFields"));
+                  setResetLoading(false);
+                  return;
+                }
+                if (resetNewPassword !== resetConfirmPassword) {
+                  setResetError(t("passwordsDoNotMatch"));
+                  setResetLoading(false);
+                  return;
+                }
+                try {
+                  await authService.resetPassword(
+                    {
+                      email: resetEmail,
+                      password: resetNewPassword,
+                      verification_code: resetOtp,
+                    },
+                    locale
+                  );
+                  toast.success(t("passwordResetSuccessful"));
+                  setView("email");
+                  setResetStep("request");
+                  setResetEmail("");
+                  setResetOtp("");
+                  setResetNewPassword("");
+                  setResetConfirmPassword("");
+                  setResetError("");
+                } catch (err) {
+                  setResetError(
+                    err instanceof Error ? err.message : t("signupFailed")
+                  );
+                  toast.error(
+                    err instanceof Error ? err.message : t("signupFailed")
+                  );
+                } finally {
+                  setResetLoading(false);
+                }
+              }}
+            >
+              <div className="w-full">
+                <div className="flex justify-center ">
+                  <div className="flex flex-col items-center">
+                    <label className="mb-2 font-medium text-center">
+                      {t("enterOtpCode")}
+                    </label>
+                    <InputOTP
+                      maxLength={5}
+                      value={resetOtp}
+                      onChange={setResetOtp}
+                    >
+                      <InputOTPGroup className="gap-4">
+                        {[...Array(5)].map((_, i) => (
+                          <InputOTPSlot
+                            key={i}
+                            index={i}
+                            className="h-12 w-12 text-xl text-center border rounded"
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+                </div>
+              </div>
+              <div className="relative w-full">
+                <label className="block mb-1 font-medium">
+                  {t("password")}
+                </label>
+                <Input
+                  type={resetShowPassword ? "text" : "password"}
+                  value={resetNewPassword}
+                  onChange={(e) => setResetNewPassword(e.target.value)}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  tabIndex={-1}
+                  className={`absolute ${
+                    isRTL ? "left-1" : "right-1"
+                  } inset-y-7 flex items-center h-8 p-0`}
+                  onClick={() => setResetShowPassword((v) => !v)}
+                  aria-label={
+                    resetShowPassword ? t("hidePassword") : t("showPassword")
+                  }
+                >
+                  {resetShowPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </Button>
+              </div>
+              <div className="relative w-full">
+                <label className="block mb-1 font-medium">
+                  {t("passwordConfirmation")}
+                </label>
+                <Input
+                  type={resetShowPasswordConfirmation ? "text" : "password"}
+                  value={resetConfirmPassword}
+                  onChange={(e) => setResetConfirmPassword(e.target.value)}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  tabIndex={-1}
+                  className={`absolute ${
+                    isRTL ? "left-1" : "right-1"
+                  } inset-y-7 flex items-center h-8 p-0`}
+                  onClick={() => setResetShowPasswordConfirmation((v) => !v)}
+                  aria-label={
+                    resetShowPasswordConfirmation
+                      ? t("hidePassword")
+                      : t("showPassword")
+                  }
+                >
+                  {resetShowPasswordConfirmation ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </Button>
+              </div>
+              <div className="flex w-full gap-4 mt-2">
+                <Button
+                  type="submit"
+                  className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
+                  disabled={resetLoading}
+                >
+                  {resetLoading ? t("verifying") : t("sendResetPasswordLink")}
+                </Button>
+              </div>
+              {resetError && (
+                <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded w-full">
+                  {resetError}
+                </div>
+              )}
+            </form>
+          )}
           <div className="flex flex-col items-center mt-4">
             <Button
               type="button"
               variant="ghost"
               className="  underline text-base mt-2 p-0 h-auto min-h-0 min-w-0"
               onClick={() => {
-                /* handle resend */
+                setResetStep("request");
+                setResetOtp("");
+                setResetNewPassword("");
+                setResetConfirmPassword("");
+                setResetError("");
               }}
             >
               {t("resendResetPasswordLink")}
@@ -833,7 +1127,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               {t("enterOtpCode")}
             </DialogTitle>
           </DialogHeader>
-          <DialogBackButton onClick={() => emailForOtp ? setView("signup") : setView("phone")} />
+          <DialogBackButton
+            onClick={() => (emailForOtp ? setView("signup") : setView("phone"))}
+          />
           <form
             className="flex flex-col items-center gap-6"
             onSubmit={handleOtpVerification}

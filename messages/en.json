@@ -147,7 +147,7 @@
       "passwordConfirmation": "Password Confirmation",
       "resetPassword": "Reset Password",
       "enterYourEmail": "Enter your email Address",
-      "sendResetPasswordLink": "Send Reset Password Link",
+      "sendResetPasswordLink": "Reset Password",
       "resendResetPasswordLink": "Re-send Reset Password Link",
       "enterOtpCode": "Enter Your OTP Code",
       "enter6DigitsCode": "Enter your 6 Digits Code",
@@ -177,9 +177,11 @@
       "phoneVerifiedSuccessfully": "Phone verified successfully! You are now signed in.",
       "invalidEmail": "Please enter a valid email address.",
       "passwordTooWeak": "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
-      "passwordsDoNotMatch": "Passwords do not match.",
       "validationError": "Validation Error",
-      "phoneInvalid": "Please enter a valid phone number starting with + and country code (11-15 digits)."
+      "phoneInvalid": "Please enter a valid phone number starting with + and country code (11-15 digits).",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "passwordResetSuccessful": "Password reset successfully! You can now sign in."
     },
     "PhoneInput": {
       "searchCountry": "Search country...",

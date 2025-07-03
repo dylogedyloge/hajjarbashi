@@ -185,7 +185,7 @@ export interface ResetPasswordRequest {
 export interface ResetPasswordResponse {
   success: boolean;
   message: string;
-  data: any;
+  data?: Record<string, unknown> | null;
   timestamp: string;
 }
 

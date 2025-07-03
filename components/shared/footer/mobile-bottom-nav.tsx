@@ -1,18 +1,16 @@
 "use client";
-import { Home, MessageSquare, Bookmark, User, LogOut } from "lucide-react";
+import { Home, MessageSquare, Bookmark, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CreateAdvertisementButton from "@/components/shared/header/create-advertisement-button";
 import { useTranslations } from "next-intl";
 import SignInSignUpButton from "@/components/shared/header/sign-in-sign-up-button";
 import { useAuth } from "@/lib/auth-context";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 const MobileBottomNav = () => {
   const t = useTranslations("MobileBottomNav");
-  const headerT = useTranslations("Header");
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
   const handleProfileClick = () => {
     router.push("/profile/overview");

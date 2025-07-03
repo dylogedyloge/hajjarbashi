@@ -166,7 +166,7 @@ const Header = () => {
                     variant="ghost"
                     className="w-full justify-start gap-2 h-9"
                     onClick={() => {
-                      // TODO: Navigate to profile page
+                      intlRouter.push("/profile/overview");
                     }}
                   >
                     <User size={16} />

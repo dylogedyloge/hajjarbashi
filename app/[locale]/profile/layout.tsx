@@ -17,6 +17,12 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu";
 
 const sidebarLinks = [
   { label: "Overview", href: "/profile/overview", icon: LayoutDashboard },
@@ -40,10 +46,45 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
   const normalize = (str: string) => str.replace(/\/$/, "");
   return (
     <SidebarProvider>
-      <div className="w-full min-h-screen bg-background flex justify-center items-start py-12">
-        <div className="flex gap-x-8 max-w-screen-lg w-full">
-          {/* Sidebar */}
-          <div className="w-80 bg-card border-r flex flex-col justify-between min-h-[700px] rounded-xl shadow-sm">
+      {/* Mobile: Navigation menu and content stacked vertically */}
+      <div className="flex flex-col w-full min-h-screen bg-background md:hidden">
+        <div className="w-full px-2 pt-4 pb-2 sticky top-0 z-20 bg-background">
+          <NavigationMenu className="w-full">
+            <NavigationMenuList className="w-screen justify-center p-4">
+              {sidebarLinks.map((link) => {
+                const Icon = link.icon;
+                const isActive = normalize(pathname).endsWith(
+                  normalize(link.href)
+                );
+                return (
+                  <NavigationMenuItem key={link.label} className="flex-1">
+                    <NavigationMenuLink
+                      href={link.href}
+                      active={isActive}
+                      className={
+                        "flex flex-col items-center justify-center flex-1 text-center gap-1 px-2 py-1.5 rounded-md text-sm font-medium transition-colors " +
+                        (isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-accent hover:text-accent-foreground")
+                      }
+                    >
+                      <Icon className="size-5 mx-auto" />
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                );
+              })}
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
+        <main className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-0">
+          {children}
+        </main>
+      </div>
+      {/* Desktop: Sidebar and main content */}
+      <div className="hidden md:flex w-full min-h-screen bg-background flex-col md:flex-row md:justify-center md:items-start md:py-12">
+        <div className="flex md:gap-x-8 w-full md:max-w-screen-lg">
+          {/* Sidebar (Desktop only) */}
+          <div className="w-80 bg-card border-r flex-col justify-between min-h-[700px] rounded-xl shadow-sm">
             <div>
               <div className="flex flex-col items-center gap-2 py-8 px-6">
                 <Avatar className="w-20 h-20">
@@ -88,7 +129,9 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
           {/* Main Content */}
-          <main className="flex-1 flex flex-col items-center">{children}</main>
+          <main className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-0">
+            {children}
+          </main>
         </div>
       </div>
     </SidebarProvider>

@@ -25,7 +25,7 @@ const Profile = () => {
   };
 
   return (
-    <form className="w-full max-w-3xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm">
+    <form className="w-full max-w-3xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
       {/* Change Avatar */}
       <section className="flex flex-col items-center gap-2 border-b pb-8">
         <div className="text-base font-semibold w-full text-left mb-2">

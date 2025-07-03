@@ -5,11 +5,18 @@ import CreateAdvertisementButton from "@/components/shared/header/create-adverti
 import { useTranslations } from "next-intl";
 import SignInSignUpButton from "@/components/shared/header/sign-in-sign-up-button";
 import { useAuth } from "@/lib/auth-context";
+import { useRouter, usePathname } from "@/i18n/navigation";
 
 const MobileBottomNav = () => {
   const t = useTranslations("MobileBottomNav");
   const headerT = useTranslations("Header");
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleProfileClick = () => {
+    router.push("/profile/overview");
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 w-full z-50 md:hidden bg-background border-t border flex justify-center items-end pt-1.5 pb-3">
@@ -63,11 +70,11 @@ const MobileBottomNav = () => {
             <Button
               variant="ghost"
               className="flex flex-col items-center flex-1 text-foreground py-1 px-0 gap-0"
-              onClick={logout}
+              onClick={handleProfileClick}
             >
-              <LogOut className="size-5 mb-0.5" strokeWidth={2} />
+              <User className="size-5 mb-0.5" strokeWidth={2} />
               <span className="text-xs mt-0.5 font-medium leading-none">
-                {headerT("logout")}
+                {t("profile")}
               </span>
             </Button>
           ) : (

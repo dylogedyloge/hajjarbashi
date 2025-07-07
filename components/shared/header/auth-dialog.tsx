@@ -480,11 +480,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
             className="flex flex-col items-center gap-6"
             onSubmit={handlePhoneLogin}
           >
-            {error && (
+            {/* {error && (
               <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
                 {error}
               </div>
-            )}
+            )} */}
             <PhoneInput
               value={phone}
               onChange={setPhone}
@@ -612,11 +612,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
           </DialogHeader>
           <DialogBackButton onClick={() => setView("main")} size="w-5 h-5" />
           <form className="flex flex-col gap-4" onSubmit={handleLogin}>
-            {error && (
+            {/* {error && (
               <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
                 {error}
               </div>
-            )}
+            )} */}
             <div>
               <label className="block mb-1 font-medium">
                 {t("emailAddress")}
@@ -750,11 +750,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
             </Alert>
           )}
           <form className="flex flex-col gap-4" onSubmit={handleSignup}>
-            {error && (
+            {/* {error && (
               <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
                 {error}
               </div>
-            )}
+            )} */}
             <div>
               <label className="block mb-1 font-medium">
                 {t("emailAddress")}

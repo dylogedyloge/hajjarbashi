@@ -203,7 +203,9 @@ export const authService = {
     });
 
     if (!response.ok) {
-      throw new Error(`Signup failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Signup failed: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -220,7 +222,9 @@ export const authService = {
     });
 
     if (!response.ok) {
-      throw new Error(`Email verification failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Email verification failed: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -237,7 +241,9 @@ export const authService = {
     });
 
     if (!response.ok) {
-      throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Login failed: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -254,24 +260,28 @@ export const authService = {
     });
 
     if (!response.ok) {
-      throw new Error(`Send SMS failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Send SMS failed: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.json();
   },
 
-  async verifyPhone(data: VerifyPhoneRequest, lang: string = 'en'): Promise<VerifyPhoneResponse> {
+    async verifyPhone(data: VerifyPhoneRequest, lang: string = 'en'): Promise<VerifyPhoneResponse> {
     const response = await fetch(`${API_BASE_URL}/users/verify_phone`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-lang': lang,
-      },
+    },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      throw new Error(`Phone verification failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Phone verification failed: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -287,7 +297,9 @@ export const authService = {
       body: JSON.stringify(data),
     });
     if (!response.ok) {
-      throw new Error(`Send reset password verification code failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Send reset password verification code failed: ${response.status}`;
+      throw new Error(errorMessage);
     }
     return response.json();
   },
@@ -302,7 +314,9 @@ export const authService = {
       body: JSON.stringify(data),
     });
     if (!response.ok) {
-      throw new Error(`Reset password failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Reset password failed: ${response.status}`;
+      throw new Error(errorMessage);
     }
     return response.json();
   },

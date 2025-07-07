@@ -68,7 +68,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   });
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+  // const [error, setError] = useState<string>("");
   const [signupValidationErrors, setSignupValidationErrors] = useState<
     string[]
   >([]);
@@ -164,7 +164,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       setPhone("");
       setEmailForOtp("");
       setOtpInputValue("");
-      setError("");
+      // setError("");
       setSignupValidationErrors([]);
       setSignupTouched({
         email: false,
@@ -201,7 +201,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // Handle signup form submission
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    // setError("");
     setSignupValidationErrors([]);
     setIsLoading(true);
 
@@ -234,7 +234,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       console.error("Signup error:", err);
       const errorMessage =
         err instanceof Error ? err.message : t("signupFailed");
-      setError(errorMessage);
+      // setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -311,12 +311,12 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // Handle login form submission
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    // setError("");
     setIsLoading(true);
 
     if (!signinData.email || !signinData.password) {
       const errorMsg = t("fillAllFields");
-      setError(errorMsg);
+      // setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
       return;
@@ -334,7 +334,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       console.error("Login error:", err);
       const errorMessage =
         err instanceof Error ? err.message : t("loginFailed");
-      setError(errorMessage);
+      // setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -353,7 +353,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // Update handlePhoneLogin to use zod validation
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    // setError("");
     setIsLoading(true);
     setPhoneTouched(true);
     // Zod validation
@@ -368,14 +368,14 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
 
     if (!phone) {
       const errorMsg = t("fillAllFields");
-      setError(errorMsg);
+      // setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
       return;
     }
     if (!isValidPhone(phone)) {
       const errorMsg = t("invalidPhone");
-      setError(errorMsg);
+      // setError(errorMsg);
       toast.error(errorMsg);
       setIsLoading(false);
       return;
@@ -399,7 +399,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       console.error("Send SMS error:", err);
       const errorMessage =
         err instanceof Error ? err.message : t("smsSendFailed");
-      setError(errorMessage);
+      // setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

@@ -34,6 +34,7 @@ import {
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import Image from "next/image";
 
 const Header = () => {
   const t = useTranslations("Header");
@@ -137,9 +138,11 @@ const Header = () => {
                   className="flex items-center gap-2 p-2 hover:bg-accent rounded-full"
                 >
                   {user.avatar_thumb ? (
-                    <img
+                    <Image
                       src={user.avatar_thumb}
                       alt={user.name || user.email}
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded-full"
                     />
                   ) : (

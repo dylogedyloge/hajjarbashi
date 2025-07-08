@@ -118,6 +118,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
 
   const [isResendingOtp, setIsResendingOtp] = useState(false);
 
+  const [resetResendTimer, setResetResendTimer] = useState(114);
+  const [isResendingReset, setIsResendingReset] = useState(false);
+
   const t = useTranslations("AuthDialog");
   const { login } = useAuth();
   const { locale, isRTL } = useLocaleDirection();
@@ -419,6 +422,18 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       setOtpTimer(114);
     }
   }, [view, otpTimer]);
+
+  useEffect(() => {
+    if (resetStep === "verify" && resetResendTimer > 0) {
+      const interval = setInterval(() => {
+        setResetResendTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+    if (resetStep !== "verify") {
+      setResetResendTimer(114);
+    }
+  }, [resetStep, resetResendTimer]);
 
   // Extract the content to reuse for both Dialog and Drawer
   const dialogContent = (
@@ -1096,24 +1111,54 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                   {resetError}
                 </div>
               )}
+              <div className="flex flex-col items-center mt-4">
+                {resetResendTimer > 0 ? (
+                  <span className="underline text-base mt-2">
+                    {t("resendResetPasswordLinkIn", {
+                      time: `${Math.floor(resetResendTimer / 60)}:${(
+                        resetResendTimer % 60
+                      )
+                        .toString()
+                        .padStart(2, "0")}`,
+                    })}
+                  </span>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="underline text-base mt-2 cursor-pointer p-0 h-auto min-h-0 min-w-0"
+                    disabled={isResendingReset}
+                    onClick={async () => {
+                      setIsResendingReset(true);
+                      try {
+                        const response =
+                          await authService.sendResetPasswordVerificationCode(
+                            { email: resetEmail },
+                            locale
+                          );
+                        toast.success(
+                          t("verificationCode", { code: response.data.code })
+                        );
+                        setResetResendTimer(114);
+                      } catch (err) {
+                        const errorMessage =
+                          err instanceof Error
+                            ? err.message
+                            : t("signupFailed");
+                        toast.error(errorMessage);
+                      } finally {
+                        setIsResendingReset(false);
+                      }
+                    }}
+                  >
+                    {isResendingReset
+                      ? t("sendingEmail")
+                      : t("resendResetPasswordLink")}
+                  </Button>
+                )}
+              </div>
             </form>
           )}
-          <div className="flex flex-col items-center mt-4">
-            <Button
-              type="button"
-              variant="ghost"
-              className="  underline text-base mt-2 p-0 h-auto min-h-0 min-w-0"
-              onClick={() => {
-                setResetStep("request");
-                setResetOtp("");
-                setResetNewPassword("");
-                setResetConfirmPassword("");
-                setResetError("");
-              }}
-            >
-              {t("resendResetPasswordLink")}
-            </Button>
-          </div>
           <div className="flex justify-center gap-2 mt-8 text-sm text-muted-foreground">
             <span className="  text-foreground cursor-pointer">
               Terms of conditions

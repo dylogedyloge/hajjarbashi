@@ -116,6 +116,8 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [resetShowPasswordConfirmation, setResetShowPasswordConfirmation] =
     useState(false);
 
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
+
   const t = useTranslations("AuthDialog");
   const { login } = useAuth();
   const { locale, isRTL } = useLocaleDirection();
@@ -1223,9 +1225,31 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 type="button"
                 variant="ghost"
                 className="underline text-base mt-2 cursor-pointer p-0 h-auto min-h-0 min-w-0"
-                onClick={() => setOtpTimer(114)}
+                disabled={isResendingOtp}
+                onClick={async () => {
+                  if (!phoneForOtp) return; // Only support phone OTP resend for now
+                  setIsResendingOtp(true);
+                  try {
+                    const response = await authService.sendVerificationSms(
+                      { phone: phoneForOtp },
+                      locale
+                    );
+                    toast.success(
+                      `${t("smsSentSuccessfully")} ${t("verificationCode", {
+                        code: response.data.code,
+                      })}`
+                    );
+                    setOtpTimer(114);
+                  } catch (err) {
+                    const errorMessage =
+                      err instanceof Error ? err.message : t("smsSendFailed");
+                    toast.error(errorMessage);
+                  } finally {
+                    setIsResendingOtp(false);
+                  }
+                }}
               >
-                {t("resendOtpCode")}
+                {isResendingOtp ? t("sendingSms") : t("resendOtpCode")}
               </Button>
             )}
           </div>

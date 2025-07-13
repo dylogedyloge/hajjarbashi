@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
+import { getMessages } from "next-intl/server";
 
 const poppins = localFont({
   src: "../../public/fonts/Poppins-Medium.ttf",
@@ -48,10 +49,19 @@ export default async function RootLayout({
   const dir = isRTL ? "rtl" : "ltr";
   const font = isRTL ? yekanBakh : poppins;
 
+  // Get messages for the current locale
+  let messages;
+  try {
+    messages = await getMessages();
+  } catch (error) {
+    console.error("Error loading messages:", error);
+    messages = {};
+  }
+
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className={`${font.className} ${isRTL ? "rtl" : ""}`}>
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <AuthProvider>
               <Header />

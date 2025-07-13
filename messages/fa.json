@@ -187,6 +187,66 @@
       "searchCountry": "جستجوی کشور...",
       "noCountryFound": "کشوری یافت نشد."
     },
+    "Profile": {
+      "avatar": {
+        "title": "تغییر آواتار",
+        "alt": "آواتار",
+        "upload": {
+          "clickHere": "اینجا کلیک کنید",
+          "orDrag": "برای آپلود فایل یا کشیدن.",
+          "supportedFormats": "فرمت‌های پشتیبانی شده: SVG، JPG، PNG (هر کدام ۱۰ مگابایت)"
+        }
+      },
+      "accountInformation": {
+        "title": "اطلاعات حساب کاربری",
+        "firstName": "نام",
+        "lastName": "نام خانوادگی",
+        "companyName": "نام شرکت",
+        "location": "مکان",
+        "selectLocation": "انتخاب مکان"
+      },
+      "displayInformation": {
+        "title": "اطلاعات نمایشی",
+        "email": "ایمیل",
+        "phoneNumber": "شماره تلفن",
+        "description": "توضیحات"
+      },
+      "locations": {
+        "china": "چین",
+        "malaysia": "مالزی",
+        "iran": "ایران"
+      },
+      "cropModal": {
+        "title": "برش آواتار",
+        "cropSource": "منبع برش",
+        "instructions": {
+          "title": "دستورالعمل‌ها",
+          "dragCorners": "گوشه‌ها را بکشید تا اندازه ناحیه برش تغییر کند",
+          "dragInside": "در داخل ناحیه برش کلیک کرده و بکشید تا آن را حرکت دهید",
+          "squareArea": "ناحیه برش باید مربعی باشد تا بهترین نتیجه حاصل شود"
+        },
+        "preview": {
+          "title": "پیش‌نمایش"
+        },
+        "actions": {
+          "cropAndUpload": "برش و آپلود",
+          "uploading": "در حال آپلود...",
+          "cancel": "لغو"
+        }
+      },
+      "actions": {
+        "save": "ذخیره"
+      },
+      "errors": {
+        "invalidFileType": "لطفاً یک فایل تصویری معتبر انتخاب کنید (SVG، JPG، PNG)",
+        "fileTooLarge": "حجم فایل باید کمتر از ۱۰ مگابایت باشد",
+        "authenticationRequired": "احراز هویت مورد نیاز است",
+        "uploadFailed": "آپلود ناموفق بود"
+      },
+      "messages": {
+        "avatarUpdated": "آواتار با موفقیت به‌روزرسانی شد!"
+      }
+    },
     "smsSentSuccessfully": "کد تایید با پیامک ارسال شد!",
     "smsSendFailed": "ارسال پیامک تایید ناموفق بود. لطفاً دوباره تلاش کنید.",
     "sendingSms": "در حال ارسال پیامک...",

@@ -45,6 +45,17 @@ const Header = () => {
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
   const { user, isAuthenticated, logout } = useAuth();
 
+  // Helper function to validate URL
+  const isValidUrl = (url: string | null): boolean => {
+    if (!url || url.trim() === "") return false;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   // Update language state when locale changes
   useEffect(() => {
     setLanguage(currentLocale.toUpperCase());
@@ -137,21 +148,32 @@ const Header = () => {
                   variant="ghost"
                   className="flex items-center gap-2 p-2 hover:bg-accent rounded-full"
                 >
-                  {user.avatar_thumb ? (
+                  {isValidUrl(user.avatar_thumb) ? (
                     <Image
-                      src={user.avatar_thumb}
+                      src={user.avatar_thumb!}
                       alt={user.name || user.email}
                       width={32}
                       height={32}
                       className="w-8 h-8 rounded-full"
+                      onError={(e) => {
+                        // Fallback to initials if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          const fallback = parent.querySelector('.avatar-fallback') as HTMLElement;
+                          if (fallback) {
+                            fallback.style.display = 'flex';
+                          }
+                        }
+                      }}
                     />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                      {user.name
-                        ? user.name.charAt(0).toUpperCase()
-                        : user.email.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  ) : null}
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium avatar-fallback" style={{ display: isValidUrl(user.avatar_thumb) ? 'none' : 'flex' }}>
+                    {user.name
+                      ? user.name.charAt(0).toUpperCase()
+                      : user.email.charAt(0).toUpperCase()}
+                  </div>
                   <div className="hidden lg:block text-left">
                     <div className="text-sm font-medium">
                       {user.name || user.email}

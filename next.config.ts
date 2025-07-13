@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         hostname: 'placehold.co',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.hajjardevs.ir',
+        pathname: '/**',
+      },
     ],
   },
 };

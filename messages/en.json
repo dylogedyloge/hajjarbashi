@@ -188,5 +188,65 @@
     "PhoneInput": {
       "searchCountry": "Search country...",
       "noCountryFound": "No country found."
+    },
+    "Profile": {
+      "avatar": {
+        "title": "Change Avatar",
+        "alt": "Avatar",
+        "upload": {
+          "clickHere": "Click here",
+          "orDrag": "to upload your file or drag.",
+          "supportedFormats": "Supported Format: SVG, JPG, PNG (10mb each)"
+        }
+      },
+      "accountInformation": {
+        "title": "Account Information",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "companyName": "Company Name",
+        "location": "Location",
+        "selectLocation": "Select location"
+      },
+      "displayInformation": {
+        "title": "Display Information",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "description": "Description"
+      },
+      "locations": {
+        "china": "China",
+        "malaysia": "Malaysia",
+        "iran": "Iran"
+      },
+      "cropModal": {
+        "title": "Crop Avatar",
+        "cropSource": "Crop source",
+        "instructions": {
+          "title": "Instructions",
+          "dragCorners": "Drag the corners to resize the crop area",
+          "dragInside": "Click and drag inside the crop area to move it",
+          "squareArea": "The crop area must be square for best results"
+        },
+        "preview": {
+          "title": "Preview"
+        },
+        "actions": {
+          "cropAndUpload": "Crop & Upload",
+          "uploading": "Uploading...",
+          "cancel": "Cancel"
+        }
+      },
+      "actions": {
+        "save": "Save"
+      },
+      "errors": {
+        "invalidFileType": "Please select a valid image file (SVG, JPG, PNG)",
+        "fileTooLarge": "File size must be less than 10MB",
+        "authenticationRequired": "Authentication required",
+        "uploadFailed": "Upload failed"
+      },
+      "messages": {
+        "avatarUpdated": "Avatar updated successfully!"
+      }
     }
   }

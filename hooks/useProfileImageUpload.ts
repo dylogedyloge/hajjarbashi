@@ -2,8 +2,9 @@ import { useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { profileService } from '@/lib/profile';
 import { validateImageFile } from '@/lib/file-validation';
-import { cropImage, createObjectURL, revokeObjectURL } from '@/lib/image-utils';
+import { createObjectURL, revokeObjectURL } from '@/lib/image-utils';
 import { useDragAndDrop } from '@/lib/drag-drop-utils';
+import { useImageCropper } from '@/hooks/useImageCropper';
 import { toast } from 'sonner';
 
 interface UseProfileImageUploadOptions {
@@ -17,12 +18,31 @@ export function useProfileImageUpload(options: UseProfileImageUploadOptions = {}
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [showCrop, setShowCrop] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [crop, setCrop] = useState<any>();
-  const [completedCrop, setCompletedCrop] = useState<any>();
-  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  // Use the image cropper hook
+  const {
+    selectedImage,
+    imageUrl,
+    crop,
+    completedCrop,
+    isCropping,
+    imgRef,
+    handleFileSelect,
+    onImageLoad,
+    handleCropComplete,
+    cleanup: cleanupCropper,
+    setCrop,
+    setCompletedCrop,
+    setIsCropping
+  } = useImageCropper({
+    aspectRatio: 1, // Square aspect ratio for avatars
+    onError: (error) => {
+      options.onError?.(error);
+      if (options.showToast !== false) {
+        toast.error(error);
+      }
+    }
+  });
 
   // Upload image to API
   const uploadImage = useCallback(async (file: File): Promise<void> => {
@@ -69,50 +89,12 @@ export function useProfileImageUpload(options: UseProfileImageUploadOptions = {}
     }
   }, [user, token, login, options]);
 
-  // Crop and upload the cropped image
+  // Handle crop and upload
   const handleCropAndUpload = useCallback(async () => {
-    if (!completedCrop || !imgRef.current) return;
-    
-    try {
-      const croppedFile = await cropImage(
-        imgRef.current,
-        completedCrop,
-        selectedImage?.name || 'avatar.jpg'
-      );
-      
-      setShowCrop(false);
-      setSelectedImage(null);
-      setImageUrl(null);
-      setCrop(undefined);
-      setCompletedCrop(undefined);
-      
+    await handleCropComplete(async (croppedFile) => {
       await uploadImage(croppedFile);
-    } catch (error) {
-      console.error("Crop error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Crop failed";
-      options.onError?.(errorMessage);
-      if (options.showToast !== false) {
-        toast.error(errorMessage);
-      }
-    }
-  }, [completedCrop, selectedImage, uploadImage, options]);
-
-  // Handle file selection
-  const handleFileSelect = useCallback((file: File) => {
-    const isValid = validateImageFile(file, (errorMessage) => {
-      options.onError?.(errorMessage);
-      if (options.showToast !== false) {
-        toast.error(errorMessage);
-      }
     });
-
-    if (isValid) {
-      setSelectedImage(file);
-      const url = createObjectURL(file);
-      setImageUrl(url);
-      setShowCrop(true);
-    }
-  }, [options]);
+  }, [handleCropComplete, uploadImage]);
 
   // Handle file input change
   const handleFileInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,31 +119,16 @@ export function useProfileImageUpload(options: UseProfileImageUploadOptions = {}
     setDragActive
   );
 
-  // When the image loads, center the crop
-  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    // Import centerAspectCrop from image-utils
-    const { centerAspectCrop } = require('@/lib/image-utils');
-    setCrop(centerAspectCrop(width, height, 1)); // 1:1 aspect ratio
-  }, []);
-
   // Cleanup function
   const cleanup = useCallback(() => {
-    if (imageUrl) {
-      revokeObjectURL(imageUrl);
-    }
-    setShowCrop(false);
-    setSelectedImage(null);
-    setImageUrl(null);
-    setCrop(undefined);
-    setCompletedCrop(undefined);
-  }, [imageUrl]);
+    cleanupCropper();
+  }, [cleanupCropper]);
 
   return {
     // State
     isUploading,
     dragActive,
-    showCrop,
+    isCropping,
     selectedImage,
     imageUrl,
     crop,
@@ -184,7 +151,7 @@ export function useProfileImageUpload(options: UseProfileImageUploadOptions = {}
     // Setters
     setCrop,
     setCompletedCrop,
-    setShowCrop,
+    setIsCropping,
     
     // Upload function
     uploadImage

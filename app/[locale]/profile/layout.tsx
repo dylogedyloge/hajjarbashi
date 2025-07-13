@@ -4,7 +4,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton,
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import {
@@ -19,7 +18,6 @@ import {
   NavigationMenu,
   NavigationMenuList,
   NavigationMenuItem,
-  NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

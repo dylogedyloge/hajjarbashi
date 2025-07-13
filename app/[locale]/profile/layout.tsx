@@ -23,23 +23,23 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 const sidebarLinks = [
-  { label: "Overview", tab: "overview", icon: LayoutDashboard },
-  { label: "View your Ads", tab: "view-your-ads", icon: List },
+  { label: "Overview", href: "/profile/overview", icon: LayoutDashboard },
+  { label: "View your Ads", href: "/profile/view-your-ads", icon: List },
   {
     label: "Plans & Billing",
-    tab: "plans-and-billing",
+    href: "/profile/plans-and-billing",
     icon: Wallet,
   },
-  { label: "Royalty Club", tab: "royalty-club", icon: Crown },
+  { label: "Royalty Club", href: "/profile/royalty-club", icon: Crown },
   {
     label: "Account Setting",
-    tab: "account-setting",
+    href: "/profile/account-setting",
     icon: Settings,
   },
-  { label: "Sign Out", tab: "sign-out", icon: LogOut },
+  { label: "Sign Out", href: "/profile/sign-out", icon: LogOut },
 ];
 
 // Loading component for better UX
@@ -56,54 +56,23 @@ const ContentSkeleton = () => (
 
 export default function ProfileLayout({ 
   children,
-  overview,
-  "view-your-ads": viewYourAds,
-  "plans-and-billing": plansAndBilling,
-  "royalty-club": royaltyClub,
-  "account-setting": accountSetting,
-  "sign-out": signOut,
-  default: defaultSlot,
 }: { 
   children: ReactNode;
-  overview: ReactNode;
-  "view-your-ads": ReactNode;
-  "plans-and-billing": ReactNode;
-  "royalty-club": ReactNode;
-  "account-setting": ReactNode;
-  "sign-out": ReactNode;
-  default: ReactNode;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const currentTab = searchParams.get('tab') || 'overview';
+  const pathname = usePathname();
 
-  const handleTabClick = (tab: string) => {
-    // Navigate to /profile with tab parameter
-    router.push(`/profile?tab=${tab}`);
+  const handleTabClick = (href: string) => {
+    // Navigate to the specific route
+    router.push(href);
   };
 
-  const isActive = (tab: string) => {
-    return currentTab === tab;
+  const isActive = (href: string) => {
+    const normalize = (str: string) => str.replace(/\/$/, "");
+    return normalize(pathname).endsWith(normalize(href));
   };
 
-  const getActiveContent = () => {
-    switch (currentTab) {
-      case 'overview':
-        return overview;
-      case 'view-your-ads':
-        return viewYourAds;
-      case 'plans-and-billing':
-        return plansAndBilling;
-      case 'royalty-club':
-        return royaltyClub;
-      case 'account-setting':
-        return accountSetting;
-      case 'sign-out':
-        return signOut;
-      default:
-        return overview;
-    }
-  };
+  // No need for getActiveContent since we're rendering children directly
 
   return (
     <SidebarProvider>
@@ -114,12 +83,12 @@ export default function ProfileLayout({
             <NavigationMenuList className="w-screen justify-center p-4">
               {sidebarLinks.map((link) => {
                 const Icon = link.icon;
-                const active = isActive(link.tab);
+                const active = isActive(link.href);
                 return (
                   <NavigationMenuItem key={link.label} className="flex-1">
                     <Button
                       variant="ghost"
-                      onClick={() => handleTabClick(link.tab)}
+                      onClick={() => handleTabClick(link.href)}
                       className={
                         "flex flex-col items-center justify-center flex-1 text-center gap-1 px-2 py-1.5 rounded-md text-sm font-medium transition-colors " +
                         (active
@@ -137,7 +106,7 @@ export default function ProfileLayout({
         </div>
         <main className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-0">
           <Suspense fallback={<ContentSkeleton />}>
-            {getActiveContent()}
+            {children}
           </Suspense>
         </main>
       </div>
@@ -165,12 +134,12 @@ export default function ProfileLayout({
               <SidebarMenu>
                 {sidebarLinks.map((link) => {
                   const Icon = link.icon;
-                  const active = isActive(link.tab);
+                  const active = isActive(link.href);
                   return (
                     <SidebarMenuItem key={link.label}>
                       <Button
                         variant="ghost"
-                        onClick={() => handleTabClick(link.tab)}
+                        onClick={() => handleTabClick(link.href)}
                         className={
                           "w-full justify-start " +
                           (active
@@ -190,7 +159,7 @@ export default function ProfileLayout({
           {/* Main Content */}
           <main className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-0">
             <Suspense fallback={<ContentSkeleton />}>
-              {getActiveContent()}
+              {children}
             </Suspense>
           </main>
         </div>

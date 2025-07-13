@@ -13,7 +13,7 @@ const MobileBottomNav = () => {
   const router = useRouter();
 
   const handleProfileClick = () => {
-    router.push("/profile?tab=overview");
+    router.push("/profile/overview");
   };
 
   return (

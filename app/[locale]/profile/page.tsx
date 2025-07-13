@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 export default function Page() {
-  // Redirect to overview tab when no tab parameter is provided
-  redirect("/profile?tab=overview");
+  // Redirect to overview route
+  redirect("/profile/overview");
   return null;
 }

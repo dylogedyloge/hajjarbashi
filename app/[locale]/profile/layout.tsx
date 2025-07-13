@@ -1,7 +1,5 @@
 "use client";
-import { ReactNode } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { ReactNode, Suspense } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   SidebarMenu,
@@ -23,27 +21,90 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
 } from "@/components/ui/navigation-menu";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const sidebarLinks = [
-  { label: "Overview", href: "/profile/overview", icon: LayoutDashboard },
-  { label: "View your Ads", href: "/profile/view-your-ads", icon: List },
+  { label: "Overview", tab: "overview", icon: LayoutDashboard },
+  { label: "View your Ads", tab: "view-your-ads", icon: List },
   {
     label: "Plans & Billing",
-    href: "/profile/plans-and-billing",
+    tab: "plans-and-billing",
     icon: Wallet,
   },
-  { label: "Royalty Club", href: "/profile/royalty-club", icon: Crown },
+  { label: "Royalty Club", tab: "royalty-club", icon: Crown },
   {
     label: "Account Setting",
-    href: "/profile/account-setting",
+    tab: "account-setting",
     icon: Settings,
   },
-  { label: "Sign Out", href: "/profile/sign-out", icon: LogOut },
+  { label: "Sign Out", tab: "sign-out", icon: LogOut },
 ];
 
-export default function ProfileLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const normalize = (str: string) => str.replace(/\/$/, "");
+// Loading component for better UX
+const ContentSkeleton = () => (
+  <div className="w-full max-w-3xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
+    <Skeleton className="h-8 w-48 mb-4" />
+    <div className="space-y-4">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-4 w-1/2" />
+    </div>
+  </div>
+);
+
+export default function ProfileLayout({ 
+  children,
+  overview,
+  "view-your-ads": viewYourAds,
+  "plans-and-billing": plansAndBilling,
+  "royalty-club": royaltyClub,
+  "account-setting": accountSetting,
+  "sign-out": signOut,
+  default: defaultSlot,
+}: { 
+  children: ReactNode;
+  overview: ReactNode;
+  "view-your-ads": ReactNode;
+  "plans-and-billing": ReactNode;
+  "royalty-club": ReactNode;
+  "account-setting": ReactNode;
+  "sign-out": ReactNode;
+  default: ReactNode;
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'overview';
+
+  const handleTabClick = (tab: string) => {
+    // Navigate to /profile with tab parameter
+    router.push(`/profile?tab=${tab}`);
+  };
+
+  const isActive = (tab: string) => {
+    return currentTab === tab;
+  };
+
+  const getActiveContent = () => {
+    switch (currentTab) {
+      case 'overview':
+        return overview;
+      case 'view-your-ads':
+        return viewYourAds;
+      case 'plans-and-billing':
+        return plansAndBilling;
+      case 'royalty-club':
+        return royaltyClub;
+      case 'account-setting':
+        return accountSetting;
+      case 'sign-out':
+        return signOut;
+      default:
+        return overview;
+    }
+  };
+
   return (
     <SidebarProvider>
       {/* Mobile: Navigation menu and content stacked vertically */}
@@ -53,23 +114,21 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
             <NavigationMenuList className="w-screen justify-center p-4">
               {sidebarLinks.map((link) => {
                 const Icon = link.icon;
-                const isActive = normalize(pathname).endsWith(
-                  normalize(link.href)
-                );
+                const active = isActive(link.tab);
                 return (
                   <NavigationMenuItem key={link.label} className="flex-1">
-                    <NavigationMenuLink
-                      href={link.href}
-                      active={isActive}
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleTabClick(link.tab)}
                       className={
                         "flex flex-col items-center justify-center flex-1 text-center gap-1 px-2 py-1.5 rounded-md text-sm font-medium transition-colors " +
-                        (isActive
+                        (active
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-accent hover:text-accent-foreground")
                       }
                     >
                       <Icon className="size-5 mx-auto" />
-                    </NavigationMenuLink>
+                    </Button>
                   </NavigationMenuItem>
                 );
               })}
@@ -77,7 +136,9 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
           </NavigationMenu>
         </div>
         <main className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-0">
-          {children}
+          <Suspense fallback={<ContentSkeleton />}>
+            {getActiveContent()}
+          </Suspense>
         </main>
       </div>
       {/* Desktop: Sidebar and main content */}
@@ -104,24 +165,22 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
               <SidebarMenu>
                 {sidebarLinks.map((link) => {
                   const Icon = link.icon;
-                  const isActive = normalize(pathname).endsWith(
-                    normalize(link.href)
-                  );
+                  const active = isActive(link.tab);
                   return (
                     <SidebarMenuItem key={link.label}>
-                      <Link href={link.href}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          className={
-                            isActive
-                              ? "!bg-primary !text-white hover:!bg-primary"
-                              : "hover:bg-accent hover:text-accent-foreground"
-                          }
-                        >
-                          <Icon className="mr-2 size-5" />
-                          {link.label}
-                        </SidebarMenuButton>
-                      </Link>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleTabClick(link.tab)}
+                        className={
+                          "w-full justify-start " +
+                          (active
+                            ? "!bg-primary !text-white hover:!bg-primary"
+                            : "hover:bg-accent hover:text-accent-foreground")
+                        }
+                      >
+                        <Icon className="mr-2 size-5" />
+                        {link.label}
+                      </Button>
                     </SidebarMenuItem>
                   );
                 })}
@@ -130,7 +189,9 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
           </div>
           {/* Main Content */}
           <main className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-0">
-            {children}
+            <Suspense fallback={<ContentSkeleton />}>
+              {getActiveContent()}
+            </Suspense>
           </main>
         </div>
       </div>

@@ -11,206 +11,52 @@ import {
 } from "@/components/ui/select";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import ReactCrop, { Crop, centerCrop, makeAspectCrop, convertToPixelCrop } from 'react-image-crop';
+import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { profileService } from "@/lib/profile";
 import { useTranslations } from "next-intl";
-
-function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number): Crop {
-  return centerCrop(
-    makeAspectCrop(
-      {
-        unit: '%',
-        width: 90,
-      },
-      aspect,
-      mediaWidth,
-      mediaHeight
-    ),
-    mediaWidth,
-    mediaHeight
-  );
-}
+import { useProfileImageUpload } from "@/hooks/useProfileImageUpload";
+import { isValidUrl, centerAspectCrop } from "@/lib/image-utils";
+import { DEFAULT_PROFILE_FORM, getUserInitials } from "@/lib/profile-utils";
 
 const Profile = () => {
   const t = useTranslations("Profile");
-  const { user, token, login } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const [showCrop, setShowCrop] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<Crop>();
-  const imgRef = useRef<HTMLImageElement | null>(null);
+  const { user } = useAuth();
+  
+  // Use the custom hook for image upload functionality
+  const {
+    isUploading,
+    dragActive,
+    showCrop,
+    imageUrl,
+    crop,
+    completedCrop,
+    fileInputRef,
+    imgRef,
+    handleFileInputChange,
+    handleUploadClick,
+    handleDrag,
+    handleDrop,
+    handleCropAndUpload,
+    onImageLoad,
+    cleanup,
+    setCrop,
+    setCompletedCrop,
+    setShowCrop
+  } = useProfileImageUpload({
+    onSuccess: (updatedUser) => {
+      toast.success(t("messages.avatarUpdated"));
+    },
+    onError: (error) => {
+      toast.error(error);
+    }
+  });
 
   // Placeholder state for form fields
-  const form = {
-    firstName: "John",
-    lastName: "Doe",
-    company: "Hajjarbashi",
-    location: "China",
-    email: "example@domain.com",
-    phone: "+989376544675",
-    description: "Lorem Ipsum is dummy text...",
-  };
-
-  // Helper function to validate URL
-  const isValidUrl = (url: string | null): boolean => {
-    if (!url || url.trim() === "") return false;
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  // Helper function to validate file
-  const validateFile = (file: File): boolean => {
-    const validTypes = ['image/svg+xml', 'image/jpeg', 'image/jpg', 'image/png'];
-    const maxSize = 10 * 1024 * 1024; // 10MB
-
-    if (!validTypes.includes(file.type)) {
-      toast.error(t("errors.invalidFileType"));
-      return false;
-    }
-
-    if (file.size > maxSize) {
-      toast.error(t("errors.fileTooLarge"));
-      return false;
-    }
-
-    return true;
-  };
-
-  // Upload image to API
-  const uploadImage = async (file: File): Promise<void> => {
-    if (!user || !token) {
-      toast.error(t("errors.authenticationRequired"));
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      const data = await profileService.updateProfileImage(file, token);
-
-      if (data.success) {
-        const baseUrl = 'https://api.hajjardevs.ir/';
-        const updatedUser = {
-          ...user,
-          avatar: baseUrl + data.data.avatar,
-          avatar_thumb: baseUrl + data.data.avatar_thumb,
-        };
-        login(updatedUser, token);
-        toast.success(t("messages.avatarUpdated"));
-      } else {
-        throw new Error(data.message || t("errors.uploadFailed"));
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      const errorMessage = error instanceof Error ? error.message : t("errors.uploadFailed");
-      toast.error(errorMessage);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  // Crop and upload the cropped image
-  const handleCropAndUpload = async () => {
-    if (!completedCrop || !imgRef.current) return;
-    // Create a canvas to crop the image
-    const canvas = document.createElement('canvas');
-    const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
-    const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
-    const pixelCrop = convertToPixelCrop(completedCrop, imgRef.current.width, imgRef.current.height);
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.drawImage(
-      imgRef.current,
-      pixelCrop.x * scaleX,
-      pixelCrop.y * scaleY,
-      pixelCrop.width * scaleX,
-      pixelCrop.height * scaleY,
-      0,
-      0,
-      pixelCrop.width,
-      pixelCrop.height
-    );
-    // Convert canvas to blob
-    canvas.toBlob(async (blob) => {
-      if (blob) {
-        const croppedFile = new File([blob], selectedImage?.name || 'avatar.jpg', { type: blob.type });
-        setShowCrop(false);
-        setSelectedImage(null);
-        setImageUrl(null);
-        setCrop(undefined);
-        setCompletedCrop(undefined);
-        await uploadImage(croppedFile);
-      }
-    }, 'image/jpeg', 0.95);
-  };
-
-  // Handle file selection
-  const handleFileSelect = useCallback((file: File) => {
-    if (validateFile(file)) {
-      setSelectedImage(file);
-      setImageUrl(URL.createObjectURL(file));
-      setShowCrop(true);
-    }
-  }, []);
-
-  // Handle file input change
-  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-    // Reset input value to allow selecting the same file again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  // Handle drag and drop
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
-    }
-  }, [handleFileSelect]);
-
-  // Handle click to upload
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  // When the image loads, center the crop
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    setCrop(centerAspectCrop(width, height, 1)); // 1:1 aspect ratio
-  };
+  const form = DEFAULT_PROFILE_FORM;
 
   // Update preview when crop changes
   const updatePreview = useCallback(() => {
@@ -222,6 +68,7 @@ const Profile = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const { convertToPixelCrop } = require('react-image-crop');
     const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
     const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
     const pixelCrop = convertToPixelCrop(completedCrop, imgRef.current.width, imgRef.current.height);
@@ -241,14 +88,19 @@ const Profile = () => {
       canvas.width,
       canvas.height
     );
-  }, [completedCrop]);
+  }, [completedCrop, imgRef]);
 
   // Update preview when crop completes
   useEffect(() => {
     updatePreview();
   }, [updatePreview]);
 
-
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
 
   return (
     <>
@@ -265,13 +117,7 @@ const Profile = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => {
-                  setShowCrop(false);
-                  setSelectedImage(null);
-                  setImageUrl(null);
-                  setCrop(undefined);
-                  setCompletedCrop(undefined);
-                }}
+                onClick={cleanup}
                 className="hover:bg-destructive/10 hover:text-destructive"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -362,13 +208,7 @@ const Profile = () => {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      setShowCrop(false);
-                      setSelectedImage(null);
-                      setImageUrl(null);
-                      setCrop(undefined);
-                      setCompletedCrop(undefined);
-                    }}
+                    onClick={cleanup}
                     className="w-full h-11"
                   >
                     {t("cropModal.actions.cancel")}
@@ -395,9 +235,7 @@ const Profile = () => {
                   />
                 ) : null}
                 <AvatarFallback className="text-2xl font-semibold">
-                  {user?.name
-                    ? user.name.charAt(0).toUpperCase()
-                    : user?.email?.charAt(0).toUpperCase() || "U"}
+                  {getUserInitials(user)}
                 </AvatarFallback>
               </Avatar>
               {isUploading && (

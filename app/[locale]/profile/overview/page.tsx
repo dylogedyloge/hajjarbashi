@@ -462,8 +462,8 @@ const Profile = () => {
                     } else {
                       throw new Error(resp.message || 'Failed to update profile');
                     }
-                  } catch (err: any) {
-                    setAccountInfoError(err.message || 'Failed to update profile');
+                  } catch (err: unknown) {
+                    setAccountInfoError('Failed to update profile');
                   } finally {
                     setAccountInfoLoading(false);
                   }

@@ -66,7 +66,7 @@ export interface MyProfileResponse {
     email_verified: boolean;
     phone_verified: boolean;
     city_id: string;
-    badge_details: any;
+    badge_details: unknown;
     published_ad_count: number;
   };
   timestamp: string;

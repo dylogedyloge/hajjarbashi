@@ -8,6 +8,16 @@ export interface UpdateProfileImageResponse {
   timestamp: string;
 }
 
+export interface Country {
+  id: string;
+  name: string;
+}
+
+export interface City {
+  id: string;
+  name: string;
+}
+
 const API_BASE_URL = 'https://api.hajjardevs.ir';
 
 export const profileService = {
@@ -31,4 +41,35 @@ export const profileService = {
 
     return response.json();
   },
-}; 
+};
+
+export async function fetchCountries(lang: string): Promise<Country[]> {
+  const response = await fetch('https://api.hajjardevs.ir/countries/list', {
+    method: 'GET',
+    headers: {
+      'x-lang': lang,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch countries');
+  }
+  const data = await response.json();
+  // Assuming the response is { success: true, data: [{ id, name }, ...] }
+  return data.data || [];
+}
+
+export async function fetchCities(countryId: string, lang: string): Promise<City[]> {
+  if (!countryId) return [];
+  const response = await fetch(`https://api.hajjardevs.ir/cities/list?country_id=${countryId}`, {
+    method: 'GET',
+    headers: {
+      'x-lang': lang,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch cities');
+  }
+  const data = await response.json();
+  // Assuming the response is { success: true, data: [{ id, name }, ...] }
+  return data.data || [];
+} 

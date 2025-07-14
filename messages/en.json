@@ -260,6 +260,8 @@
       "messages": {
         "avatarUpdated": "Avatar updated successfully!"
       },
+      "loading": "Loading...",
+      "error": "Error loading data.",
       "Sidebar": {
         "overview": "Overview",
         "viewYourAds": "View your Ads",

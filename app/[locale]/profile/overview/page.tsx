@@ -15,11 +15,12 @@ import { useEffect, useCallback, useRef, useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { ImageCropper } from "@/components/ui/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
-import { profileService } from "@/lib/profile";
+import { profileService, fetchCountries, fetchCities, Country, City } from "@/lib/profile";
+import { useRouter } from 'next/router';
 
 const Profile = () => {
   const t = useTranslations("Profile");
@@ -33,6 +34,24 @@ const Profile = () => {
   const [selectedCountry, setSelectedCountry] = useState("China");
   const [selectedCity, setSelectedCity] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState("English");
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState(false);
+  const [countriesError, setCountriesError] = useState<string | null>(null);
+  const [cities, setCities] = useState<City[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [citiesError, setCitiesError] = useState<string | null>(null);
+
+  // Get current locale from next-intl
+  const locale = useLocale();
+
+  useEffect(() => {
+    setCountriesLoading(true);
+    setCountriesError(null);
+    fetchCountries(locale)
+      .then((data) => setCountries(data))
+      .catch((err) => setCountriesError('Failed to load countries'))
+      .finally(() => setCountriesLoading(false));
+  }, [locale]);
 
   // Example cities for each country
   const citiesByCountry: Record<string, string[]> = {
@@ -183,6 +202,28 @@ const Profile = () => {
     };
   }, [selectedImage]);
 
+  // Fetch cities when selectedCountry changes
+  useEffect(() => {
+    if (!selectedCountry) {
+      setCities([]);
+      return;
+    }
+    setCitiesLoading(true);
+    setCitiesError(null);
+    // Find the selected country id
+    const countryObj = countries.find(c => c.name === selectedCountry);
+    const countryId = countryObj?.id || '';
+    if (!countryId) {
+      setCities([]);
+      setCitiesLoading(false);
+      return;
+    }
+    fetchCities(countryId, locale)
+      .then((data) => setCities(data))
+      .catch((err) => setCitiesError('Failed to load cities'))
+      .finally(() => setCitiesLoading(false));
+  }, [selectedCountry, countries, locale]);
+
   return (
     <>
       {/* Crop Modal using ImageCropper */}
@@ -310,26 +351,47 @@ const Profile = () => {
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t("accountInformation.country")}</label>
-                <Select value={selectedCountry} onValueChange={setSelectedCountry} defaultValue={form.country}>
+                <Select
+                  value={selectedCountry}
+                  onValueChange={setSelectedCountry}
+                  defaultValue={form.country}
+                  disabled={countriesLoading || !!countriesError}
+                >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("accountInformation.selectCountry")} className="w-full" />
+                    <SelectValue placeholder={countriesLoading ? t("loading") : countriesError ? t("error") : t("accountInformation.selectCountry") } className="w-full" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="China">{t("locations.china")}</SelectItem>
-                    <SelectItem value="Malaysia">{t("locations.malaysia")}</SelectItem>
-                    <SelectItem value="Iran">{t("locations.iran")}</SelectItem>
+                    {countriesLoading && (
+                      <div className="px-4 py-2 text-muted-foreground">{t("loading")}</div>
+                    )}
+                    {countriesError && (
+                      <div className="px-4 py-2 text-destructive">{t("error")}</div>
+                    )}
+                    {countries.map((country) => (
+                      <SelectItem key={country.id} value={country.name}>{country.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t("accountInformation.city")}</label>
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <Select
+                  value={selectedCity}
+                  onValueChange={setSelectedCity}
+                  disabled={citiesLoading || !!citiesError}
+                >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("accountInformation.selectCity")} className="w-full" />
+                    <SelectValue placeholder={citiesLoading ? t("loading") : citiesError ? t("error") : t("accountInformation.selectCity")} className="w-full" />
                   </SelectTrigger>
                   <SelectContent>
-                    {citiesByCountry[selectedCountry]?.map((city) => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                    {citiesLoading && (
+                      <div className="px-4 py-2 text-muted-foreground">{t("loading")}</div>
+                    )}
+                    {citiesError && (
+                      <div className="px-4 py-2 text-destructive">{t("error")}</div>
+                    )}
+                    {cities.map((city) => (
+                      <SelectItem key={city.id} value={city.name}>{city.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

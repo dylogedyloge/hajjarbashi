@@ -199,19 +199,31 @@
           "supportedFormats": "Supported Format: SVG, JPG, PNG (10mb each)"
         }
       },
-      "accountInformation": {
-        "title": "Account Information",
-        "firstName": "First Name",
-        "lastName": "Last Name",
-        "companyName": "Company Name",
-        "location": "Location",
-        "selectLocation": "Select location"
-      },
-      "displayInformation": {
-        "title": "Display Information",
+      "contactInformation": {
+        "title": "Contact Information",
         "email": "Email",
         "phoneNumber": "Phone Number",
-        "description": "Description"
+        "showContactInfo": "Show my contact information to others",
+        "save": "Save Contact Information"
+      },
+      "accountInformation": {
+        "title": "Account Information",
+        "name": "Name",
+        "companyName": "Company Name",
+        "position": "Position",
+        "country": "Country",
+        "selectCountry": "Select country",
+        "city": "City",
+        "selectCity": "Select city",
+        "bio": "Bio",
+        "save": "Save Account Information",
+        "preferredLanguage": "Preferred Language",
+        "selectPreferredLanguage": "Select preferred language",
+        "languages": {
+          "english": "English",
+          "persian": "Persian",
+          "chinese": "Chinese"
+        }
       },
       "locations": {
         "china": "China",
@@ -247,6 +259,14 @@
       },
       "messages": {
         "avatarUpdated": "Avatar updated successfully!"
+      },
+      "Sidebar": {
+        "overview": "Overview",
+        "viewYourAds": "View your Ads",
+        "plansAndBilling": "Plans & Billing",
+        "royaltyClub": "Royalty Club",
+        "accountSetting": "Account Setting",
+        "signOut": "Sign Out"
       }
     }
   }

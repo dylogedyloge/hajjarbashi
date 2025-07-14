@@ -22,23 +22,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter, usePathname } from "next/navigation";
-
-const sidebarLinks = [
-  { label: "Overview", href: "/profile/overview", icon: LayoutDashboard },
-  { label: "View your Ads", href: "/profile/view-your-ads", icon: List },
-  {
-    label: "Plans & Billing",
-    href: "/profile/plans-and-billing",
-    icon: Wallet,
-  },
-  { label: "Royalty Club", href: "/profile/royalty-club", icon: Crown },
-  {
-    label: "Account Setting",
-    href: "/profile/account-setting",
-    icon: Settings,
-  },
-  { label: "Sign Out", href: "/profile/sign-out", icon: LogOut },
-];
+import { useAuth } from "@/lib/auth-context";
+import { useTranslations } from "next-intl";
 
 // Loading component for better UX
 const ContentSkeleton = () => (
@@ -52,13 +37,28 @@ const ContentSkeleton = () => (
   </div>
 );
 
-export default function ProfileLayout({ 
-  children,
-}: { 
-  children: ReactNode;
-}) {
+export default function ProfileLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
+  const t = useTranslations("Profile.Sidebar");
+
+  const sidebarLinks = [
+    { label: t("overview"), href: "/profile/overview", icon: LayoutDashboard },
+    { label: t("viewYourAds"), href: "/profile/view-your-ads", icon: List },
+    {
+      label: t("plansAndBilling"),
+      href: "/profile/plans-and-billing",
+      icon: Wallet,
+    },
+    { label: t("royaltyClub"), href: "/profile/royalty-club", icon: Crown },
+    {
+      label: t("accountSetting"),
+      href: "/profile/account-setting",
+      icon: Settings,
+    },
+    { label: t("signOut"), href: "/profile/sign-out", icon: LogOut },
+  ];
 
   const handleTabClick = (href: string) => {
     // Navigate to the specific route
@@ -103,9 +103,7 @@ export default function ProfileLayout({
           </NavigationMenu>
         </div>
         <main className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-0">
-          <Suspense fallback={<ContentSkeleton />}>
-            {children}
-          </Suspense>
+          <Suspense fallback={<ContentSkeleton />}>{children}</Suspense>
         </main>
       </div>
       {/* Desktop: Sidebar and main content */}
@@ -116,17 +114,21 @@ export default function ProfileLayout({
             <div>
               <div className="flex flex-col items-center gap-2 py-8 px-6">
                 <Avatar className="w-20 h-20">
-                  <AvatarImage
-                    src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins"
-                    alt="Ali Motiei"
-                  />
+                  {user?.avatar_thumb ? (
+                    <AvatarImage
+                      src={user.avatar_thumb}
+                      alt={user.name || user.email || "User"}
+                    />
+                  ) : null}
                   <AvatarFallback className="text-2xl font-semibold">
-                    AM
+                    {user?.name
+                      ? user.name.charAt(0).toUpperCase()
+                      : user?.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="text-lg font-semibold">Ali Motiei</div>
+                <div className="text-lg font-semibold">{user?.name || ""}</div>
                 <div className="text-sm text-muted-foreground">
-                  ali.motiei@example.com
+                  {user?.email || ""}
                 </div>
               </div>
               <SidebarMenu>
@@ -156,9 +158,7 @@ export default function ProfileLayout({
           </div>
           {/* Main Content */}
           <main className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-0">
-            <Suspense fallback={<ContentSkeleton />}>
-              {children}
-            </Suspense>
+            <Suspense fallback={<ContentSkeleton />}>{children}</Suspense>
           </main>
         </div>
       </div>

@@ -17,25 +17,9 @@ import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
-import ReactCrop, { centerCrop, convertToPixelCrop, Crop, makeAspectCrop } from "react-image-crop";
+import { ImageCropper } from "@/components/ui/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
 import { profileService } from "@/lib/profile";
-
-function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number): Crop {
-  return centerCrop(
-    makeAspectCrop(
-      {
-        unit: '%',
-        width: 90,
-      },
-      aspect,
-      mediaWidth,
-      mediaHeight
-    ),
-    mediaWidth,
-    mediaHeight
-  );
-}
 
 const Profile = () => {
   const t = useTranslations("Profile");
@@ -45,10 +29,6 @@ const Profile = () => {
   const [dragActive, setDragActive] = useState(false);
   const [showCrop, setShowCrop] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<Crop>();
-  const imgRef = useRef<HTMLImageElement | null>(null);
   const [showContactInfo, setShowContactInfo] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState("China");
   const [selectedCity, setSelectedCity] = useState("");
@@ -136,51 +116,13 @@ const Profile = () => {
     }
   };
 
-  // Crop and upload the cropped image
-  const handleCropAndUpload = async () => {
-    if (!completedCrop || !imgRef.current) return;
-    // Create a canvas to crop the image
-    const canvas = document.createElement('canvas');
-    const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
-    const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
-    const pixelCrop = convertToPixelCrop(completedCrop, imgRef.current.width, imgRef.current.height);
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.drawImage(
-      imgRef.current,
-      pixelCrop.x * scaleX,
-      pixelCrop.y * scaleY,
-      pixelCrop.width * scaleX,
-      pixelCrop.height * scaleY,
-      0,
-      0,
-      pixelCrop.width,
-      pixelCrop.height
-    );
-    // Convert canvas to blob
-    canvas.toBlob(async (blob) => {
-      if (blob) {
-        const croppedFile = new File([blob], selectedImage?.name || 'avatar.jpg', { type: blob.type });
-        setShowCrop(false);
-        setSelectedImage(null);
-        setImageUrl(null);
-        setCrop(undefined);
-        setCompletedCrop(undefined);
-        await uploadImage(croppedFile);
-      }
-    }, 'image/jpeg', 0.95);
-  };
-
   // Handle file selection
   const handleFileSelect = useCallback((file: File) => {
     if (validateFile(file)) {
       setSelectedImage(file);
-      setImageUrl(URL.createObjectURL(file));
       setShowCrop(true);
     }
-  }, []);
+  }, [validateFile]);
 
   // Handle file input change
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,146 +165,56 @@ const Profile = () => {
   // When the image loads, center the crop
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
-    setCrop(centerAspectCrop(width, height, 1)); // 1:1 aspect ratio
+    // setCrop(centerAspectCrop(width, height, 1)); // 1:1 aspect ratio
+  };
+
+  // Handle crop complete from ImageCropper
+  const handleCropComplete = async (croppedFile: File) => {
+    setShowCrop(false);
+    setSelectedImage(null);
+    await uploadImage(croppedFile);
   };
 
   useEffect(() => {
     return () => {
-      if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
+      if (selectedImage) {
+        URL.revokeObjectURL(URL.createObjectURL(selectedImage));
       }
     };
-  }, [imageUrl]);
+  }, [selectedImage]);
 
   return (
     <>
-      {/* Crop Modal */}
-      {showCrop && imageUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="bg-background border border-border rounded-xl shadow-2xl max-w-5xl w-[95vw] max-h-[95vh] flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <h2 className="text-xl font-semibold text-foreground">{t("cropModal.title")}</h2>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setShowCrop(false);
-                  setSelectedImage(null);
-                  setImageUrl(null);
-                  setCrop(undefined);
-                  setCompletedCrop(undefined);
-                }}
-                className="hover:bg-destructive/10 hover:text-destructive"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </Button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-              {/* Crop Area */}
-              <div className="flex-1 flex items-center justify-center p-6 bg-muted/20">
-                <div className="relative max-w-full max-h-full">
-                  <ReactCrop
-                    crop={crop}
-                    onChange={(_, percentCrop) => setCrop(percentCrop)}
-                    aspect={1}
-                    minWidth={64}
-                    minHeight={64}
-                    keepSelection
-                    onComplete={(c) => setCompletedCrop(c)}
-                    className="max-w-full max-h-full"
-                  >
-                    <img
-                      ref={imgRef}
-                      src={imageUrl}
-                      alt={t("cropModal.cropSource")}
-                      onLoad={onImageLoad}
-                      className="max-w-full max-h-[60vh] lg:max-h-[70vh] object-contain rounded-lg shadow-lg"
-                    />
-                  </ReactCrop>
-                </div>
-              </div>
-
-              {/* Sidebar - Instructions and Actions */}
-              <div className="w-full lg:w-80 bg-card border-l border-border p-6 flex flex-col">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold mb-4 text-foreground">{t("cropModal.instructions.title")}</h3>
-                  <div className="space-y-3 text-sm text-muted-foreground">
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <p>{t("cropModal.instructions.dragCorners")}</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <p>{t("cropModal.instructions.dragInside")}</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <p>{t("cropModal.instructions.squareArea")}</p>
-                    </div>
-                  </div>
-
-                  {/* Preview */}
-                  {completedCrop && (
-                    <div className="mt-6">
-                      <h4 className="text-sm font-medium mb-3 text-foreground">{t("cropModal.preview.title")}</h4>
-                      <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-border bg-muted">
-                        <canvas
-                          id="preview-canvas"
-                          className="w-full h-full object-cover"
-                          width="80"
-                          height="80"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col gap-3 pt-6 border-t border-border">
-                  <Button
-                    onClick={handleCropAndUpload}
-                    disabled={!completedCrop || isUploading}
-                    className="w-full h-11"
-                  >
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        {t("cropModal.actions.uploading")}
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4 mr-2" />
-                        {t("cropModal.actions.cropAndUpload")}
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowCrop(false);
-                      setSelectedImage(null);
-                      setImageUrl(null);
-                      setCrop(undefined);
-                      setCompletedCrop(undefined);
-                    }}
-                    className="w-full h-11"
-                  >
-                    {t("cropModal.actions.cancel")}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Crop Modal using ImageCropper */}
+      <ImageCropper
+        isOpen={showCrop}
+        file={selectedImage}
+        onClose={() => {
+          setShowCrop(false);
+          setSelectedImage(null);
+        }}
+        onCropComplete={handleCropComplete}
+        aspectRatio={1}
+        minWidth={64}
+        minHeight={64}
+        title={t("cropModal.title")}
+        instructions={{
+          title: t("cropModal.instructions.title"),
+          dragCorners: t("cropModal.instructions.dragCorners"),
+          dragInside: t("cropModal.instructions.dragInside"),
+          squareArea: t("cropModal.instructions.squareArea"),
+        }}
+        actions={{
+          cropAndUpload: t("cropModal.actions.cropAndUpload"),
+          uploading: t("cropModal.actions.uploading"),
+          cancel: t("cropModal.actions.cancel"),
+        }}
+        preview={{
+          title: t("cropModal.preview.title"),
+        }}
+        cropSource={t("cropModal.cropSource")}
+        className=""
+      />
       <form className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12">
         {/* Change Avatar */}
         <Card className="overflow-visible">
@@ -404,6 +256,7 @@ const Profile = () => {
               onClick={handleUploadClick}
             >
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/svg+xml,image/jpeg,image/jpg,image/png"
                 onChange={handleFileInputChange}

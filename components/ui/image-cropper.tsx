@@ -4,12 +4,13 @@ import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Button } from '@/components/ui/button';
 import { Loader2, Upload, X } from 'lucide-react';
-import { Crop, centerCrop, makeAspectCrop, convertToPixelCrop } from 'react-image-crop';
+import { Crop,  convertToPixelCrop } from 'react-image-crop';
 import { centerAspectCrop, cropImage, createObjectURL, revokeObjectURL } from '@/lib/image-utils';
 import { validateImageFile } from '@/lib/file-validation';
 
 interface ImageCropperProps {
   isOpen: boolean;
+  file?: File | null;
   onClose: () => void;
   onCropComplete: (file: File) => Promise<void>;
   aspectRatio?: number;
@@ -38,6 +39,7 @@ interface ImageCropperProps {
 
 export function ImageCropper({
   isOpen,
+  file,
   onClose,
   onCropComplete,
   aspectRatio = 1,
@@ -71,17 +73,17 @@ export function ImageCropper({
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   // Handle file selection
-  const handleFileSelect = useCallback((file: File) => {
-    const isValid = validateImageFile(file, (errorMessage) => {
-      console.error(errorMessage);
-    });
+  // const handleFileSelect = useCallback((file: File) => {
+  //   const isValid = validateImageFile(file, (errorMessage) => {
+  //     console.error(errorMessage);
+  //   });
 
-    if (isValid) {
-      setSelectedImage(file);
-      const url = createObjectURL(file);
-      setImageUrl(url);
-    }
-  }, []);
+  //   if (isValid) {
+  //     setSelectedImage(file);
+  //     const url = createObjectURL(file);
+  //     setImageUrl(url);
+  //   }
+  // }, []);
 
   // When the image loads, center the crop
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -124,6 +126,15 @@ export function ImageCropper({
   useEffect(() => {
     updatePreview();
   }, [updatePreview]);
+
+  // When the file prop changes, update selectedImage and imageUrl
+  useEffect(() => {
+    if (file) {
+      setSelectedImage(file);
+      const url = createObjectURL(file);
+      setImageUrl(url);
+    }
+  }, [file]);
 
   // Handle crop and upload
   const handleCropAndUpload = useCallback(async () => {
@@ -215,13 +226,15 @@ export function ImageCropper({
                 onComplete={(c) => setCompletedCrop(c)}
                 className="max-w-full max-h-full"
               >
-                <img
-                  ref={imgRef}
-                  src={imageUrl || ''}
-                  alt={cropSource}
-                  onLoad={onImageLoad}
-                  className="max-w-full max-h-[60vh] lg:max-h-[70vh] object-contain rounded-lg shadow-lg"
-                />
+                {imageUrl && (
+                  <img
+                    ref={imgRef}
+                    src={imageUrl}
+                    alt={cropSource}
+                    onLoad={onImageLoad}
+                    className="max-w-full max-h-[60vh] lg:max-h-[70vh] object-contain rounded-lg shadow-lg"
+                  />
+                )}
               </ReactCrop>
             </div>
           </div>

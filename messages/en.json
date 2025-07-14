@@ -262,6 +262,7 @@
       },
       "loading": "Loading...",
       "error": "Error loading data.",
+      "profileUpdated": "Profile updated!",
       "Sidebar": {
         "overview": "Overview",
         "viewYourAds": "View your Ads",

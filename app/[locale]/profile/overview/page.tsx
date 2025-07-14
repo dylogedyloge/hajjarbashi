@@ -19,7 +19,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { ImageCropper } from "@/components/ui/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
-import { profileService, fetchCountries, fetchCities, Country, City } from "@/lib/profile";
+import { profileService, fetchCountries, fetchCities, updateProfile, getMyProfile, Country, City } from "@/lib/profile";
 
 
 const Profile = () => {
@@ -40,6 +40,16 @@ const Profile = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [citiesError, setCitiesError] = useState<string | null>(null);
+  // Editable state for account info
+  const [name, setName] = useState(user?.name || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [company, setCompany] = useState(user?.company_name || "");
+  const [position, setPosition] = useState(user?.position || "");
+  const [accountInfoLoading, setAccountInfoLoading] = useState(false);
+  const [accountInfoError, setAccountInfoError] = useState<string | null>(null);
+  const [accountInfoSuccess, setAccountInfoSuccess] = useState<string | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   // Get current locale from next-intl
   const locale = useLocale();
@@ -53,20 +63,29 @@ const Profile = () => {
       .finally(() => setCountriesLoading(false));
   }, [locale]);
 
+  // Fetch user profile and populate fields
+  useEffect(() => {
+    if (!token) return;
+    setProfileLoading(true);
+    setProfileError(null);
+    getMyProfile(token, locale)
+      .then((resp) => {
+        const data = resp.data;
+        setName(data.name || "");
+        setBio(data.bio || "");
+        setCompany(data.company_name || "");
+        setPosition(data.position || "");
+        setShowContactInfo(!!data.show_contact_info);
+        setPreferredLanguage(locale);
+        setSelectedCountry(data.country_name || "");
+        setSelectedCity(data.city_name || "");
+      })
+      .catch((err) => setProfileError(err.message || 'Failed to load profile'))
+      .finally(() => setProfileLoading(false));
+  }, [token, locale]);
 
 
-  // Placeholder state for form fields
-  const form = {
-    name: "John Doe",
-    company: "Hajjarbashi",
-    position: "Manager",
-    country: selectedCountry,
-    city: selectedCity,
-    preferredLanguage,
-    email: "example@domain.com",
-    phone: "+989376544675",
-    bio: "Lorem Ipsum is dummy text...",
-  };
+  // Remove static form object, use state instead
 
   // Helper function to validate URL
   const isValidUrl = (url: string | null): boolean => {
@@ -251,6 +270,11 @@ const Profile = () => {
         cropSource={t("cropModal.cropSource")}
         className=""
       />
+      {profileLoading ? (
+        <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12 text-center text-muted-foreground py-12">{t('loading')}</div>
+      ) : profileError ? (
+        <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12 text-center text-destructive py-12">{profileError}</div>
+      ) : (
       <form className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12">
         {/* Change Avatar */}
         <Card className="overflow-visible">
@@ -321,7 +345,7 @@ const Profile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t("accountInformation.name")}</label>
-                <Input value={form.name} readOnly />
+                <Input value={name} onChange={e => setName(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
                 <label className="text-sm font-medium">{t("accountInformation.preferredLanguage")}</label>
@@ -338,18 +362,17 @@ const Profile = () => {
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t("accountInformation.companyName")}</label>
-                <Input value={form.company} readOnly />
+                <Input value={company} onChange={e => setCompany(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t("accountInformation.position")}</label>
-                <Input value={form.position} readOnly />
+                <Input value={position} onChange={e => setPosition(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t("accountInformation.country")}</label>
                 <Select
                   value={selectedCountry}
                   onValueChange={setSelectedCountry}
-                  defaultValue={form.country}
                   disabled={countriesLoading || !!countriesError}
                 >
                   <SelectTrigger className="w-full">
@@ -394,22 +417,61 @@ const Profile = () => {
               <div className="flex flex-col gap-2 md:col-span-2">
                 <label className="text-sm font-medium">{t("accountInformation.bio")}</label>
                 <Textarea
-                  value={form.bio}
-                  readOnly
+                  value={bio}
+                  onChange={e => setBio(e.target.value)}
                   maxLength={300}
                   className="resize-none min-h-24"
                 />
                 <div className="text-xs text-muted-foreground text-right">
-                  {form.bio.length}/300
+                  {bio.length}/300
                 </div>
               </div>
               
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="button" className="w-full h-12 rounded-full text-lg">
-              {t("accountInformation.save")}
-            </Button>
+            <div className="flex flex-col w-full gap-2">
+              <Button
+                type="button"
+                className="w-full h-12 rounded-full text-lg"
+                onClick={async () => {
+                  setAccountInfoLoading(true);
+                  setAccountInfoError(null);
+                  setAccountInfoSuccess(null);
+                  try {
+                    // Find country and city IDs
+                    const countryObj = countries.find(c => c.name === selectedCountry);
+                    const cityObj = cities.find(c => c.name === selectedCity);
+                    if (!countryObj || !cityObj) throw new Error('Please select a valid country and city');
+                    // Map preferredLanguage to language code
+                    let languageCode = 'en';
+                    if (preferredLanguage === 'Persian') languageCode = 'fa';
+                    else if (preferredLanguage === 'Chinese') languageCode = 'zh';
+                    const req = {
+                      country_id: countryObj.id,
+                      bio,
+                      position,
+                      name,
+                      company_name: company,
+                      city_id: cityObj.id,
+                      show_contact_info: showContactInfo,
+                      language: languageCode,
+                    };
+                    if (!token) throw new Error('Not authenticated');
+                    const resp = await updateProfile(req, token, locale);
+                    toast.success(t('profileUpdated') || 'Profile updated!');
+                  } catch (err: any) {
+                    setAccountInfoError(err.message || 'Failed to update profile');
+                  } finally {
+                    setAccountInfoLoading(false);
+                  }
+                }}
+                disabled={accountInfoLoading}
+              >
+                {accountInfoLoading ? t('loading') : t('accountInformation.save')}
+              </Button>
+              {accountInfoError && <div className="text-destructive text-sm text-center">{accountInfoError}</div>}
+            </div>
           </CardFooter>
         </Card>
         {/* Contact Information */}
@@ -422,11 +484,11 @@ const Profile = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">{t("contactInformation.email")}</label>
-              <Input value={form.email} readOnly />
+              <Input value={user?.email || ""} readOnly />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">{t("contactInformation.phoneNumber")}</label>
-              <PhoneInput value={form.phone} readOnly />
+              <PhoneInput value={user?.phone || ""} readOnly />
             </div>
             <div className="flex items-center gap-2 md:col-span-2 mt-2">
               <input
@@ -448,6 +510,7 @@ const Profile = () => {
           </CardFooter>
         </Card>
       </form>
+      )}
     </>
   );
 };

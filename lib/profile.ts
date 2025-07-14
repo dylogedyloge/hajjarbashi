@@ -18,6 +18,60 @@ export interface City {
   name: string;
 }
 
+export interface UpdateProfileRequest {
+  country_id: string;
+  bio: string;
+  position: string;
+  name: string;
+  company_name: string;
+  city_id: string;
+  show_contact_info: boolean;
+  language: string;
+  avatar?: File | null;
+}
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+  data: any; // You can type this more strictly if needed
+  timestamp: string;
+}
+
+export interface MyProfileResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    rate: number;
+    avatar: string;
+    avatar_thumb: string;
+    contact_info: string | null;
+    show_contact_info: boolean;
+    bio: string;
+    company_name: string;
+    position: string;
+    u_country_id: string;
+    registration_date: number;
+    badge_ids: string | null;
+    city_name: string;
+    country_name: string;
+    type: number;
+    token: string;
+    wallet_balance: string;
+    fcm_token: string | null;
+    web_fcm_token: string | null;
+    phone: string | null;
+    email: string | null;
+    email_verified: boolean;
+    phone_verified: boolean;
+    city_id: string;
+    badge_details: any;
+    published_ad_count: number;
+  };
+  timestamp: string;
+}
+
 const API_BASE_URL = 'https://api.hajjardevs.ir';
 
 export const profileService = {
@@ -72,4 +126,53 @@ export async function fetchCities(countryId: string, lang: string): Promise<City
   const data = await response.json();
   // Assuming the response is { success: true, data: [{ id, name }, ...] }
   return data.data || [];
+}
+
+export async function updateProfile(
+  data: UpdateProfileRequest,
+  token: string,
+  lang: string
+): Promise<UpdateProfileResponse> {
+  const formData = new FormData();
+  formData.append('country_id', data.country_id);
+  formData.append('bio', data.bio);
+  formData.append('position', data.position);
+  formData.append('name', data.name);
+  formData.append('company_name', data.company_name);
+  formData.append('city_id', data.city_id);
+  formData.append('show_contact_info', String(data.show_contact_info));
+  formData.append('language', data.language);
+  if (data.avatar) {
+    formData.append('avatar', data.avatar);
+  }
+  const response = await fetch('https://api.hajjardevs.ir/users/update_profile', {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'x-lang': lang,
+    },
+    body: formData,
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Update failed: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+  return response.json();
+}
+
+export async function getMyProfile(token: string, lang: string): Promise<MyProfileResponse> {
+  const response = await fetch('https://api.hajjardevs.ir/users/my_profile', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'x-lang': lang,
+    },
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Fetch failed: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+  return response.json();
 } 

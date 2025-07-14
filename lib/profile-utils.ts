@@ -2,6 +2,8 @@
  * Profile-related utilities
  */
 
+import type { User } from './auth-context';
+
 export interface ProfileFormData {
   firstName: string;
   lastName: string;
@@ -60,11 +62,11 @@ export function constructAvatarUrls(
  * Updates user object with new avatar URLs
  */
 export function updateUserWithAvatars(
-  user: any,
+  user: User,
   avatarPath: string,
   avatarThumbPath: string,
   baseUrl: string = 'https://api.hajjardevs.ir/'
-): any {
+): User {
   return {
     ...user,
     avatar: baseUrl + avatarPath,

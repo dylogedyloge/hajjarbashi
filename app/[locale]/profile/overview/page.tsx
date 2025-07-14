@@ -163,10 +163,10 @@ const Profile = () => {
   };
 
   // When the image loads, center the crop
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    // setCrop(centerAspectCrop(width, height, 1)); // 1:1 aspect ratio
-  };
+  // const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  //   const { width, height } = e.currentTarget;
+  //   // setCrop(centerAspectCrop(width, height, 1)); // 1:1 aspect ratio
+  // };
 
   // Handle crop complete from ImageCropper
   const handleCropComplete = async (croppedFile: File) => {

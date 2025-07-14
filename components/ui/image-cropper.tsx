@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Upload, X } from 'lucide-react';
 import { Crop,  convertToPixelCrop } from 'react-image-crop';
 import { centerAspectCrop, cropImage, createObjectURL, revokeObjectURL } from '@/lib/image-utils';
-import { validateImageFile } from '@/lib/file-validation';
+// import { validateImageFile } from '@/lib/file-validation';
 
 interface ImageCropperProps {
   isOpen: boolean;

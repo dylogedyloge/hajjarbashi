@@ -20,7 +20,7 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { ImageCropper } from "@/components/ui/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
 import { profileService, fetchCountries, fetchCities, Country, City } from "@/lib/profile";
-import { useRouter } from 'next/router';
+
 
 const Profile = () => {
   const t = useTranslations("Profile");
@@ -53,12 +53,7 @@ const Profile = () => {
       .finally(() => setCountriesLoading(false));
   }, [locale]);
 
-  // Example cities for each country
-  const citiesByCountry: Record<string, string[]> = {
-    China: ["Beijing", "Shanghai", "Guangzhou"],
-    Malaysia: ["Kuala Lumpur", "Penang", "Johor Bahru"],
-    Iran: ["Tehran", "Mashhad", "Isfahan"],
-  };
+
 
   // Placeholder state for form fields
   const form = {
@@ -220,7 +215,7 @@ const Profile = () => {
     }
     fetchCities(countryId, locale)
       .then((data) => setCities(data))
-      .catch((err) => setCitiesError('Failed to load cities'))
+      .catch((err) => setCitiesError(err.message || 'Failed to load cities'))
       .finally(() => setCitiesLoading(false));
   }, [selectedCountry, countries, locale]);
 

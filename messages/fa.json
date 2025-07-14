@@ -199,8 +199,14 @@
       },
       "contactInformation": {
         "title": "اطلاعات تماس",
-        "email": "ایمیل",
+        "contactTitle": "عنوان",
+        "contactTitlePlaceholder": "مثلاً کاری، شخصی و غیره",
+        "contactType": "نوع تماس",
+        "selectType": "انتخاب نوع",
         "phoneNumber": "شماره تلفن",
+        "phonePlaceholder": "شماره تلفن را وارد کنید",
+        "email": "ایمیل",
+        "emailPlaceholder": "آدرس ایمیل را وارد کنید",
         "showContactInfo": "نمایش اطلاعات تماس من به دیگران",
         "save": "ذخیره اطلاعات تماس"
       },

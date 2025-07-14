@@ -19,7 +19,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { ImageCropper } from "@/components/ui/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
-import { profileService, fetchCountries, fetchCities, updateProfile, getMyProfile, Country, City } from "@/lib/profile";
+import { profileService, fetchCountries, fetchCities, updateProfile, getMyProfile, Country, City, saveContactInfo } from "@/lib/profile";
 
 
 const Profile = () => {
@@ -49,6 +49,12 @@ const Profile = () => {
   const [accountInfoError, setAccountInfoError] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+
+  const [contactTitle, setContactTitle] = useState("");
+  const [contactType, setContactType] = useState<"phone" | "email">("phone");
+  const [contactValue, setContactValue] = useState("");
+  const [contactInfoLoading, setContactInfoLoading] = useState(false);
+  const [contactInfoError, setContactInfoError] = useState<string | null>(null);
 
   // Get current locale from next-intl
   const locale = useLocale();
@@ -484,13 +490,52 @@ const Profile = () => {
             </div>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Title Field */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">{t("contactInformation.email")}</label>
-              <Input value={user?.email || ""} readOnly />
+              <label className="text-sm font-medium">{t("contactInformation.contactTitle")}</label>
+              <Input
+                value={contactTitle}
+                onChange={e => setContactTitle(e.target.value)}
+                placeholder={t("contactInformation.contactTitlePlaceholder")}
+              />
             </div>
+            {/* Type Select */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">{t("contactInformation.phoneNumber")}</label>
-              <PhoneInput value={user?.phone || ""} readOnly />
+              <label className="text-sm font-medium">{t("contactInformation.contactType")}</label>
+              <Select
+                value={contactType}
+                onValueChange={val => setContactType(val as "phone" | "email")}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t("contactInformation.selectType")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="phone">{t("contactInformation.phoneNumber")}</SelectItem>
+                  <SelectItem value="email">{t("contactInformation.email")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Conditional Field */}
+            <div className="flex flex-col gap-2 md:col-span-2">
+              <label className="text-sm font-medium">
+                {contactType === "phone"
+                  ? t("contactInformation.phoneNumber")
+                  : t("contactInformation.email")}
+              </label>
+              {contactType === "phone" ? (
+                <PhoneInput
+                  value={contactValue}
+                  onChange={setContactValue}
+                  placeholder={t("contactInformation.phonePlaceholder")}
+                />
+              ) : (
+                <Input
+                  type="email"
+                  value={contactValue}
+                  onChange={e => setContactValue(e.target.value)}
+                  placeholder={t("contactInformation.emailPlaceholder")}
+                />
+              )}
             </div>
             <div className="flex items-center gap-2 md:col-span-2 mt-2">
               <input
@@ -506,9 +551,34 @@ const Profile = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="button" className="w-full h-12 rounded-full text-lg">
-              {t("contactInformation.save")}
+            <Button
+              type="button"
+              className="w-full h-12 rounded-full text-lg"
+              onClick={async () => {
+                setContactInfoLoading(true);
+                setContactInfoError(null);
+                try {
+                  if (!contactTitle || !contactValue) throw new Error(t('errors.fillAllFields'));
+                  if (!token) throw new Error('Not authenticated');
+                  const resp = await saveContactInfo([
+                    { title: contactTitle, value: contactValue }
+                  ], token);
+                  if (resp.success) {
+                    toast.success(t('profileUpdated') || 'Profile updated!');
+                  } else {
+                    throw new Error(resp.message || 'Failed to update contact info');
+                  }
+                } catch (err: unknown) {
+                  setContactInfoError(err instanceof Error ? err.message : 'Failed to update contact info');
+                } finally {
+                  setContactInfoLoading(false);
+                }
+              }}
+              disabled={contactInfoLoading}
+            >
+              {contactInfoLoading ? t('loading') : t('contactInformation.save')}
             </Button>
+            {contactInfoError && <div className="text-destructive text-sm text-center">{contactInfoError}</div>}
           </CardFooter>
         </Card>
       </form>

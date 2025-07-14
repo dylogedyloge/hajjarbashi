@@ -201,8 +201,14 @@
       },
       "contactInformation": {
         "title": "Contact Information",
-        "email": "Email",
+        "contactTitle": "Title",
+        "contactTitlePlaceholder": "e.g. Work, Personal, etc.",
+        "contactType": "Contact Type",
+        "selectType": "Select type",
         "phoneNumber": "Phone Number",
+        "phonePlaceholder": "Enter phone number",
+        "email": "Email",
+        "emailPlaceholder": "Enter email address",
         "showContactInfo": "Show my contact information to others",
         "save": "Save Contact Information"
       },

@@ -72,6 +72,18 @@ export interface MyProfileResponse {
   timestamp: string;
 }
 
+export interface ContactInfoItem {
+  title: string;
+  value: string;
+}
+
+export interface SaveContactInfoResponse {
+  success: boolean;
+  message: string;
+  data: unknown;
+  timestamp: string;
+}
+
 const API_BASE_URL = 'https://api.hajjardevs.ir';
 
 export const profileService = {
@@ -172,6 +184,26 @@ export async function getMyProfile(token: string, lang: string): Promise<MyProfi
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const errorMessage = errorData.message || errorData.error || `Fetch failed: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+  return response.json();
+}
+
+export async function saveContactInfo(
+  contactInfo: ContactInfoItem[],
+  token: string
+): Promise<SaveContactInfoResponse> {
+  const response = await fetch(`${API_BASE_URL}/users/contact_info`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ contact_info: contactInfo }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Save failed: ${response.status}`;
     throw new Error(errorMessage);
   }
   return response.json();

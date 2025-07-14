@@ -245,6 +245,14 @@
       },
       "messages": {
         "avatarUpdated": "آواتار با موفقیت به‌روزرسانی شد!"
+      },
+      "Sidebar": {
+        "overview": "نمای کلی",
+        "viewYourAds": "آگهی‌های شما",
+        "plansAndBilling": "پلن‌ها و صورتحساب",
+        "royaltyClub": "باشگاه رویالتی",
+        "accountSetting": "تنظیمات حساب",
+        "signOut": "خروج"
       }
     },
     "smsSentSuccessfully": "کد تایید با پیامک ارسال شد!",

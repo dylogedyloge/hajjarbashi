@@ -49,7 +49,7 @@ const Profile = () => {
     setCountriesError(null);
     fetchCountries(locale)
       .then((data) => setCountries(data))
-      .catch((err) => setCountriesError('Failed to load countries'))
+      .catch((err) => setCountriesError(err.message || 'Failed to load countries'))
       .finally(() => setCountriesLoading(false));
   }, [locale]);
 

@@ -197,19 +197,31 @@
           "supportedFormats": "فرمت‌های پشتیبانی شده: SVG، JPG، PNG (هر کدام ۱۰ مگابایت)"
         }
       },
-      "accountInformation": {
-        "title": "اطلاعات حساب کاربری",
-        "firstName": "نام",
-        "lastName": "نام خانوادگی",
-        "companyName": "نام شرکت",
-        "location": "مکان",
-        "selectLocation": "انتخاب مکان"
-      },
-      "displayInformation": {
-        "title": "اطلاعات نمایشی",
+      "contactInformation": {
+        "title": "اطلاعات تماس",
         "email": "ایمیل",
         "phoneNumber": "شماره تلفن",
-        "description": "توضیحات"
+        "showContactInfo": "نمایش اطلاعات تماس من به دیگران",
+        "save": "ذخیره اطلاعات تماس"
+      },
+      "accountInformation": {
+        "title": "اطلاعات حساب کاربری",
+        "name": "نام و نام خانوادگی",
+        "companyName": "نام شرکت",
+        "position": "سمت",
+        "country": "کشور",
+        "selectCountry": "انتخاب کشور",
+        "city": "شهر",
+        "selectCity": "انتخاب شهر",
+        "bio": "بیوگرافی",
+        "save": "ذخیره اطلاعات حساب کاربری",
+        "preferredLanguage": "زبان ترجیحی",
+        "selectPreferredLanguage": "انتخاب زبان ترجیحی",
+        "languages": {
+          "english": "انگلیسی",
+          "persian": "فارسی",
+          "chinese": "چینی"
+        }
       },
       "locations": {
         "china": "چین",

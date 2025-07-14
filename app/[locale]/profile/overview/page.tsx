@@ -19,6 +19,7 @@ import ReactCrop, { Crop, centerCrop, makeAspectCrop, convertToPixelCrop } from 
 import 'react-image-crop/dist/ReactCrop.css';
 import { profileService } from "@/lib/profile";
 import { useTranslations } from "next-intl";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number): Crop {
   return centerCrop(
@@ -48,16 +49,29 @@ const Profile = () => {
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop>();
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const [showContactInfo, setShowContactInfo] = useState(true);
+  const [selectedCountry, setSelectedCountry] = useState("China");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [preferredLanguage, setPreferredLanguage] = useState("English");
+
+  // Example cities for each country
+  const citiesByCountry: Record<string, string[]> = {
+    China: ["Beijing", "Shanghai", "Guangzhou"],
+    Malaysia: ["Kuala Lumpur", "Penang", "Johor Bahru"],
+    Iran: ["Tehran", "Mashhad", "Isfahan"],
+  };
 
   // Placeholder state for form fields
   const form = {
-    firstName: "John",
-    lastName: "Doe",
+    name: "John Doe",
     company: "Hajjarbashi",
-    location: "China",
+    position: "Manager",
+    country: selectedCountry,
+    city: selectedCity,
+    preferredLanguage,
     email: "example@domain.com",
     phone: "+989376544675",
-    description: "Lorem Ipsum is dummy text...",
+    bio: "Lorem Ipsum is dummy text...",
   };
 
   // Helper function to validate URL
@@ -379,13 +393,15 @@ const Profile = () => {
           </div>
         </div>
       )}
-      <form className="w-full max-w-3xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
+      <form className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12">
         {/* Change Avatar */}
-        <section className="flex flex-col items-center gap-2 border-b pb-8">
-          <div className="text-base font-semibold w-full text-left mb-2">
-            {t("avatar.title")}
-          </div>
-          <div className="flex flex-col items-center gap-2 w-full">
+        <Card className="overflow-visible">
+          <CardHeader className="pb-4">
+            <div className="text-base font-semibold">
+              {t("avatar.title")}
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
             <div className="relative">
               <Avatar className="w-20 h-20">
                 {user?.avatar_thumb && isValidUrl(user.avatar_thumb) ? (
@@ -436,68 +452,124 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
         {/* Account Information */}
-        <section className="grid grid-cols-2 gap-6">
-          <div className="col-span-2 text-base font-semibold mb-2">
-            {t("accountInformation.title")}
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t("accountInformation.firstName")}</label>
-            <Input value={form.firstName} readOnly />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t("accountInformation.lastName")}</label>
-            <Input value={form.lastName} readOnly />
-          </div>
-          <div className="flex flex-col gap-2 col-span-1">
-            <label className="text-sm font-medium">{t("accountInformation.companyName")}</label>
-            <Input value={form.company} readOnly />
-          </div>
-          <div className="flex flex-col gap-2 col-span-1">
-            <label className="text-sm font-medium">{t("accountInformation.location")}</label>
-            <Select defaultValue={form.location}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("accountInformation.selectLocation")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="China">{t("locations.china")}</SelectItem>
-                <SelectItem value="Malaysia">{t("locations.malaysia")}</SelectItem>
-                <SelectItem value="Iran">{t("locations.iran")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </section>
-        {/* Display Information */}
-        <section className="grid grid-cols-2 gap-6">
-          <div className="col-span-2 text-base font-semibold mb-2">
-            {t("displayInformation.title")}
-          </div>
-          <div className="flex flex-col gap-2 col-span-1">
-            <label className="text-sm font-medium">{t("displayInformation.email")}</label>
-            <Input value={form.email} readOnly />
-          </div>
-          <div className="flex flex-col gap-2 col-span-1">
-            <label className="text-sm font-medium">{t("displayInformation.phoneNumber")}</label>
-            <PhoneInput value={form.phone} readOnly />
-          </div>
-          <div className="flex flex-col gap-2 col-span-2">
-            <label className="text-sm font-medium">{t("displayInformation.description")}</label>
-            <Textarea
-              value={form.description}
-              readOnly
-              maxLength={300}
-              className="resize-none min-h-24"
-            />
-            <div className="text-xs text-muted-foreground text-right">
-              {form.description.length}/300
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="text-base font-semibold">
+              {t("accountInformation.title")}
             </div>
-          </div>
-        </section>
-        <Button type="submit" className="w-full h-12 rounded-full text-lg mt-4">
-          {t("actions.save")}
-        </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">{t("accountInformation.name")}</label>
+                <Input value={form.name} readOnly />
+              </div>
+              <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
+                <label className="text-sm font-medium">{t("accountInformation.preferredLanguage")}</label>
+                <Select value={preferredLanguage} onValueChange={setPreferredLanguage}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t("accountInformation.selectPreferredLanguage")} className="w-full" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="English">{t("accountInformation.languages.english")}</SelectItem>
+                    <SelectItem value="Persian">{t("accountInformation.languages.persian")}</SelectItem>
+                    <SelectItem value="Chinese">{t("accountInformation.languages.chinese")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">{t("accountInformation.companyName")}</label>
+                <Input value={form.company} readOnly />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">{t("accountInformation.position")}</label>
+                <Input value={form.position} readOnly />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">{t("accountInformation.country")}</label>
+                <Select value={selectedCountry} onValueChange={setSelectedCountry} defaultValue={form.country}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t("accountInformation.selectCountry")} className="w-full" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="China">{t("locations.china")}</SelectItem>
+                    <SelectItem value="Malaysia">{t("locations.malaysia")}</SelectItem>
+                    <SelectItem value="Iran">{t("locations.iran")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">{t("accountInformation.city")}</label>
+                <Select value={selectedCity} onValueChange={setSelectedCity}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t("accountInformation.selectCity")} className="w-full" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {citiesByCountry[selectedCountry]?.map((city) => (
+                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <label className="text-sm font-medium">{t("accountInformation.bio")}</label>
+                <Textarea
+                  value={form.bio}
+                  readOnly
+                  maxLength={300}
+                  className="resize-none min-h-24"
+                />
+                <div className="text-xs text-muted-foreground text-right">
+                  {form.bio.length}/300
+                </div>
+              </div>
+              
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button type="button" className="w-full h-12 rounded-full text-lg">
+              {t("accountInformation.save")}
+            </Button>
+          </CardFooter>
+        </Card>
+        {/* Contact Information */}
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="text-base font-semibold">
+              {t("contactInformation.title")}
+            </div>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">{t("contactInformation.email")}</label>
+              <Input value={form.email} readOnly />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">{t("contactInformation.phoneNumber")}</label>
+              <PhoneInput value={form.phone} readOnly />
+            </div>
+            <div className="flex items-center gap-2 md:col-span-2 mt-2">
+              <input
+                type="checkbox"
+                id="show-contact-info"
+                checked={showContactInfo}
+                onChange={() => setShowContactInfo((v) => !v)}
+                className="accent-primary w-4 h-4"
+              />
+              <label htmlFor="show-contact-info" className="text-sm font-medium cursor-pointer">
+                {t("contactInformation.showContactInfo")}
+              </label>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button type="button" className="w-full h-12 rounded-full text-lg">
+              {t("contactInformation.save")}
+            </Button>
+          </CardFooter>
+        </Card>
       </form>
     </>
   );

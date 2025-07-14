@@ -33,7 +33,7 @@ export interface UpdateProfileRequest {
 export interface UpdateProfileResponse {
   success: boolean;
   message: string;
-  data: any; // You can type this more strictly if needed
+  data: MyProfileResponse['data'];
   timestamp: string;
 }
 

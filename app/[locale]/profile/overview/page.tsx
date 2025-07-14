@@ -47,7 +47,6 @@ const Profile = () => {
   const [position, setPosition] = useState(user?.position || "");
   const [accountInfoLoading, setAccountInfoLoading] = useState(false);
   const [accountInfoError, setAccountInfoError] = useState<string | null>(null);
-  const [accountInfoSuccess, setAccountInfoSuccess] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
@@ -437,7 +436,6 @@ const Profile = () => {
                 onClick={async () => {
                   setAccountInfoLoading(true);
                   setAccountInfoError(null);
-                  setAccountInfoSuccess(null);
                   try {
                     // Find country and city IDs
                     const countryObj = countries.find(c => c.name === selectedCountry);
@@ -459,7 +457,11 @@ const Profile = () => {
                     };
                     if (!token) throw new Error('Not authenticated');
                     const resp = await updateProfile(req, token, locale);
-                    toast.success(t('profileUpdated') || 'Profile updated!');
+                    if (resp.success) {
+                      toast.success(t('profileUpdated') || 'Profile updated!');
+                    } else {
+                      throw new Error(resp.message || 'Failed to update profile');
+                    }
                   } catch (err: any) {
                     setAccountInfoError(err.message || 'Failed to update profile');
                   } finally {

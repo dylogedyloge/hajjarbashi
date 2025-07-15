@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User } from "@/lib/auth-context";
 import { Upload, Loader2 } from "lucide-react";
 import { ImageCropper } from "@/components/profile/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
@@ -7,7 +8,7 @@ import { profileService } from "@/lib/profile";
 import { toast } from "sonner";
 
 interface AvatarUploaderProps {
-  user: any;
+  user: User | null;
   token: string;
   login: (user: any, token: string) => void;
   t: (key: string) => string;

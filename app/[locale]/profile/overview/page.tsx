@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from "next-intl";
@@ -130,7 +130,7 @@ const Profile = () => {
       ) : (
       <form className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12">
         {/* Change Avatar */}
-        <AvatarUploader user={user ?? {}} token={token ?? ''} login={login} t={t} />
+        <AvatarUploader user={user} token={token ?? ''} login={login} t={t} />
         {/* Account Information */}
         <AccountInfoForm
           name={name ?? ''}

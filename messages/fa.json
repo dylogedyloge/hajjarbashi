@@ -208,7 +208,9 @@
         "email": "ایمیل",
         "emailPlaceholder": "آدرس ایمیل را وارد کنید",
         "showContactInfo": "نمایش اطلاعات تماس من به دیگران",
-        "save": "ذخیره اطلاعات تماس"
+        "save": "ذخیره اطلاعات تماس",
+        "addAnother": "افزودن مورد دیگر",
+        "remove": "حذف"
       },
       "accountInformation": {
         "title": "اطلاعات حساب کاربری",
@@ -274,7 +276,8 @@
         "accountSetting": "تنظیمات حساب",
         "signOut": "خروج"
       },
-      "profileUpdated": "پروفایل با موفقیت به‌روزرسانی شد!"
+      "profileUpdated": "پروفایل با موفقیت به‌روزرسانی شد!",
+      "contactInformationUpdated": "اطلاعات تماس با موفقیت به‌روزرسانی شد!"
     },
     "smsSentSuccessfully": "کد تایید با پیامک ارسال شد!",
     "smsSendFailed": "ارسال پیامک تایید ناموفق بود. لطفاً دوباره تلاش کنید.",

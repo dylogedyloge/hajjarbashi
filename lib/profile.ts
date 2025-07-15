@@ -191,7 +191,8 @@ export async function getMyProfile(token: string, lang: string): Promise<MyProfi
 
 export async function saveContactInfo(
   contactInfo: ContactInfoItem[],
-  token: string
+  token: string,
+  showContactInfo: boolean
 ): Promise<SaveContactInfoResponse> {
   const response = await fetch(`${API_BASE_URL}/users/contact_info`, {
     method: 'POST',
@@ -199,7 +200,7 @@ export async function saveContactInfo(
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ contact_info: contactInfo }),
+    body: JSON.stringify({ contact_info: contactInfo, show_contact_info: showContactInfo }),
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

@@ -210,7 +210,9 @@
         "email": "Email",
         "emailPlaceholder": "Enter email address",
         "showContactInfo": "Show my contact information to others",
-        "save": "Save Contact Information"
+        "save": "Save Contact Information",
+        "addAnother": "Add another",
+        "remove": "Remove"
       },
       "accountInformation": {
         "title": "Account Information",
@@ -269,6 +271,7 @@
       "loading": "Loading...",
       "error": "Error loading data.",
       "profileUpdated": "Profile updated!",
+      "contactInformationUpdated": "Contact information updated!",
       "Sidebar": {
         "overview": "Overview",
         "viewYourAds": "View your Ads",

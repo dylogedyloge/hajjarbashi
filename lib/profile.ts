@@ -85,6 +85,8 @@ export interface SaveContactInfoResponse {
 }
 
 const API_BASE_URL = 'https://api.hajjardevs.ir';
+// const API_BASE_URL = 'http://192.168.10.100:3001';
+
 
 export const profileService = {
   async updateProfileImage(file: File, token: string): Promise<UpdateProfileImageResponse> {
@@ -110,7 +112,7 @@ export const profileService = {
 };
 
 export async function fetchCountries(lang: string): Promise<Country[]> {
-  const response = await fetch('https://api.hajjardevs.ir/countries/list', {
+  const response = await fetch(`${API_BASE_URL}/countries/list`, {
     method: 'GET',
     headers: {
       'x-lang': lang,
@@ -126,7 +128,7 @@ export async function fetchCountries(lang: string): Promise<Country[]> {
 
 export async function fetchCities(countryId: string, lang: string): Promise<City[]> {
   if (!countryId) return [];
-  const response = await fetch(`https://api.hajjardevs.ir/cities/list?country_id=${countryId}`, {
+  const response = await fetch(`${API_BASE_URL}/cities/list?country_id=${countryId}`, {
     method: 'GET',
     headers: {
       'x-lang': lang,
@@ -157,7 +159,7 @@ export async function updateProfile(
   if (data.avatar) {
     formData.append('avatar', data.avatar);
   }
-  const response = await fetch('https://api.hajjardevs.ir/users/update_profile', {
+  const response = await fetch(`${API_BASE_URL}/users/update_profile`, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -174,7 +176,7 @@ export async function updateProfile(
 }
 
 export async function getMyProfile(token: string, lang: string): Promise<MyProfileResponse> {
-  const response = await fetch('https://api.hajjardevs.ir/users/my_profile', {
+  const response = await fetch(`${API_BASE_URL}/users/my_profile`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,

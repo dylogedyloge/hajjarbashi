@@ -3,168 +3,215 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import React from "react";
+import { UseFormReturn } from "react-hook-form";
+
+export interface AccountInfoFormValues {
+  name: string;
+  preferredLanguage: string;
+  company: string;
+  position: string;
+  country: string;
+  city: string;
+  bio: string;
+}
 
 interface AccountInfoFormProps {
-  name: string;
-  setName: (v: string) => void;
-  preferredLanguage: string;
-  setPreferredLanguage: (v: string) => void;
-  company: string;
-  setCompany: (v: string) => void;
-  position: string;
-  setPosition: (v: string) => void;
-  selectedCountry: string;
-  setSelectedCountry: (v: string) => void;
-  selectedCity: string;
-  setSelectedCity: (v: string) => void;
+  form: UseFormReturn<AccountInfoFormValues>;
   countries: { id: string; name: string }[];
   countriesLoading: boolean;
   countriesError: string | null;
   cities: { id: string; name: string }[];
   citiesLoading: boolean;
   citiesError: string | null;
-  bio: string;
-  setBio: (v: string) => void;
   accountInfoLoading: boolean;
   accountInfoError: string | null;
-  onSave: () => void;
+  onSubmit: (values: AccountInfoFormValues) => void | Promise<void>;
   t: (key: string) => string;
 }
 
 export function AccountInfoForm({
-  name,
-  setName,
-  preferredLanguage,
-  setPreferredLanguage,
-  company,
-  setCompany,
-  position,
-  setPosition,
-  selectedCountry,
-  setSelectedCountry,
-  selectedCity,
-  setSelectedCity,
+  form,
   countries,
   countriesLoading,
   countriesError,
   cities,
   citiesLoading,
   citiesError,
-  bio,
-  setBio,
   accountInfoLoading,
   accountInfoError,
-  onSave,
+  onSubmit,
   t,
 }: AccountInfoFormProps) {
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <div className="text-base font-semibold">
-          {t("accountInformation.title")}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t("accountInformation.name")}</label>
-            <Input value={name} onChange={e => setName(e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
-            <label className="text-sm font-medium">{t("accountInformation.preferredLanguage")}</label>
-            <Select value={preferredLanguage} onValueChange={setPreferredLanguage}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t("accountInformation.selectPreferredLanguage")} className="w-full" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="English">{t("accountInformation.languages.english")}</SelectItem>
-                <SelectItem value="Persian">{t("accountInformation.languages.persian")}</SelectItem>
-                <SelectItem value="Chinese">{t("accountInformation.languages.chinese")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t("accountInformation.companyName")}</label>
-            <Input value={company} onChange={e => setCompany(e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t("accountInformation.position")}</label>
-            <Input value={position} onChange={e => setPosition(e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t("accountInformation.country")}</label>
-            <Select
-              value={selectedCountry}
-              onValueChange={setSelectedCountry}
-              disabled={countriesLoading || !!countriesError}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={countriesLoading ? t("loading") : countriesError ? t("error") : t("accountInformation.selectCountry") } className="w-full" />
-              </SelectTrigger>
-              <SelectContent>
-                {countriesLoading && (
-                  <div className="px-4 py-2 text-muted-foreground">{t("loading")}</div>
-                )}
-                {countriesError && (
-                  <div className="px-4 py-2 text-destructive">{t("error")}</div>
-                )}
-                {countries.map((country) => (
-                  <SelectItem key={country.id} value={country.name}>{country.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t("accountInformation.city")}</label>
-            <Select
-              value={selectedCity}
-              onValueChange={setSelectedCity}
-              disabled={citiesLoading || !!citiesError}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={citiesLoading ? t("loading") : citiesError ? t("error") : t("accountInformation.selectCity")} className="w-full" />
-              </SelectTrigger>
-              <SelectContent>
-                {citiesLoading && (
-                  <div className="px-4 py-2 text-muted-foreground">{t("loading")}</div>
-                )}
-                {citiesError && (
-                  <div className="px-4 py-2 text-destructive">{t("error")}</div>
-                )}
-                {cities.map((city) => (
-                  <SelectItem key={city.id} value={city.name}>{city.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="text-sm font-medium">{t("accountInformation.bio")}</label>
-            <Textarea
-              value={bio}
-              onChange={e => setBio(e.target.value)}
-              maxLength={300}
-              className="resize-none min-h-24"
-            />
-            <div className="text-xs text-muted-foreground text-right">
-              {bio.length}/300
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="text-base font-semibold">
+              {t("accountInformation.title")}
             </div>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <div className="flex flex-col w-full gap-2">
-          <Button
-            type="button"
-            className="w-full h-12 rounded-full text-lg"
-            onClick={onSave}
-            disabled={accountInfoLoading}
-          >
-            {accountInfoLoading ? t('loading') : t('accountInformation.save')}
-          </Button>
-          {accountInfoError && <div className="text-destructive text-sm text-center">{accountInfoError}</div>}
-        </div>
-      </CardFooter>
-    </Card>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("accountInformation.name")}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="preferredLanguage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("accountInformation.preferredLanguage")}</FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={t("accountInformation.selectPreferredLanguage")} className="w-full" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="English">{t("accountInformation.languages.english")}</SelectItem>
+                          <SelectItem value="Persian">{t("accountInformation.languages.persian")}</SelectItem>
+                          <SelectItem value="Chinese">{t("accountInformation.languages.chinese")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("accountInformation.companyName")}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="position"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("accountInformation.position")}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("accountInformation.country")}</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={countriesLoading || !!countriesError}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={countriesLoading ? t("loading") : countriesError ? t("error") : t("accountInformation.selectCountry") } className="w-full" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countriesLoading && (
+                            <div className="px-4 py-2 text-muted-foreground">{t("loading")}</div>
+                          )}
+                          {countriesError && (
+                            <div className="px-4 py-2 text-destructive">{t("error")}</div>
+                          )}
+                          {countries.map((country) => (
+                            <SelectItem key={country.id} value={country.name}>{country.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("accountInformation.city")}</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={citiesLoading || !!citiesError}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={citiesLoading ? t("loading") : citiesError ? t("error") : t("accountInformation.selectCity")} className="w-full" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {citiesLoading && (
+                            <div className="px-4 py-2 text-muted-foreground">{t("loading")}</div>
+                          )}
+                          {citiesError && (
+                            <div className="px-4 py-2 text-destructive">{t("error")}</div>
+                          )}
+                          {cities.map((city) => (
+                            <SelectItem key={city.id} value={city.name}>{city.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>{t("accountInformation.bio")}</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} maxLength={300} className="resize-none min-h-24" />
+                    </FormControl>
+                    <div className="text-xs text-muted-foreground text-right">
+                      {field.value.length}/300
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </CardContent>
+          <CardFooter>
+            <div className="flex flex-col w-full gap-2">
+              <Button
+                type="submit"
+                className="w-full h-12 rounded-full text-lg"
+                disabled={accountInfoLoading}
+              >
+                {accountInfoLoading ? t('loading') : t('accountInformation.save')}
+              </Button>
+              {accountInfoError && <div className="text-destructive text-sm text-center">{accountInfoError}</div>}
+            </div>
+          </CardFooter>
+        </Card>
+      </form>
+    </Form>
   );
 } 

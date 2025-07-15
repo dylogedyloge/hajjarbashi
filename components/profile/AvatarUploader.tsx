@@ -10,7 +10,7 @@ import { toast } from "sonner";
 interface AvatarUploaderProps {
   user: User | null;
   token: string;
-  login: (user: any, token: string) => void;
+  login: (user: User, token: string) => void;
   t: (key: string) => string;
 }
 

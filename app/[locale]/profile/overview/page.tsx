@@ -12,7 +12,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { AccountInfoFormValues } from "@/components/profile/AccountInfoForm";
-import type { ContactInfoFormValues, ContactInfoItemForm } from "@/components/profile/ContactInfoForm";
+import type { ContactInfoFormValues } from "@/components/profile/ContactInfoForm";
 import { Form } from "@/components/ui/form";
 
 

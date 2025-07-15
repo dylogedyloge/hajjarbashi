@@ -17,10 +17,13 @@ import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from "next-intl";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
-import { ImageCropper } from "@/components/ui/image-cropper";
+import { ImageCropper } from "@/components/profile/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
 import { profileService, fetchCountries, fetchCities, updateProfile, getMyProfile, Country, City, saveContactInfo, ContactInfoItem } from "@/lib/profile";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
+import { AvatarUploader } from "@/components/profile/AvatarUploader";
+import { AccountInfoForm } from "@/components/profile/AccountInfoForm";
+import { ContactInfoForm } from "@/components/profile/ContactInfoForm";
 
 
 const Profile = () => {
@@ -50,7 +53,6 @@ const Profile = () => {
   const [accountInfoError, setAccountInfoError] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
-
   const [contactInfos, setContactInfos] = useState([
     { title: "", type: "phone" as "phone" | "email", value: "" },
   ]);
@@ -295,346 +297,100 @@ const Profile = () => {
       ) : (
       <form className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12">
         {/* Change Avatar */}
-        <Card className="overflow-visible">
-          <CardHeader className="pb-4">
-            <div className="text-base font-semibold">
-              {t("avatar.title")}
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <Avatar className="w-20 h-20">
-                {user?.avatar_thumb && isValidUrl(user.avatar_thumb) ? (
-                  <AvatarImage
-                    src={user.avatar_thumb}
-                    alt={t("avatar.alt")}
-                  />
-                ) : null}
-                <AvatarFallback className="text-2xl font-semibold">
-                  {getUserInitials(user)}
-                </AvatarFallback>
-              </Avatar>
-              {isUploading && (
-                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                  <Loader2 className="w-6 h-6 text-white animate-spin" />
-                </div>
-              )}
-            </div>
-            {/* Upload Area */}
-            <div
-              className={`w-full max-w-xs border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
-                dragActive 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-muted-foreground/25 hover:border-primary/50'
-              }`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              onClick={handleUploadClick}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/svg+xml,image/jpeg,image/jpg,image/png"
-                onChange={handleFileInputChange}
-                className="hidden"
-              />
-              <div className="flex flex-col items-center gap-2">
-                <Upload className="w-6 h-6 text-muted-foreground" />
-                <div className="text-sm">
-                  <span className="text-primary font-medium">{t("avatar.upload.clickHere")}</span> {t("avatar.upload.orDrag")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("avatar.upload.supportedFormats")}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AvatarUploader user={user ?? {}} token={token ?? ''} login={login} t={t} />
         {/* Account Information */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="text-base font-semibold">
-              {t("accountInformation.title")}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">{t("accountInformation.name")}</label>
-                <Input value={name} onChange={e => setName(e.target.value)} />
-              </div>
-              <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
-                <label className="text-sm font-medium">{t("accountInformation.preferredLanguage")}</label>
-                <Select value={preferredLanguage} onValueChange={setPreferredLanguage}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("accountInformation.selectPreferredLanguage")} className="w-full" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="English">{t("accountInformation.languages.english")}</SelectItem>
-                    <SelectItem value="Persian">{t("accountInformation.languages.persian")}</SelectItem>
-                    <SelectItem value="Chinese">{t("accountInformation.languages.chinese")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">{t("accountInformation.companyName")}</label>
-                <Input value={company} onChange={e => setCompany(e.target.value)} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">{t("accountInformation.position")}</label>
-                <Input value={position} onChange={e => setPosition(e.target.value)} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">{t("accountInformation.country")}</label>
-                <Select
-                  value={selectedCountry}
-                  onValueChange={setSelectedCountry}
-                  disabled={countriesLoading || !!countriesError}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={countriesLoading ? t("loading") : countriesError ? t("error") : t("accountInformation.selectCountry") } className="w-full" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countriesLoading && (
-                      <div className="px-4 py-2 text-muted-foreground">{t("loading")}</div>
-                    )}
-                    {countriesError && (
-                      <div className="px-4 py-2 text-destructive">{t("error")}</div>
-                    )}
-                    {countries.map((country) => (
-                      <SelectItem key={country.id} value={country.name}>{country.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">{t("accountInformation.city")}</label>
-                <Select
-                  value={selectedCity}
-                  onValueChange={setSelectedCity}
-                  disabled={citiesLoading || !!citiesError}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={citiesLoading ? t("loading") : citiesError ? t("error") : t("accountInformation.selectCity")} className="w-full" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {citiesLoading && (
-                      <div className="px-4 py-2 text-muted-foreground">{t("loading")}</div>
-                    )}
-                    {citiesError && (
-                      <div className="px-4 py-2 text-destructive">{t("error")}</div>
-                    )}
-                    {cities.map((city) => (
-                      <SelectItem key={city.id} value={city.name}>{city.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-sm font-medium">{t("accountInformation.bio")}</label>
-                <Textarea
-                  value={bio}
-                  onChange={e => setBio(e.target.value)}
-                  maxLength={300}
-                  className="resize-none min-h-24"
-                />
-                <div className="text-xs text-muted-foreground text-right">
-                  {bio.length}/300
-                </div>
-              </div>
-              
-            </div>
-          </CardContent>
-          <CardFooter>
-            <div className="flex flex-col w-full gap-2">
-              <Button
-                type="button"
-                className="w-full h-12 rounded-full text-lg"
-                onClick={async () => {
-                  setAccountInfoLoading(true);
-                  setAccountInfoError(null);
-                  try {
-                    // Find country and city IDs
-                    const countryObj = countries.find(c => c.name === selectedCountry);
-                    const cityObj = cities.find(c => c.name === selectedCity);
-                    if (!countryObj || !cityObj) throw new Error('Please select a valid country and city');
-                    // Map preferredLanguage to language code
-                    let languageCode = 'en';
-                    if (preferredLanguage === 'Persian') languageCode = 'fa';
-                    else if (preferredLanguage === 'Chinese') languageCode = 'zh';
-                    const req = {
-                      country_id: countryObj.id,
-                      bio,
-                      position,
-                      name,
-                      company_name: company,
-                      city_id: cityObj.id,
-                      show_contact_info: showContactInfo,
-                      language: languageCode,
-                    };
-                    if (!token) throw new Error('Not authenticated');
-                    const resp = await updateProfile(req, token, locale);
-                    if (resp.success) {
-                      toast.success(t('profileUpdated') || 'Profile updated!');
-                    } else {
-                      throw new Error(resp.message || 'Failed to update profile');
-                    }
-                  } catch (err: unknown) {
-                    setAccountInfoError(err instanceof Error ? err.message : 'Failed to update profile');
-                  } finally {
-                    setAccountInfoLoading(false);
-                  }
-                }}
-                disabled={accountInfoLoading}
-              >
-                {accountInfoLoading ? t('loading') : t('accountInformation.save')}
-              </Button>
-              {accountInfoError && <div className="text-destructive text-sm text-center">{accountInfoError}</div>}
-            </div>
-          </CardFooter>
-        </Card>
+        <AccountInfoForm
+          name={name ?? ''}
+          setName={setName}
+          preferredLanguage={preferredLanguage ?? ''}
+          setPreferredLanguage={setPreferredLanguage}
+          company={company ?? ''}
+          setCompany={setCompany}
+          position={position ?? ''}
+          setPosition={setPosition}
+          selectedCountry={selectedCountry ?? ''}
+          setSelectedCountry={setSelectedCountry}
+          selectedCity={selectedCity ?? ''}
+          setSelectedCity={setSelectedCity}
+          countries={countries}
+          countriesLoading={countriesLoading}
+          countriesError={countriesError ?? ''}
+          cities={cities}
+          citiesLoading={citiesLoading}
+          citiesError={citiesError ?? ''}
+          bio={bio ?? ''}
+          setBio={setBio}
+          accountInfoLoading={accountInfoLoading}
+          accountInfoError={accountInfoError ?? ''}
+          onSave={async () => {
+            setAccountInfoLoading(true);
+            setAccountInfoError(null);
+            try {
+              // Find country and city IDs
+              const countryObj = countries.find(c => c.name === selectedCountry);
+              const cityObj = cities.find(c => c.name === selectedCity);
+              if (!countryObj || !cityObj) throw new Error('Please select a valid country and city');
+              // Map preferredLanguage to language code
+              let languageCode = 'en';
+              if (preferredLanguage === 'Persian') languageCode = 'fa';
+              else if (preferredLanguage === 'Chinese') languageCode = 'zh';
+              const req = {
+                country_id: countryObj.id,
+                bio,
+                position,
+                name,
+                company_name: company,
+                city_id: cityObj.id,
+                show_contact_info: showContactInfo,
+                language: languageCode,
+              };
+              if (!token) throw new Error('Not authenticated');
+              const resp = await updateProfile(req, token, locale);
+              if (resp.success) {
+                toast.success(t('profileUpdated') || 'Profile updated!');
+              } else {
+                throw new Error(resp.message || 'Failed to update profile');
+              }
+            } catch (err: unknown) {
+              setAccountInfoError(err instanceof Error ? err.message : 'Failed to update profile');
+            } finally {
+              setAccountInfoLoading(false);
+            }
+          }}
+          t={t}
+        />
         {/* Contact Information */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="text-base font-semibold">
-              {t("contactInformation.title")}
-            </div>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {contactInfos.map((info, idx) => (
-              <div key={idx} className="relative border rounded-lg p-4 mb-2 flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium">{t("contactInformation.contactTitle")}</label>
-                  <Input
-                    value={info.title}
-                    onChange={e => {
-                      const newInfos = [...contactInfos];
-                      newInfos[idx].title = e.target.value;
-                      setContactInfos(newInfos);
-                    }}
-                    placeholder={t("contactInformation.contactTitlePlaceholder")}
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium">{t("contactInformation.contactType")}</label>
-                  <Select
-                    value={info.type}
-                    onValueChange={val => {
-                      const newInfos = [...contactInfos];
-                      newInfos[idx].type = val as "phone" | "email";
-                      setContactInfos(newInfos);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("contactInformation.selectType")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="phone">{t("contactInformation.phoneNumber")}</SelectItem>
-                      <SelectItem value="email">{t("contactInformation.email")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium">
-                    {info.type === "phone"
-                      ? t("contactInformation.phoneNumber")
-                      : t("contactInformation.email")}
-                  </label>
-                  {info.type === "phone" ? (
-                    <PhoneInput
-                      value={info.value}
-                      onChange={val => {
-                        const newInfos = [...contactInfos];
-                        newInfos[idx].value = val;
-                        setContactInfos(newInfos);
-                      }}
-                      placeholder={t("contactInformation.phonePlaceholder")}
-                    />
-                  ) : (
-                    <Input
-                      type="email"
-                      value={info.value}
-                      onChange={e => {
-                        const newInfos = [...contactInfos];
-                        newInfos[idx].value = e.target.value;
-                        setContactInfos(newInfos);
-                      }}
-                      placeholder={t("contactInformation.emailPlaceholder")}
-                    />
-                  )}
-                </div>
-                {/* Remove button for all but the first entry */}
-                {idx > 0 && (
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className={`absolute top-2 ${dir === 'rtl' ? 'left-2' : 'right-2'} text-destructive hover:bg-destructive/10`}
-                    onClick={() => {
-                      setContactInfos(contactInfos.filter((_, i) => i !== idx));
-                    }}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            {/* Plus button to add new entry */}
-            <button
-              type="button"
-              className="w-full border border-dashed rounded-lg p-2 text-primary hover:bg-primary/10 flex items-center justify-center gap-2"
-              onClick={() => setContactInfos([...contactInfos, { title: "", type: "phone", value: "" }])}
-            >
-              <span className="text-xl font-bold">+</span> {t("contactInformation.addAnother") || "Add another"}
-            </button>
-            <div className="flex items-center gap-2 md:col-span-2 mt-2">
-              <input
-                type="checkbox"
-                id="show-contact-info"
-                checked={showContactInfo}
-                onChange={() => setShowContactInfo((v) => !v)}
-                className="accent-primary w-4 h-4"
-              />
-              <label htmlFor="show-contact-info" className="text-sm font-medium cursor-pointer">
-                {t("contactInformation.showContactInfo")}
-              </label>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button
-              type="button"
-              className="w-full h-12 rounded-full text-lg"
-              onClick={async () => {
-                setContactInfoLoading(true);
-                setContactInfoError(null);
-                try {
-                  if (contactInfos.some(info => !info.title || !info.value)) throw new Error(t('errors.fillAllFields'));
-                  if (!token) throw new Error('Not authenticated');
-                  const resp = await saveContactInfo(
-                    contactInfos.map(info => ({ title: info.title, value: info.value })),
-                    token,
-                    showContactInfo
-                  );
-                  if (resp.success) {
-                    toast.success(t('contactInformationUpdated') || 'Contact information updated!');
-                  } else {
-                    throw new Error(resp.message || 'Failed to update contact info');
-                  }
-                } catch (err: unknown) {
-                  setContactInfoError(err instanceof Error ? err.message : 'Failed to update contact info');
-                } finally {
-                  setContactInfoLoading(false);
-                }
-              }}
-              disabled={contactInfoLoading}
-            >
-              {contactInfoLoading ? t('loading') : t('contactInformation.save')}
-            </Button>
-            {contactInfoError && <div className="text-destructive text-sm text-center">{contactInfoError}</div>}
-          </CardFooter>
-        </Card>
+        <ContactInfoForm
+          contactInfos={contactInfos}
+          setContactInfos={setContactInfos}
+          showContactInfo={showContactInfo}
+          setShowContactInfo={setShowContactInfo}
+          contactInfoLoading={contactInfoLoading}
+          contactInfoError={contactInfoError}
+          onSave={async () => {
+            setContactInfoLoading(true);
+            setContactInfoError(null);
+            try {
+              if (contactInfos.some(info => !info.title || !info.value)) throw new Error(t('errors.fillAllFields'));
+              if (!token) throw new Error('Not authenticated');
+              const resp = await saveContactInfo(
+                contactInfos.map(info => ({ title: info.title, value: info.value })),
+                token,
+                showContactInfo
+              );
+              if (resp.success) {
+                toast.success(t('contactInformationUpdated') || 'Contact information updated!');
+              } else {
+                throw new Error(resp.message || 'Failed to update contact info');
+              }
+            } catch (err: unknown) {
+              setContactInfoError(err instanceof Error ? err.message : 'Failed to update contact info');
+            } finally {
+              setContactInfoLoading(false);
+            }
+          }}
+          t={t}
+        />
       </form>
       )}
     </>

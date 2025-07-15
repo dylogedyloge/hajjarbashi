@@ -26,7 +26,7 @@ interface PublicProfile {
   city_name: string;
   country_name: string;
   contact_info: ContactInfoItem[];
-  badge_details: any;
+  badge_details: unknown;
 }
 
 export default function PublicProfilePage() {

@@ -19,7 +19,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { ImageCropper } from "@/components/ui/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
-import { profileService, fetchCountries, fetchCities, updateProfile, getMyProfile, Country, City, saveContactInfo } from "@/lib/profile";
+import { profileService, fetchCountries, fetchCities, updateProfile, getMyProfile, Country, City, saveContactInfo, ContactInfoItem } from "@/lib/profile";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 
 
@@ -89,7 +89,7 @@ const Profile = () => {
         // Set contactInfos from API response
         if (Array.isArray(data.contact_info) && data.contact_info.length > 0) {
           setContactInfos(
-            data.contact_info.map((item: any) => ({
+            data.contact_info.map((item: ContactInfoItem) => ({
               title: item.title || "",
               value: item.value || "",
               type: item.value && typeof item.value === "string" && item.value.includes("@") ? "email" : "phone"
@@ -117,8 +117,7 @@ const Profile = () => {
     }
   };
 
-  // Helper function to validate file
-  const validateFile = (file: File): boolean => {
+  const validateFile = useCallback((file: File): boolean => {
     const validTypes = ['image/svg+xml', 'image/jpeg', 'image/jpg', 'image/png'];
     const maxSize = 10 * 1024 * 1024; // 10MB
 
@@ -133,7 +132,7 @@ const Profile = () => {
     }
 
     return true;
-  };
+  }, [t]);
 
   // Upload image to API
   const uploadImage = async (file: File): Promise<void> => {

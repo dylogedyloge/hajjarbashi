@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
 import React from "react";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";

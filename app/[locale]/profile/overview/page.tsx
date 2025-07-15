@@ -1,26 +1,10 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
 import { useEffect, useCallback, useRef, useState } from "react";
-import { Upload, Loader2, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from "next-intl";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
-import { ImageCropper } from "@/components/profile/image-cropper";
-import { getUserInitials } from "@/lib/profile-utils";
-import { profileService, fetchCountries, fetchCities, updateProfile, getMyProfile, Country, City, saveContactInfo, ContactInfoItem } from "@/lib/profile";
-import { useLocaleDirection } from "@/hooks/useLocaleDirection";
+import { fetchCountries, fetchCities, updateProfile, getMyProfile, Country, City, saveContactInfo, ContactInfoItem } from "@/lib/profile";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { AccountInfoForm } from "@/components/profile/AccountInfoForm";
 import { ContactInfoForm } from "@/components/profile/ContactInfoForm";
@@ -29,11 +13,7 @@ import { ContactInfoForm } from "@/components/profile/ContactInfoForm";
 const Profile = () => {
   const t = useTranslations("Profile");
   const { user, token, login } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const [showCrop, setShowCrop] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  // Removed isUploading, showCrop, selectedImage, and related avatar upload logic
   const [showContactInfo, setShowContactInfo] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState("China");
   const [selectedCity, setSelectedCity] = useState("");
@@ -61,7 +41,7 @@ const Profile = () => {
 
   // Get current locale from next-intl
   const locale = useLocale();
-  const { dir } = useLocaleDirection();
+
 
   useEffect(() => {
     setCountriesLoading(true);
@@ -106,135 +86,16 @@ const Profile = () => {
   }, [token, locale]);
 
 
-  // Remove static form object, use state instead
 
-  // Helper function to validate URL
-  const isValidUrl = (url: string | null): boolean => {
-    if (!url || url.trim() === "") return false;
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const validateFile = useCallback((file: File): boolean => {
-    const validTypes = ['image/svg+xml', 'image/jpeg', 'image/jpg', 'image/png'];
-    const maxSize = 10 * 1024 * 1024; // 10MB
-
-    if (!validTypes.includes(file.type)) {
-      toast.error(t("errors.invalidFileType"));
-      return false;
-    }
-
-    if (file.size > maxSize) {
-      toast.error(t("errors.fileTooLarge"));
-      return false;
-    }
-
-    return true;
-  }, [t]);
-
-  // Upload image to API
-  const uploadImage = async (file: File): Promise<void> => {
-    if (!user || !token) {
-      toast.error(t("errors.authenticationRequired"));
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      const data = await profileService.updateProfileImage(file, token);
-
-      if (data.success) {
-        const baseUrl = 'https://api.hajjardevs.ir/';
-        const updatedUser = {
-          ...user,
-          avatar: baseUrl + data.data.avatar,
-          avatar_thumb: baseUrl + data.data.avatar_thumb,
-        };
-        login(updatedUser, token);
-        toast.success(t("messages.avatarUpdated"));
-      } else {
-        throw new Error(data.message || t("errors.uploadFailed"));
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      const errorMessage = error instanceof Error ? error.message : t("errors.uploadFailed");
-      toast.error(errorMessage);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  // Handle file selection
-  const handleFileSelect = useCallback((file: File) => {
-    if (validateFile(file)) {
-      setSelectedImage(file);
-      setShowCrop(true);
-    }
-  }, [validateFile]);
-
-  // Handle file input change
-  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-    // Reset input value to allow selecting the same file again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  // Handle drag and drop
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
-    }
-  }, [handleFileSelect]);
-
-  // Handle click to upload
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  // When the image loads, center the crop
-  // const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-  //   const { width, height } = e.currentTarget;
-  //   // setCrop(centerAspectCrop(width, height, 1)); // 1:1 aspect ratio
-  // };
 
   // Handle crop complete from ImageCropper
-  const handleCropComplete = async (croppedFile: File) => {
-    setShowCrop(false);
-    setSelectedImage(null);
-    await uploadImage(croppedFile);
-  };
+  // Avatar upload and crop logic is now handled in AvatarUploader
 
   useEffect(() => {
     return () => {
-      if (selectedImage) {
-        URL.revokeObjectURL(URL.createObjectURL(selectedImage));
-      }
+      // No longer needed as selectedImage is removed
     };
-  }, [selectedImage]);
+  }, []);
 
   // Fetch cities when selectedCountry changes
   useEffect(() => {
@@ -261,35 +122,7 @@ const Profile = () => {
   return (
     <>
       {/* Crop Modal using ImageCropper */}
-      <ImageCropper
-        isOpen={showCrop}
-        file={selectedImage}
-        onClose={() => {
-          setShowCrop(false);
-          setSelectedImage(null);
-        }}
-        onCropComplete={handleCropComplete}
-        aspectRatio={1}
-        minWidth={64}
-        minHeight={64}
-        title={t("cropModal.title")}
-        instructions={{
-          title: t("cropModal.instructions.title"),
-          dragCorners: t("cropModal.instructions.dragCorners"),
-          dragInside: t("cropModal.instructions.dragInside"),
-          squareArea: t("cropModal.instructions.squareArea"),
-        }}
-        actions={{
-          cropAndUpload: t("cropModal.actions.cropAndUpload"),
-          uploading: t("cropModal.actions.uploading"),
-          cancel: t("cropModal.actions.cancel"),
-        }}
-        preview={{
-          title: t("cropModal.preview.title"),
-        }}
-        cropSource={t("cropModal.cropSource")}
-        className=""
-      />
+      {/* Avatar upload and crop logic is now handled in AvatarUploader */}
       {profileLoading ? (
         <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12 text-center text-muted-foreground py-12">{t('loading')}</div>
       ) : profileError ? (

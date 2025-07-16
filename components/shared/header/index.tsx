@@ -71,8 +71,8 @@ const Header = () => {
     <header className="w-full flex items-center justify-between px-4 md:px-8 py-4 bg-background border-b border">
       {/* Desktop: Logo and Nav */}
       <div className="hidden md:flex items-center gap-8">
-        <Link className="  text-lg text-foreground" href="/">
-          {t("appName")}
+        <Link className="text-lg text-foreground flex items-center" href="/">
+          <img src="/logo-2.svg" alt="App Logo" className="h-8 w-auto" />
         </Link>
         <div className="flex items-center gap-2 bg-muted rounded-full px-2 py-1">
           <Button variant="default" size="sm" className="rounded-full px-6 ">
@@ -158,18 +158,25 @@ const Header = () => {
                       onError={(e) => {
                         // Fallback to initials if image fails to load
                         const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
+                        target.style.display = "none";
                         const parent = target.parentElement;
                         if (parent) {
-                          const fallback = parent.querySelector('.avatar-fallback') as HTMLElement;
+                          const fallback = parent.querySelector(
+                            ".avatar-fallback"
+                          ) as HTMLElement;
                           if (fallback) {
-                            fallback.style.display = 'flex';
+                            fallback.style.display = "flex";
                           }
                         }
                       }}
                     />
                   ) : null}
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium avatar-fallback" style={{ display: isValidUrl(user.avatar_thumb) ? 'none' : 'flex' }}>
+                  <div
+                    className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium avatar-fallback"
+                    style={{
+                      display: isValidUrl(user.avatar_thumb) ? "none" : "flex",
+                    }}
+                  >
                     {user.name
                       ? user.name.charAt(0).toUpperCase()
                       : user.email.charAt(0).toUpperCase()}

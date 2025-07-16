@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Building2, User2, MapPin, CalendarDays, Award } from "lucide-react";
+import { Building2, MapPin, CalendarDays, Award } from "lucide-react";
 
 interface ContactInfoItem {
   uuid: string;

@@ -72,7 +72,13 @@ const Header = () => {
       {/* Desktop: Logo and Nav */}
       <div className="hidden md:flex items-center gap-8">
         <Link className="text-lg text-foreground flex items-center" href="/">
-          <img src="/logo-2.svg" alt="App Logo" className="h-8 w-auto" />
+          <Image
+            src="/logo-2.svg"
+            alt="App Logo"
+            width={100}
+            height={100}
+            className="h-8 w-auto"
+          />
         </Link>
         <div className="flex items-center gap-2 bg-muted rounded-full px-2 py-1">
           <Button variant="default" size="sm" className="rounded-full px-6 ">

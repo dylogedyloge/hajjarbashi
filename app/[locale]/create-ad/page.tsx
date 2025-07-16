@@ -84,8 +84,8 @@ export default function CreateAdPage() {
       } else {
         setUploadError(res?.message || "Upload failed");
       }
-    } catch (err: any) {
-      setUploadError(err.message || "Upload failed");
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
     }

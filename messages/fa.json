@@ -318,6 +318,12 @@
       "selectOrigin": "انتخاب مبدا",
       "selectGrade": "انتخاب درجه",
       "selectUnit": "انتخاب واحد",
-      "infoAbout": "اطلاعات درباره {item}"
+      "infoAbout": "اطلاعات درباره {item}",
+      "uploading": "در حال آپلود...",
+      "maxImages": "شما می‌توانید تا {count} تصویر آپلود کنید.",
+      "uploadSuccess": "تصویر با موفقیت آپلود شد!",
+      "deleteSuccess": "تصویر با موفقیت حذف شد!",
+      "deleteError": "حذف تصویر ناموفق بود.",
+      "deleteImage": "حذف تصویر"
     }
   }

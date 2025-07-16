@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
+import { initAdvertisement } from "@/lib/advertisements";
+import { useAuth } from "@/lib/auth-context";
 
 interface CreateAdvertisementButtonProps {
   floating?: boolean;
@@ -15,8 +17,23 @@ const CreateAdvertisementButton = ({
   const pathname = usePathname();
   // Extract locale from pathname (e.g., /en/..., /fa/...)
   const locale = pathname.split("/")[1] || "en";
-  const handleClick = () => {
-    router.push(`/${locale}/create-ad`);
+  const { token, isAuthenticated } = useAuth();
+  const handleClick = async () => {
+    if (!isAuthenticated || !token) {
+      router.push(`/${locale}/create-ad`);
+      return;
+    }
+    try {
+      const res = await initAdvertisement(locale, token);
+      if (res?.success && res?.data?.id) {
+        console.log("Advertisement ID:", res.data.id);
+        router.push(`/${locale}/create-ad?id=${res.data.id}`);
+      }
+      // If not successful, do not navigate
+    } catch (error) {
+      console.error("Failed to initialize advertisement:", error);
+      // Do not navigate on error
+    }
   };
   if (floating) {
     return (

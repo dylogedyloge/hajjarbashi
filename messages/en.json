@@ -316,6 +316,12 @@
       "selectOrigin": "Select origin",
       "selectGrade": "Select grade",
       "selectUnit": "Select unit",
-      "infoAbout": "Info about {item}"
+      "infoAbout": "Info about {item}",
+      "uploading": "Uploading...",
+      "maxImages": "You can upload up to {count} images.",
+      "uploadSuccess": "Image uploaded successfully!",
+      "deleteSuccess": "Image deleted successfully!",
+      "deleteError": "Failed to delete image.",
+      "deleteImage": "Delete image"
     }
   }

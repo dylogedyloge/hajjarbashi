@@ -1,3 +1,4 @@
+"use client";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,88 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
-import { Info } from "lucide-react";
+import { Info, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { uploadAdMedia, deleteAdMedia, getAdDetails } from "@/lib/advertisements";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export default function CreateAdPage() {
   const t = useTranslations("CreateAd");
+  const searchParams = useSearchParams();
+  const adId = searchParams.get("id");
+  const locale = searchParams.get("lang") || "en";
+  const { token } = useAuth();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [imageUrls, setImageUrls] = useState<{ url: string; mediaPath: string }[]>([]);
+
+  useEffect(() => {
+    if (!adId) return;
+    (async () => {
+      try {
+        const res = await getAdDetails({ id: adId!, locale, token: token || undefined });
+        if (res?.success && res?.data?.uploaded_files) {
+          setImageUrls(
+            res.data.uploaded_files.map((file: any) => ({
+              url: `http://192.168.10.6:3001/${file.thumb_path}`,
+              mediaPath: file.path,
+            }))
+          );
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    })();
+  }, [adId, token, locale]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !adId || !token) return;
+    if (imageUrls.length >= 6) {
+      setUploadError(t("maxImages", { count: 6 }));
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const res = await uploadAdMedia({ id: adId, file, locale, token });
+      if (res?.success && res?.data?.media_thumb_path && res?.data?.media_path) {
+        setImageUrls((prev) => {
+          // Prevent duplicate images
+          if (prev.some((img) => img.mediaPath === res.data.media_path)) return prev;
+          return [
+            ...prev,
+            {
+              url: `http://192.168.10.6:3001/${res.data.media_thumb_path}`,
+              mediaPath: res.data.media_path,
+            },
+          ];
+        });
+        toast.success(t("uploadSuccess"));
+      } else {
+        setUploadError(res?.message || "Upload failed");
+      }
+    } catch (err: any) {
+      setUploadError(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteImage = async (mediaPath: string) => {
+    if (!adId || !token) return;
+    try {
+      await deleteAdMedia({ id: adId, mediaPath, locale, token });
+      setImageUrls((prev) => prev.filter((img) => img.mediaPath !== mediaPath));
+      toast.success(t("deleteSuccess"));
+    } catch (err: any) {
+      toast.error(t("deleteError"));
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto py-12">
       {/* Left Panel */}
@@ -82,16 +160,35 @@ export default function CreateAdPage() {
         <div>
           <div className="font-semibold mb-2">{t("productImage")}</div>
           <div className="border border-dashed border-muted rounded-lg p-6 flex flex-col items-center justify-center text-center mb-2 min-h-[120px]">
+            <div className="flex flex-wrap gap-2 mb-2 justify-center">
+              {imageUrls.map((img, idx) => (
+                <div key={idx} className="relative group">
+                  <img src={img.url} alt={`Uploaded ${idx + 1}`} className="max-h-32 rounded" />
+                  <button
+                    type="button"
+                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity group-hover:opacity-100"
+                    onClick={() => handleDeleteImage(img.mediaPath)}
+                    aria-label={t("deleteImage")}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
             <span className="text-muted-foreground text-sm">
-              <span className="font-semibold text-primary cursor-pointer">
+              <label className="font-semibold text-primary cursor-pointer">
                 {t("clickHere")}
-              </span>{" "}
+                <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading || imageUrls.length >= 6} />
+              </label>{" "}
               {t("uploadOrDrag")}
               <br />
               <span className="text-xs text-muted-foreground">
                 {t("supportedFormats")}
               </span>
             </span>
+            {uploading && <div className="text-xs text-blue-500 mt-2">{t("uploading")}</div>}
+            {uploadError && <div className="text-xs text-red-500 mt-2">{uploadError}</div>}
+            {imageUrls.length >= 6 && <div className="text-xs text-orange-500 mt-2">{t("maxImages", { count: 6 })}</div>}
           </div>
         </div>
         {/* Product Info Form */}

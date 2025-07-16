@@ -26,6 +26,8 @@ import { uploadAdMedia, deleteAdMedia, getAdDetails } from "@/lib/advertisements
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
+type UploadedFile = { path: string; thumb_path: string };
+
 export default function CreateAdPage() {
   const t = useTranslations("CreateAd");
   const searchParams = useSearchParams();
@@ -43,14 +45,14 @@ export default function CreateAdPage() {
         const res = await getAdDetails({ id: adId!, locale, token: token || undefined });
         if (res?.success && res?.data?.uploaded_files) {
           setImageUrls(
-            res.data.uploaded_files.map((file: any) => ({
-              url: `http://192.168.10.6:3001/${file.thumb_path}`,
+            res.data.uploaded_files.map((file: UploadedFile) => ({
+              url: `https://api.hajjardevs.ir/${file.thumb_path}`,
               mediaPath: file.path,
             }))
           );
         }
       } catch (err) {
-        // Optionally handle error
+        console.error(err);
       }
     })();
   }, [adId, token, locale]);
@@ -73,7 +75,7 @@ export default function CreateAdPage() {
           return [
             ...prev,
             {
-              url: `http://192.168.10.6:3001/${res.data.media_thumb_path}`,
+              url: `https://api.hajjardevs.ir/${res.data.media_thumb_path}`,
               mediaPath: res.data.media_path,
             },
           ];
@@ -95,8 +97,9 @@ export default function CreateAdPage() {
       await deleteAdMedia({ id: adId, mediaPath, locale, token });
       setImageUrls((prev) => prev.filter((img) => img.mediaPath !== mediaPath));
       toast.success(t("deleteSuccess"));
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(t("deleteError"));
+      console.error(err);
     }
   };
 

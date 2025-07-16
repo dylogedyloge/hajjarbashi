@@ -47,10 +47,27 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import type { DragEndEvent } from "@dnd-kit/core";
 
 type UploadedFile = { path: string; thumb_path: string };
 
-function SortableImage({ id, idx, img, isCover, onDelete, t }: any) {
+interface SortableImageProps {
+  id: string;
+  idx: number;
+  img: { url: string; mediaPath: string };
+  isCover: boolean;
+  onDelete: (mediaPath: string) => void;
+  t: ReturnType<typeof useTranslations>;
+}
+
+function SortableImage({
+  id,
+  idx,
+  img,
+  isCover,
+  onDelete,
+  t,
+}: SortableImageProps) {
   const {
     attributes,
     listeners,
@@ -199,9 +216,10 @@ export default function CreateAdPageDndKit() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (active.id !== over?.id) {
+    if (!over) return;
+    if (active.id !== over.id) {
       const oldIndex = imageUrls.findIndex(
         (img) => img.mediaPath === active.id
       );

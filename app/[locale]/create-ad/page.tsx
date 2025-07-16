@@ -22,9 +22,26 @@ import { Info, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { uploadAdMedia, deleteAdMedia, getAdDetails } from "@/lib/advertisements";
+import {
+  uploadAdMedia,
+  deleteAdMedia,
+  getAdDetails,
+} from "@/lib/advertisements";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+  DroppableProvided,
+  DraggableProvided,
+  DraggableStateSnapshot,
+} from "react-beautiful-dnd";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { UploadIcon } from "lucide-react";
 
 type UploadedFile = { path: string; thumb_path: string };
 
@@ -36,13 +53,19 @@ export default function CreateAdPage() {
   const { token } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [imageUrls, setImageUrls] = useState<{ url: string; mediaPath: string }[]>([]);
+  const [imageUrls, setImageUrls] = useState<
+    { url: string; mediaPath: string }[]
+  >([]);
 
   useEffect(() => {
     if (!adId) return;
     (async () => {
       try {
-        const res = await getAdDetails({ id: adId!, locale, token: token || undefined });
+        const res = await getAdDetails({
+          id: adId!,
+          locale,
+          token: token || undefined,
+        });
         if (res?.success && res?.data?.uploaded_files) {
           setImageUrls(
             res.data.uploaded_files.map((file: UploadedFile) => ({
@@ -68,10 +91,15 @@ export default function CreateAdPage() {
     setUploadError(null);
     try {
       const res = await uploadAdMedia({ id: adId, file, locale, token });
-      if (res?.success && res?.data?.media_thumb_path && res?.data?.media_path) {
+      if (
+        res?.success &&
+        res?.data?.media_thumb_path &&
+        res?.data?.media_path
+      ) {
         setImageUrls((prev) => {
           // Prevent duplicate images
-          if (prev.some((img) => img.mediaPath === res.data.media_path)) return prev;
+          if (prev.some((img) => img.mediaPath === res.data.media_path))
+            return prev;
           return [
             ...prev,
             {
@@ -101,6 +129,14 @@ export default function CreateAdPage() {
       toast.error(t("deleteError"));
       console.error(err);
     }
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const reordered = Array.from(imageUrls);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+    setImageUrls(reordered);
   };
 
   return (
@@ -163,35 +199,156 @@ export default function CreateAdPage() {
         <div>
           <div className="font-semibold mb-2">{t("productImage")}</div>
           <div className="border border-dashed border-muted rounded-lg p-6 flex flex-col items-center justify-center text-center mb-2 min-h-[120px]">
-            <div className="flex flex-wrap gap-2 mb-2 justify-center">
-              {imageUrls.map((img, idx) => (
-                <div key={idx} className="relative group">
-                  <img src={img.url} alt={`Uploaded ${idx + 1}`} className="max-h-32 rounded" />
-                  <button
-                    type="button"
-                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity group-hover:opacity-100"
-                    onClick={() => handleDeleteImage(img.mediaPath)}
-                    aria-label={t("deleteImage")}
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="images" direction="horizontal">
+                {(provided: DroppableProvided) => {
+                  // Always show 6 slots (first is cover, rest are regular)
+                  const slots = Array.from(
+                    { length: 6 },
+                    (_, i) => imageUrls[i] || null
+                  );
+                  return (
+                    <div
+                      className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 justify-center"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {slots.map((img, idx) => {
+                        const isCover = idx === 0;
+                        // Only render Draggable for filled slots (images)
+                        if (img) {
+                          return (
+                            <Draggable
+                              key={img.mediaPath}
+                              draggableId={img.mediaPath}
+                              index={idx}
+                            >
+                              {(
+                                provided: DraggableProvided,
+                                snapshot: DraggableStateSnapshot
+                              ) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`relative group ${
+                                    snapshot.isDragging ? "z-10" : ""
+                                  } ${
+                                    isCover
+                                      ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2"
+                                      : ""
+                                  }`}
+                                  style={{
+                                    ...provided.draggableProps.style,
+                                    opacity: snapshot.isDragging ? 0.7 : 1,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {/* Image container with fixed aspect ratio and overflow-hidden */}
+                                  <div
+                                    className={`relative w-full h-0 ${
+                                      isCover
+                                        ? "pt-[100%] min-w-[180px] min-h-[180px]"
+                                        : "pt-[100%] min-w-[90px] min-h-[90px]"
+                                    } overflow-hidden rounded`}
+                                  >
+                                    <Image
+                                      src={img.url}
+                                      alt={`Uploaded ${idx + 1}`}
+                                      fill
+                                      className="object-cover rounded"
+                                    />
+                                    {/* Cover badge */}
+                                    {isCover && (
+                                      <Badge className="absolute bottom-2 left-2 bg-primary text-white shadow-md text-xs px-2 py-1 rounded-full z-20">
+                                        {t("coverImage", {
+                                          defaultValue: "Cover Image",
+                                        })}
+                                      </Badge>
+                                    )}
+                                    <button
+                                      type="button"
+                                      className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity group-hover:opacity-100 z-30"
+                                      onClick={() =>
+                                        handleDeleteImage(img.mediaPath)
+                                      }
+                                      aria-label={t("deleteImage")}
+                                    >
+                                      <X size={16} />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </Draggable>
+                          );
+                        }
+                        // Skeleton slot (static, not draggable)
+                        // Show the upload button in the first empty slot only
+                        const showUpload =
+                          slots.findIndex((s) => s === null) === idx &&
+                          imageUrls.length < 6;
+                        return (
+                          <div
+                            key={`skeleton-${idx}`}
+                            className={`${
+                              isCover
+                                ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2"
+                                : ""
+                            } relative ${
+                              showUpload
+                                ? "border-2 border-dotted rounded-sm border-primary"
+                                : ""
+                            }`}
+                          >
+                            <Skeleton
+                              className={`w-full h-0 ${
+                                isCover
+                                  ? "pt-[100%] min-w-[180px] min-h-[180px]"
+                                  : "pt-[100%] min-w-[90px] min-h-[90px]"
+                              } rounded`}
+                            />
+                            {showUpload && (
+                              <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
+                                <UploadIcon className="w-3 h-3 md:w-5 md:h-5 text-primary mb-1" />
+                                <span className="text-xs text-primary font-medium select-none">
+                                  {t("clickHere")}
+                                </span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={handleFileChange}
+                                  disabled={uploading || imageUrls.length >= 6}
+                                />
+                              </label>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  );
+                }}
+              </Droppable>
+            </DragDropContext>
             <span className="text-muted-foreground text-sm">
-              <label className="font-semibold text-primary cursor-pointer">
-                {t("clickHere")}
-                <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading || imageUrls.length >= 6} />
-              </label>{" "}
-              {t("uploadOrDrag")}
-              <br />
               <span className="text-xs text-muted-foreground">
                 {t("supportedFormats")}
               </span>
             </span>
-            {uploading && <div className="text-xs text-blue-500 mt-2">{t("uploading")}</div>}
-            {uploadError && <div className="text-xs text-red-500 mt-2">{uploadError}</div>}
-            {imageUrls.length >= 6 && <div className="text-xs text-orange-500 mt-2">{t("maxImages", { count: 6 })}</div>}
+            {uploading && (
+              <div className="text-xs text-blue-500 mt-2">{t("uploading")}</div>
+            )}
+            {uploadError && (
+              <div className="text-xs text-red-500 mt-2">{uploadError}</div>
+            )}
+            {imageUrls.length >= 6 && (
+              <div className="text-xs text-orange-500 mt-2">
+                {t("maxImages", { count: 6 })}
+              </div>
+            )}
           </div>
         </div>
         {/* Product Info Form */}

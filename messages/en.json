@@ -322,6 +322,7 @@
       "uploadSuccess": "Image uploaded successfully!",
       "deleteSuccess": "Image deleted successfully!",
       "deleteError": "Failed to delete image.",
-      "deleteImage": "Delete image"
+      "deleteImage": "Delete image",
+      "coverImage": "Cover Image"
     }
   }

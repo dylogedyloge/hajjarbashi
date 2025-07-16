@@ -324,6 +324,7 @@
       "uploadSuccess": "تصویر با موفقیت آپلود شد!",
       "deleteSuccess": "تصویر با موفقیت حذف شد!",
       "deleteError": "حذف تصویر ناموفق بود.",
-      "deleteImage": "حذف تصویر"
+      "deleteImage": "حذف تصویر",
+      "coverImage": "تصویر کاور"
     }
   }

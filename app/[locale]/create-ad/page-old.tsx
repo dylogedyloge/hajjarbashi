@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
-import { Info, X, UploadIcon } from "lucide-react";
+import { Info, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -30,85 +30,22 @@ import {
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+  DroppableProvided,
+  DraggableProvided,
+  DraggableStateSnapshot,
+} from "react-beautiful-dnd";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-// dnd-kit imports
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  useSortable,
-  rectSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { UploadIcon } from "lucide-react";
 
 type UploadedFile = { path: string; thumb_path: string };
 
-function SortableImage({ id, idx, img, isCover, onDelete, t }: any) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.7 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: isDragging ? 10 : undefined,
-      }}
-      className={`relative group ${
-        isCover ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2" : ""
-      }`}
-      {...attributes}
-      {...listeners}
-    >
-      <div
-        className={`relative w-full h-0 ${
-          isCover
-            ? "pt-[100%] min-w-[180px] min-h-[180px]"
-            : "pt-[100%] min-w-[90px] min-h-[90px]"
-        } overflow-hidden rounded`}
-      >
-        <Image
-          src={img.url}
-          alt={`Uploaded ${idx + 1}`}
-          fill
-          className="object-cover rounded"
-        />
-        {isCover && (
-          <Badge className="absolute bottom-2 left-2 bg-primary text-white shadow-md text-xs px-2 py-1 rounded-full z-20">
-            {t("coverImage", { defaultValue: "Cover Image" })}
-          </Badge>
-        )}
-        <button
-          type="button"
-          className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity group-hover:opacity-100 z-30"
-          onClick={() => onDelete(img.mediaPath)}
-          aria-label={t("deleteImage")}
-        >
-          <X size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export default function CreateAdPageDndKit() {
+export default function CreateAdPage() {
   const t = useTranslations("CreateAd");
   const searchParams = useSearchParams();
   const adId = searchParams.get("id");
@@ -194,20 +131,12 @@ export default function CreateAdPageDndKit() {
     }
   };
 
-  // dnd-kit drag and drop logic
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
-
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-    if (active.id !== over?.id) {
-      const oldIndex = imageUrls.findIndex(
-        (img) => img.mediaPath === active.id
-      );
-      const newIndex = imageUrls.findIndex((img) => img.mediaPath === over.id);
-      setImageUrls((imgs) => arrayMove(imgs, oldIndex, newIndex));
-    }
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const reordered = Array.from(imageUrls);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+    setImageUrls(reordered);
   };
 
   return (
@@ -270,78 +199,140 @@ export default function CreateAdPageDndKit() {
         <div>
           <div className="font-semibold mb-2">{t("productImage")}</div>
           <div className="border border-dashed border-muted rounded-lg p-6 flex flex-col items-center justify-center text-center mb-2 min-h-[120px]">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={imageUrls.map((img) => img.mediaPath)}
-                strategy={rectSortingStrategy}
-              >
-                {/* Always show 6 slots (first is cover, rest are regular) */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 justify-center">
-                  {Array.from({ length: 6 }, (_, idx) => {
-                    const img = imageUrls[idx] || null;
-                    const isCover = idx === 0;
-                    // Show the upload button in the first empty slot only
-                    const showUpload =
-                      imageUrls.length < 6 && imageUrls.length === idx;
-                    if (img) {
-                      return (
-                        <SortableImage
-                          key={img.mediaPath}
-                          id={img.mediaPath}
-                          idx={idx}
-                          img={img}
-                          isCover={isCover}
-                          onDelete={handleDeleteImage}
-                          t={t}
-                        />
-                      );
-                    }
-                    // Skeleton slot (static, not draggable)
-                    return (
-                      <div
-                        key={`skeleton-${idx}`}
-                        className={`${
-                          isCover
-                            ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2"
-                            : ""
-                        } relative ${
-                          showUpload
-                            ? "border-2 border-dotted rounded-sm border-primary"
-                            : ""
-                        }`}
-                      >
-                        <Skeleton
-                          className={`w-full h-0 ${
-                            isCover
-                              ? "pt-[100%] min-w-[180px] min-h-[180px]"
-                              : "pt-[100%] min-w-[90px] min-h-[90px]"
-                          } rounded`}
-                        />
-                        {showUpload && (
-                          <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
-                            <UploadIcon className="w-3 h-3 md:w-5 md:h-5 text-primary mb-1" />
-                            <span className="text-xs text-primary font-medium select-none">
-                              {t("clickHere")}
-                            </span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleFileChange}
-                              disabled={uploading || imageUrls.length >= 6}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="images" direction="horizontal">
+                {(provided: DroppableProvided) => {
+                  // Always show 6 slots (first is cover, rest are regular)
+                  const slots = Array.from(
+                    { length: 6 },
+                    (_, i) => imageUrls[i] || null
+                  );
+                  return (
+                    <div
+                      className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 justify-center"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {slots.map((img, idx) => {
+                        const isCover = idx === 0;
+                        // Only render Draggable for filled slots (images)
+                        if (img) {
+                          return (
+                            <Draggable
+                              key={img.mediaPath}
+                              draggableId={img.mediaPath}
+                              index={idx}
+                            >
+                              {(
+                                provided: DraggableProvided,
+                                snapshot: DraggableStateSnapshot
+                              ) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`relative group ${
+                                    snapshot.isDragging ? "z-10" : ""
+                                  } ${
+                                    isCover
+                                      ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2"
+                                      : ""
+                                  }`}
+                                  style={{
+                                    ...provided.draggableProps.style,
+                                    opacity: snapshot.isDragging ? 0.7 : 1,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {/* Image container with fixed aspect ratio and overflow-hidden */}
+                                  <div
+                                    className={`relative w-full h-0 ${
+                                      isCover
+                                        ? "pt-[100%] min-w-[180px] min-h-[180px]"
+                                        : "pt-[100%] min-w-[90px] min-h-[90px]"
+                                    } overflow-hidden rounded`}
+                                  >
+                                    <Image
+                                      src={img.url}
+                                      alt={`Uploaded ${idx + 1}`}
+                                      fill
+                                      className="object-cover rounded"
+                                    />
+                                    {/* Cover badge */}
+                                    {isCover && (
+                                      <Badge className="absolute bottom-2 left-2 bg-primary text-white shadow-md text-xs px-2 py-1 rounded-full z-20">
+                                        {t("coverImage", {
+                                          defaultValue: "Cover Image",
+                                        })}
+                                      </Badge>
+                                    )}
+                                    <button
+                                      type="button"
+                                      className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity group-hover:opacity-100 z-30"
+                                      onClick={() =>
+                                        handleDeleteImage(img.mediaPath)
+                                      }
+                                      aria-label={t("deleteImage")}
+                                    >
+                                      <X size={16} />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </Draggable>
+                          );
+                        }
+                        // Skeleton slot (static, not draggable)
+                        // Show the upload button in the first empty slot only
+                        const showUpload =
+                          slots.findIndex((s) => s === null) === idx &&
+                          imageUrls.length < 6;
+                        return (
+                          <div
+                            key={`skeleton-${idx}`}
+                            className={`${
+                              isCover
+                                ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2"
+                                : ""
+                            } relative ${
+                              showUpload
+                                ? "border-2 border-dotted rounded-sm border-primary"
+                                : ""
+                            }`}
+                          >
+                            <Skeleton
+                              className={`w-full h-0 ${
+                                isCover
+                                  ? "pt-[100%] min-w-[180px] min-h-[180px]"
+                                  : "pt-[100%] min-w-[90px] min-h-[90px]"
+                              } rounded`}
                             />
-                          </label>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </SortableContext>
-            </DndContext>
+                            {showUpload && (
+                              <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
+                                <UploadIcon className="w-3 h-3 md:w-5 md:h-5 text-primary mb-1" />
+                                <span className="text-xs text-primary font-medium select-none">
+                                  {t("clickHere")}
+                                </span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={handleFileChange}
+                                  disabled={uploading || imageUrls.length >= 6}
+                                />
+                              </label>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  );
+                }}
+              </Droppable>
+            </DragDropContext>
             <span className="text-muted-foreground text-sm">
               <span className="text-xs text-muted-foreground">
                 {t("supportedFormats")}

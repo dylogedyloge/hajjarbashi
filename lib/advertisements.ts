@@ -177,4 +177,17 @@ export async function fetchPorts(lang: string) {
   }
   const data = await response.json();
   return data.data || [];
+}
+
+export async function fetchAds({ limit, page, locale }: { limit: number; page: number; locale: string }) {
+  const response = await fetch(`${API_BASE_URL}/ads/explore?limit=${limit}&page=${page}`, {
+    method: 'GET',
+    headers: {
+      'x-lang': locale,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch ads');
+  }
+  return response.json();
 } 

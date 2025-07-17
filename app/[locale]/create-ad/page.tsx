@@ -54,7 +54,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { DragEndEvent } from "@dnd-kit/core";
-import DropdownMultiSelect, { DropdownMultiSelectOption } from "@/components/ui/dropdown-multiselect";
+import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
 
 type UploadedFile = { path: string; thumb_path: string };
 
@@ -152,7 +152,7 @@ export default function CreateAdPage() {
   const [contactInfo, setContactInfo] = useState(false);
 
   // Add state for all form fields
-  const [exportPorts, setExportPorts] = useState<string>("");
+ 
   const [surfaceId, setSurfaceId] = useState<string>("");
   const [originCountryId, setOriginCountryId] = useState<string>("");
   const [originCityId, setOriginCityId] = useState<string>("");
@@ -169,8 +169,6 @@ export default function CreateAdPage() {
   const [minimumOrder, setMinimumOrder] = useState<string>("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [price, setPrice] = useState<string>("");
-  const [colors, setColors] = useState<string>("");
-  const [receivingPorts, setReceivingPorts] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
   // Add state for country/city options and loading
@@ -393,8 +391,12 @@ export default function CreateAdPage() {
       } else {
         toast.error(res?.message || t("adUpdateError", { defaultValue: "Failed to update ad." }));
       }
-    } catch (err: any) {
-      toast.error(err.message || t("adUpdateError", { defaultValue: "Failed to update ad." }));
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : t("adUpdateError", { defaultValue: "Failed to update ad." });
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

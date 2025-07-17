@@ -7,8 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 
 interface AdDetailPageProps {
-  params: { id: string };
-  searchParams?: { lang?: string };
+  params: { id: string; locale: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 type Port = {
@@ -20,7 +20,7 @@ type Port = {
 type Media = { media_thumb_path?: string; media_path?: string };
 
 export default async function AdDetailPage({ params, searchParams }: AdDetailPageProps) {
-  const locale = searchParams?.lang || "en";
+  const locale = Array.isArray(searchParams?.lang) ? searchParams.lang[0] : searchParams?.lang || "en";
   let ad = null;
   try {
     const res = await fetchAdById({ id: params.id, locale });

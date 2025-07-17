@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 
 interface AdDetailPageProps {
-  params: { id: string; locale: string };
+  params: { [key: string]: string };
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 

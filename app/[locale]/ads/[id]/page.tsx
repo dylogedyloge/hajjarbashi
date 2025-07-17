@@ -14,7 +14,7 @@ type Port = {
 
 type Media = { media_thumb_path?: string; media_path?: string };
 
-export default async function AdDetailPage({
+export default async function Page({
   params,
   searchParams,
 }: {

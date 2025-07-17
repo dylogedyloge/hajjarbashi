@@ -84,8 +84,8 @@ export interface SaveContactInfoResponse {
   timestamp: string;
 }
 
-const API_BASE_URL = 'https://api.hajjardevs.ir';
-// const API_BASE_URL = 'http://192.168.10.6:3001';
+// const API_BASE_URL = 'https://api.hajjardevs.ir';
+const API_BASE_URL = 'http://192.168.10.6:3001';
 
 
 
@@ -211,4 +211,14 @@ export async function saveContactInfo(
     throw new Error(errorMessage);
   }
   return response.json();
+}
+
+export async function fetchUserProfile(id: string, lang: string) {
+  // const response = await fetch(`https://api.hajjardevs.ir/users/profile/${id}`, {
+  const response = await fetch(`http://192.168.10.6:3001/users/profile/${id}`, {
+    headers: { "x-lang": lang },
+  });
+  if (!response.ok) throw new Error("Failed to fetch user profile");
+  const data = await response.json();
+  return data.data;
 } 

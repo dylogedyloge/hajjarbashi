@@ -51,7 +51,8 @@ export default function PublicProfilePage() {
     if (!id) return;
     setLoading(true);
     setError(null);
-    fetch(`https://api.hajjardevs.ir/users/profile/${id}`, {
+    // fetch(`https://api.hajjardevs.ir/users/profile/${id}`, {
+    fetch(`http://192.168.10.6:3001/users/profile/${id}`, {
       headers: lang ? { "x-lang": lang } : {},
     })
       .then(async (res) => {

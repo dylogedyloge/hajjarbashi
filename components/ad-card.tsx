@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Clock, Weight } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AdCardProps {
   ad: {
@@ -100,13 +101,19 @@ const AdCard = ({ ad }: AdCardProps) => {
           {/* Color dots (show if color/colors is present) */}
           {colorArray.length > 0 && (
             <span className="flex items-center gap-1">
-              {colorArray.map((c, i) => (
-                <span
-                  key={i}
-                  className="w-4 h-4 rounded-full border border-muted bg-neutral-200 inline-block"
-                  title={c}
-                />
-              ))}
+              <TooltipProvider>
+                {colorArray.map((c, i) => (
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <span
+                        className="w-4 h-4 rounded-full border border-muted inline-block cursor-pointer"
+                        style={{ backgroundColor: c }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{c}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </TooltipProvider>
             </span>
           )}
         </div>

@@ -1,9 +1,12 @@
+
 import { fetchAdById } from "@/lib/advertisements";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import AdImageGallery from "@/components/AdImageGallery";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AdCreatorCard } from "@/components/AdCreatorCard";
+
 
 
 type Port = {
@@ -44,17 +47,22 @@ export default async function Page(props: unknown) {
   const receivingPorts = Array.isArray(ad.receiving_ports_details) ? ad.receiving_ports_details : [];
   const exportPorts = Array.isArray(ad.export_ports_details) ? ad.export_ports_details : [];
 
+  // Combine main image and gallery images, remove duplicates and falsy
+  const allImages = [mainImageUrl, ...galleryImages].filter(
+    (img, idx, arr) => img && arr.indexOf(img) === idx
+  );
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <Card className="p-0 overflow-hidden">
         {/* Main Image & Gallery */}
         <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/2 w-full aspect-square bg-muted flex items-center justify-center relative">
-            {mainImageUrl ? (
-              <Image src={mainImageUrl} alt={ad.category?.name || "Ad image"} fill className="object-cover" />
-            ) : (
-              <Skeleton className="w-full h-full" />
-            )}
+          <div className="md:w-1/2 w-full">
+            <AdImageGallery
+              mainImageUrl={mainImageUrl}
+              galleryImages={allImages}
+              alt={ad.category?.name || "Ad image"}
+            />
           </div>
           <div className="md:w-1/2 w-full flex flex-col gap-4 p-6">
             <div className="flex flex-wrap gap-2 mb-2">
@@ -71,13 +79,19 @@ export default async function Page(props: unknown) {
               {colorArray.length > 0 && (
                 <>
                   <span className="text-xs text-muted-foreground">Colors:</span>
-                  {colorArray.map((c: string, i: number) => (
-                    <span
-                      key={i}
-                      className="w-5 h-5 rounded-full border border-muted bg-neutral-200 inline-block"
-                      title={c}
-                    />
-                  ))}
+                  <TooltipProvider>
+                    {colorArray.map((c: string, i: number) => (
+                      <Tooltip key={i} >
+                        <TooltipTrigger asChild>
+                          <span
+                            className="w-5 h-5 rounded-full border border-muted inline-block cursor-pointer"
+                            style={{ backgroundColor: c }}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" >{c}</TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </TooltipProvider>
                 </>
               )}
             </div>
@@ -141,22 +155,16 @@ export default async function Page(props: unknown) {
             </div>
           </div>
         </div>
-        {/* Gallery */}
-        {galleryImages.length > 0 && (
-          <div className="flex gap-2 p-4 border-t bg-muted overflow-x-auto">
-            {galleryImages.map((img: string, i: number) => (
-              <div key={i} className="relative w-24 h-24 flex-shrink-0">
-                <Image
-                  src={img.startsWith("http") ? img : `https://api.hajjardevs.ir/${img}`}
-                  alt={`Gallery image ${i + 1}`}
-                  fill
-                  className="object-cover rounded"
-                />
-              </div>
-            ))}
-          </div>
-        )}
       </Card>
+      {/* Creator Card (static data) */}
+      <div className="flex justify-center mt-8">
+        <AdCreatorCard
+          avatarUrl="https://randomuser.me/api/portraits/men/1.jpg"
+          name="John Doe"
+          company="company name"
+          adId={ad.id || "1234567"}
+        />
+      </div>
     </div>
   );
 } 

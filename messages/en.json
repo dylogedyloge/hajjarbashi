@@ -323,6 +323,9 @@
       "deleteSuccess": "Image deleted successfully!",
       "deleteError": "Failed to delete image.",
       "deleteImage": "Delete image",
-      "coverImage": "Cover Image"
+      "coverImage": "Cover Image",
+      "updating": "Updating...",
+      "adUpdateSuccess": "Ad updated successfully!",
+      "adUpdateError": "Failed to update ad."
     }
   }

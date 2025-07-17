@@ -26,6 +26,12 @@ import {
   uploadAdMedia,
   deleteAdMedia,
   getAdDetails,
+  fetchCountries,
+  fetchCities,
+  fetchSurfaces,
+  fetchCategories,
+  fetchPorts,
+  updateAd,
 } from "@/lib/advertisements";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -48,6 +54,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { DragEndEvent } from "@dnd-kit/core";
+import DropdownMultiSelect, { DropdownMultiSelectOption } from "@/components/ui/dropdown-multiselect";
 
 type UploadedFile = { path: string; thumb_path: string };
 
@@ -125,7 +132,7 @@ function SortableImage({
   );
 }
 
-export default function CreateAdPageDndKit() {
+export default function CreateAdPage() {
   const t = useTranslations("CreateAd");
   const searchParams = useSearchParams();
   const adId = searchParams.get("id");
@@ -136,6 +143,57 @@ export default function CreateAdPageDndKit() {
   const [imageUrls, setImageUrls] = useState<
     { url: string; mediaPath: string }[]
   >([]);
+
+  // Add state for left panel checkboxes
+  const [featured, setFeatured] = useState(true);
+  const [autoRenew, setAutoRenew] = useState(false);
+  const [expressReady, setExpressReady] = useState(false); // Not in API, but keep for UI
+  const [enableChat, setEnableChat] = useState(false);
+  const [contactInfo, setContactInfo] = useState(false);
+
+  // Add state for all form fields
+  const [exportPorts, setExportPorts] = useState<string>("");
+  const [surfaceId, setSurfaceId] = useState<string>("");
+  const [originCountryId, setOriginCountryId] = useState<string>("");
+  const [originCityId, setOriginCityId] = useState<string>("");
+  const [benefits, setBenefits] = useState<string>("");
+  const [defects, setDefects] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [saleUnitType, setSaleUnitType] = useState<string>("");
+  const [formType, setFormType] = useState<string>("");
+  const [grade, setGrade] = useState<string>("");
+  const [sizeH, setSizeH] = useState<string>("");
+  const [sizeW, setSizeW] = useState<string>("");
+  const [sizeL, setSizeL] = useState<string>("");
+  const [weight, setWeight] = useState<string>("");
+  const [minimumOrder, setMinimumOrder] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [price, setPrice] = useState<string>("");
+  const [colors, setColors] = useState<string>("");
+  const [receivingPorts, setReceivingPorts] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+
+  // Add state for country/city options and loading
+  const [countryOptions, setCountryOptions] = useState<{ id: string; name: string }[]>([]);
+  const [cityOptions, setCityOptions] = useState<{ id: string; name: string }[]>([]);
+  const [countryLoading, setCountryLoading] = useState(false);
+  const [cityLoading, setCityLoading] = useState(false);
+  const [countryError, setCountryError] = useState<string | null>(null);
+  const [cityError, setCityError] = useState<string | null>(null);
+  const [surfaceOptions, setSurfaceOptions] = useState<{ id: string; name: string }[]>([]);
+  const [surfaceLoading, setSurfaceLoading] = useState(false);
+  const [surfaceError, setSurfaceError] = useState<string | null>(null);
+  const [categoryOptions, setCategoryOptions] = useState<{ id: string; name: string; colors: string[] }[]>([]);
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [colorOptions, setColorOptions] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [portOptions, setPortOptions] = useState<{ id: string; name: string }[]>([]);
+  const [portLoading, setPortLoading] = useState(false);
+  const [portError, setPortError] = useState<string | null>(null);
+  const [selectedReceivingPorts, setSelectedReceivingPorts] = useState<string[]>([]);
+  const [selectedExportPorts, setSelectedExportPorts] = useState<string[]>([]);
 
   useEffect(() => {
     if (!adId) return;
@@ -159,6 +217,65 @@ export default function CreateAdPageDndKit() {
       }
     })();
   }, [adId, token, locale]);
+
+  // Fetch countries on mount
+  useEffect(() => {
+    setCountryLoading(true);
+    setCountryError(null);
+    fetchCountries(locale)
+      .then((data) => setCountryOptions(data))
+      .catch((err) => setCountryError(err.message || "Failed to load countries"))
+      .finally(() => setCountryLoading(false));
+  }, [locale]);
+  // Fetch cities when originCountryId changes
+  useEffect(() => {
+    if (!originCountryId) {
+      setCityOptions([]);
+      return;
+    }
+    setCityLoading(true);
+    setCityError(null);
+    fetchCities(originCountryId, locale)
+      .then((data) => setCityOptions(data))
+      .catch((err) => setCityError(err.message || "Failed to load cities"))
+      .finally(() => setCityLoading(false));
+  }, [originCountryId, locale]);
+
+  // Fetch surfaces on mount
+  useEffect(() => {
+    setSurfaceLoading(true);
+    setSurfaceError(null);
+    fetchSurfaces(locale)
+      .then((data) => setSurfaceOptions(data))
+      .catch((err) => setSurfaceError(err.message || "Failed to load surfaces"))
+      .finally(() => setSurfaceLoading(false));
+  }, [locale]);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    setCategoryLoading(true);
+    setCategoryError(null);
+    fetchCategories(locale)
+      .then((data) => setCategoryOptions(data))
+      .catch((err) => setCategoryError(err.message || "Failed to load categories"))
+      .finally(() => setCategoryLoading(false));
+  }, [locale]);
+  // Update color options when categoryId changes
+  useEffect(() => {
+    const cat = categoryOptions.find((c) => c.id === categoryId);
+    setColorOptions(cat?.colors || []);
+    setSelectedColors([]); // Reset selected colors when category changes
+  }, [categoryId, categoryOptions]);
+
+  // Fetch ports on mount
+  useEffect(() => {
+    setPortLoading(true);
+    setPortError(null);
+    fetchPorts(locale)
+      .then((data) => setPortOptions(data))
+      .catch((err) => setPortError(err.message || "Failed to load ports"))
+      .finally(() => setPortLoading(false));
+  }, [locale]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -228,6 +345,61 @@ export default function CreateAdPageDndKit() {
     }
   };
 
+  // Add handler for Pay and Publish
+  const handlePayAndPublish = async () => {
+    const updateAdPayload = {
+      id: adId!,
+      status: Number(status),
+      sale_unit_type: saleUnitType,
+      form: formType,
+      grade,
+      size: {
+        h: Number(sizeH),
+        w: Number(sizeW),
+        l: Number(sizeL),
+      },
+      weight: Number(weight),
+      description,
+      is_chat_enabled: enableChat,
+      contact_info_enabled: contactInfo,
+      express: expressReady,
+      minimum_order: Number(minimumOrder),
+      category_id: categoryId,
+      price: Number(price),
+      colors: selectedColors,
+      receiving_ports: selectedReceivingPorts,
+      export_ports: selectedExportPorts,
+      surface_id: surfaceId,
+      origin_country_id: originCountryId,
+      origin_city_id: originCityId,
+      auto_renew: autoRenew,
+      media: imageUrls.map((img, idx) => {
+        const url = new URL(img.url);
+        const media_thumb_path = url.pathname.replace(/^\//, "");
+        return {
+          index: idx,
+          media_path: img.mediaPath,
+          media_thumb_path,
+        };
+      }),
+      benefits: benefits.split(",").map(b => b.trim()).filter(Boolean),
+      defects: defects.split(",").map(d => d.trim()).filter(Boolean),
+    };
+    setSubmitting(true);
+    try {
+      const res = await updateAd({ payload: updateAdPayload, locale, token: token! });
+      if (res?.success) {
+        toast.success(t("adUpdateSuccess", { defaultValue: "Ad updated successfully!" }));
+      } else {
+        toast.error(res?.message || t("adUpdateError", { defaultValue: "Failed to update ad." }));
+      }
+    } catch (err: any) {
+      toast.error(err.message || t("adUpdateError", { defaultValue: "Failed to update ad." }));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto py-12">
       {/* Left Panel */}
@@ -241,32 +413,81 @@ export default function CreateAdPageDndKit() {
           </div>
         </div>
         <div className="flex flex-col gap-3">
-          {[
-            { label: t("featured"), key: "featured", checked: true },
-            { label: t("autoRenew"), key: "autoRenew" },
-            { label: t("expressReady"), key: "expressReady" },
-            { label: t("enableChat"), key: "enableChat" },
-            { label: t("contactInfo"), key: "contactInfo" },
-          ].map((item) => (
-            <div key={item.key} className="flex items-center gap-2">
-              <Checkbox checked={item.checked} />
-              <span className="text-sm">{item.label}</span>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <span>{t("infoAbout", { item: item.label })}</span>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          ))}
+          {/* Map checkboxes to API fields */}
+          <div className="flex items-center gap-2">
+            <Checkbox checked={featured} onCheckedChange={checked => typeof checked === 'boolean' && setFeatured(checked)} />
+            <span className="text-sm">{t("featured")}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span>{t("infoAbout", { item: t("featured") })}</span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox checked={autoRenew} onCheckedChange={checked => typeof checked === 'boolean' && setAutoRenew(checked)} />
+            <span className="text-sm">{t("autoRenew")}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span>{t("infoAbout", { item: t("autoRenew") })}</span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox checked={expressReady} onCheckedChange={checked => typeof checked === 'boolean' && setExpressReady(checked)} />
+            <span className="text-sm">{t("expressReady")}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span>{t("infoAbout", { item: t("expressReady") })}</span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox checked={enableChat} onCheckedChange={checked => typeof checked === 'boolean' && setEnableChat(checked)} />
+            <span className="text-sm">{t("enableChat")}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span>{t("infoAbout", { item: t("enableChat") })}</span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox checked={contactInfo} onCheckedChange={checked => typeof checked === 'boolean' && setContactInfo(checked)} />
+            <span className="text-sm">{t("contactInfo")}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span>{t("infoAbout", { item: t("contactInfo") })}</span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
         <div className="flex flex-col gap-3 mt-4">
-          <Button className="bg-foreground text-background w-full rounded-full py-2 text-base font-semibold">
-            {t("payAndPublish")}
+          <Button className="bg-foreground text-background w-full rounded-full py-2 text-base font-semibold" onClick={handlePayAndPublish} type="button" disabled={submitting}>
+            {submitting ? t("updating") : t("payAndPublish")}
           </Button>
           <Button
             variant="outline"
@@ -379,161 +600,201 @@ export default function CreateAdPageDndKit() {
           </div>
         </div>
         {/* Product Info Form */}
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Type */}
+        <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={e => { e.preventDefault(); handlePayAndPublish(); }}>
+          {/* Status */}
           <div className="flex flex-col gap-1">
-            <Label>{t("type")}</Label>
-            <Select>
+            <Label>Status</Label>
+            <Select value={status} onValueChange={setStatus}>
               <SelectTrigger>
-                <SelectValue placeholder={t("selectType")} />
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="john">John</SelectItem>
+                <SelectItem value="0">Draft</SelectItem>
+                <SelectItem value="3">Published</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {/* From */}
+          {/* Sale Unit Type */}
           <div className="flex flex-col gap-1">
-            <Label>{t("from")}</Label>
-            <Input placeholder="email@example.com" />
-          </div>
-          {/* Surface */}
-          <div className="flex flex-col gap-1">
-            <Label>{t("surface")}</Label>
-            <Select>
+            <Label>Sale Unit Type</Label>
+            <Select value={saleUnitType} onValueChange={setSaleUnitType}>
               <SelectTrigger>
-                <SelectValue placeholder={t("selectSurface")} />
+                <SelectValue placeholder="Select unit type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="hajjarbashi">Hajjarbashi</SelectItem>
+                <SelectItem value="weight">Weight</SelectItem>
+                <SelectItem value="volume">Volume</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {/* Origin */}
+          {/* Form */}
           <div className="flex flex-col gap-1">
-            <Label>{t("origin")}</Label>
-            <Select>
+            <Label>Form</Label>
+            <Select value={formType} onValueChange={setFormType}>
               <SelectTrigger>
-                <SelectValue placeholder={t("selectOrigin")} />
+                <SelectValue placeholder="Select form" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="china">China</SelectItem>
+                <SelectItem value="slab">Slab</SelectItem>
+                <SelectItem value="block">Block</SelectItem>
+                <SelectItem value="tile">Tile</SelectItem>
               </SelectContent>
             </Select>
           </div>
           {/* Grade */}
           <div className="flex flex-col gap-1">
-            <Label>{t("grade")}</Label>
-            <Select>
+            <Label>Grade</Label>
+            <Select value={grade} onValueChange={setGrade}>
               <SelectTrigger>
-                <SelectValue placeholder={t("selectGrade")} />
+                <SelectValue placeholder="Select grade" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="hajjarbashi">Hajjarbashi</SelectItem>
+                <SelectItem value="a">A</SelectItem>
+                <SelectItem value="b">B</SelectItem>
+                <SelectItem value="c">C</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {/* Grade (again) */}
-          <div className="flex flex-col gap-1">
-            <Label>{t("grade")}</Label>
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder={t("selectGrade")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="hajjarbashi">Hajjarbashi</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Origin of Shipment */}
-          <div className="flex flex-col gap-1">
-            <Label>{t("originOfShipment")}</Label>
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder={t("selectOrigin")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="china">China</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Empty for grid alignment */}
-          <div />
-          {/* Dimensions */}
+          {/* Size (h, w, l) */}
           <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>{t("dimensions")}</Label>
+            <Label>Size (H × W × L)</Label>
             <div className="flex gap-2">
-              <Input placeholder="x" className="w-16" />
-              <Input placeholder="y" className="w-16" />
-              <Input placeholder="z" className="w-16" />
-              <Select>
-                <SelectTrigger className="w-20">
-                  <SelectValue placeholder="M" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="m">M</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input placeholder="Height (h)" type="number" min={0} value={sizeH} onChange={e => setSizeH(e.target.value)} />
+              <Input placeholder="Width (w)" type="number" min={0} value={sizeW} onChange={e => setSizeW(e.target.value)} />
+              <Input placeholder="Length (l)" type="number" min={0} value={sizeL} onChange={e => setSizeL(e.target.value)} />
             </div>
           </div>
           {/* Weight */}
           <div className="flex flex-col gap-1">
-            <Label>{t("weight")}</Label>
-            <Input placeholder="12345" />
+            <Label>Weight</Label>
+            <Input placeholder="Weight" type="number" min={0} value={weight} onChange={e => setWeight(e.target.value)} />
           </div>
+          {/* Minimum Order */}
           <div className="flex flex-col gap-1">
-            <Label>{t("unit")}</Label>
-            <Select>
+            <Label>Minimum Order</Label>
+            <Input placeholder="Minimum Order" type="number" min={0} value={minimumOrder} onChange={e => setMinimumOrder(e.target.value)} />
+          </div>
+          {/* Category ID */}
+          <div className="flex flex-col gap-1">
+            <Label>Category</Label>
+            <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
-                <SelectValue placeholder={t("selectUnit")} />
+                <SelectValue placeholder={categoryLoading ? "Loading..." : "Select category"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="kg">KG</SelectItem>
+                {categoryOptions.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            {categoryError && <span className="text-xs text-destructive">{categoryError}</span>}
+            <span className="text-xs text-muted-foreground">Must be a valid UUID</span>
           </div>
-          {/* Deliverable Destination */}
+          {/* Colors */}
           <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>{t("deliverableDestination")}</Label>
-            <Input placeholder="12345" />
+            <Label>Colors</Label>
+            <DropdownMultiSelect
+              options={colorOptions.map((c) => ({ label: c, value: c }))}
+              value={selectedColors}
+              onChange={setSelectedColors}
+              placeholder={!categoryId ? "Select category first" : (colorOptions.length ? "Select colors" : "No colors available")}
+              disabled={!colorOptions.length}
+            />
           </div>
-          {/* Minimum Order Quantity */}
-          <div className="flex flex-col gap-1">
-            <Label>{t("minimumOrderQuantity")}</Label>
-            <Input placeholder="12345" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label>{t("unit")}</Label>
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder={t("selectUnit")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="kg">KG</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Price */}
+          {/* Receiving Ports */}
           <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>{t("price")}</Label>
-            <Input placeholder="12345" />
+            <Label>Receiving Ports</Label>
+            <DropdownMultiSelect
+              options={portOptions.map((p) => ({ label: p.name, value: p.id }))}
+              value={selectedReceivingPorts}
+              onChange={setSelectedReceivingPorts}
+              placeholder={portLoading ? "Loading..." : "Select receiving ports"}
+              disabled={portLoading || !portOptions.length}
+            />
+            {portError && <span className="text-xs text-destructive">{portError}</span>}
           </div>
+          {/* Export Ports */}
+          <div className="flex flex-col gap-1 md:col-span-2">
+            <Label>Export Ports</Label>
+            <DropdownMultiSelect
+              options={portOptions.map((p) => ({ label: p.name, value: p.id }))}
+              value={selectedExportPorts}
+              onChange={setSelectedExportPorts}
+              placeholder={portLoading ? "Loading..." : "Select export ports"}
+              disabled={portLoading || !portOptions.length}
+            />
+            {portError && <span className="text-xs text-destructive">{portError}</span>}
+          </div>
+          {/* Surface */}
           <div className="flex flex-col gap-1">
-            <Label>{t("perUnit")}</Label>
-            <Select>
+            <Label>Surface</Label>
+            <Select value={surfaceId} onValueChange={setSurfaceId}>
               <SelectTrigger>
-                <SelectValue placeholder={t("selectUnit")} />
+                <SelectValue placeholder={surfaceLoading ? "Loading..." : "Select surface"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="kg">KG</SelectItem>
+                {surfaceOptions.map((surface) => (
+                  <SelectItem key={surface.id} value={surface.id}>{surface.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            {surfaceError && <span className="text-xs text-destructive">{surfaceError}</span>}
+            <span className="text-xs text-muted-foreground">Must be a valid UUID</span>
+          </div>
+          {/* Origin Country ID */}
+          <div className="flex flex-col gap-1">
+            <Label>Origin Country</Label>
+            <Select value={originCountryId} onValueChange={setOriginCountryId}>
+              <SelectTrigger>
+                <SelectValue placeholder={countryLoading ? "Loading..." : "Select country"} />
+              </SelectTrigger>
+              <SelectContent>
+                {countryOptions.map((country) => (
+                  <SelectItem key={country.id} value={country.id}>{country.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {countryError && <span className="text-xs text-destructive">{countryError}</span>}
+            <span className="text-xs text-muted-foreground">Must be a valid UUID</span>
+          </div>
+          {/* Origin City ID */}
+          <div className="flex flex-col gap-1">
+            <Label>Origin City</Label>
+            <Select value={originCityId} onValueChange={setOriginCityId} disabled={!originCountryId || cityLoading}>
+              <SelectTrigger>
+                <SelectValue placeholder={cityLoading ? "Loading..." : (!originCountryId ? "Select country first" : "Select city")}/>
+              </SelectTrigger>
+              <SelectContent>
+                {cityOptions.map((city) => (
+                  <SelectItem key={city.id} value={city.id}>{city.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {cityError && <span className="text-xs text-destructive">{cityError}</span>}
+            <span className="text-xs text-muted-foreground">Must be a valid UUID</span>
+          </div>
+          {/* Benefits */}
+          <div className="flex flex-col gap-1 md:col-span-2">
+            <Label>Benefits (comma separated)</Label>
+            <Input placeholder="e.g. benefit1,benefit2" value={benefits} onChange={e => setBenefits(e.target.value)} />
+          </div>
+          {/* Defects */}
+          <div className="flex flex-col gap-1 md:col-span-2">
+            <Label>Defects (comma separated)</Label>
+            <Input placeholder="e.g. defect1,defect2" value={defects} onChange={e => setDefects(e.target.value)} />
           </div>
           {/* Description */}
           <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>{t("description")}</Label>
-            <Textarea placeholder={t("description")} rows={3} />
+            <Label>Description</Label>
+            <Textarea placeholder="Description" rows={3} value={description} onChange={e => setDescription(e.target.value)} />
           </div>
+          {/* Price */}
+          <div className="flex flex-col gap-1">
+            <Label>Price</Label>
+            <Input placeholder="Price" type="number" min={0} value={price} onChange={e => setPrice(e.target.value)} />
+          </div>
+          {/* Checkboxes */}
+          {/* In the right panel form, remove checkboxes for Enable Chat, Enable Contact Info, Express */}
         </form>
       </Card>
     </div>

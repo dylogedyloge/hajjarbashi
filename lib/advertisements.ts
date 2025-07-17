@@ -90,4 +90,91 @@ export async function getAdDetails({
     throw new Error(`Failed to fetch ad details: ${response.statusText}`);
   }
   return response.json();
+}
+
+export async function updateAd({ payload, locale, token }: { payload: any; locale: string; token: string }) {
+  const response = await fetch(`${API_BASE_URL}/ads`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-lang': locale,
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update ad: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export async function fetchCountries(lang: string) {
+  const response = await fetch(`${API_BASE_URL}/countries/list`, {
+    method: 'GET',
+    headers: {
+      'x-lang': lang,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch countries');
+  }
+  const data = await response.json();
+  return data.data || [];
+}
+
+export async function fetchCities(countryId: string, lang: string) {
+  if (!countryId) return [];
+  const response = await fetch(`${API_BASE_URL}/cities/list?country_id=${countryId}`, {
+    method: 'GET',
+    headers: {
+      'x-lang': lang,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch cities');
+  }
+  const data = await response.json();
+  return data.data || [];
+}
+
+export async function fetchSurfaces(lang: string) {
+  const response = await fetch(`${API_BASE_URL}/surfaces/list`, {
+    method: 'GET',
+    headers: {
+      'x-lang': lang,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch surfaces');
+  }
+  const data = await response.json();
+  return data.data || [];
+}
+
+export async function fetchCategories(lang: string) {
+  const response = await fetch(`${API_BASE_URL}/categories/tree`, {
+    method: 'GET',
+    headers: {
+      'x-lang': lang,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch categories');
+  }
+  const data = await response.json();
+  return data.data || [];
+}
+
+export async function fetchPorts(lang: string) {
+  const response = await fetch(`${API_BASE_URL}/ports/list`, {
+    method: 'GET',
+    headers: {
+      'x-lang': lang,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch ports');
+  }
+  const data = await response.json();
+  return data.data || [];
 } 

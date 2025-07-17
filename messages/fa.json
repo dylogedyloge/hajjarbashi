@@ -325,6 +325,9 @@
       "deleteSuccess": "تصویر با موفقیت حذف شد!",
       "deleteError": "حذف تصویر ناموفق بود.",
       "deleteImage": "حذف تصویر",
-      "coverImage": "تصویر کاور"
+      "coverImage": "تصویر کاور",
+      "adUpdateSuccess": "آگهی با موفقیت به‌روزرسانی شد!",
+      "adUpdateError": "به‌روزرسانی آگهی ناموفق بود.",
+      "updating": "در حال به‌روزرسانی..."
     }
   }

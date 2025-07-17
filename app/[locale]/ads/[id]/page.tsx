@@ -4,12 +4,20 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+
 
 interface AdDetailPageProps {
   params: { id: string };
   searchParams?: { lang?: string };
 }
+
+type Port = {
+  id: string;
+  name: string;
+  city_name?: string;
+};
+
+type Media = { media_thumb_path?: string; media_path?: string };
 
 export default async function AdDetailPage({ params, searchParams }: AdDetailPageProps) {
   const locale = searchParams?.lang || "en";
@@ -28,7 +36,7 @@ export default async function AdDetailPage({ params, searchParams }: AdDetailPag
     ? mediaArray[0].media_thumb_path || mediaArray[0].media_path
     : ad.cover_thumb || ad.cover || "";
   const mainImageUrl = mainImage ? (mainImage.startsWith("http") ? mainImage : `https://api.hajjardevs.ir/${mainImage}`) : null;
-  const galleryImages = mediaArray.slice(1).map((m: any) => m.media_thumb_path || m.media_path).filter(Boolean);
+  const galleryImages = mediaArray.slice(1).map((m: Media) => m.media_thumb_path || m.media_path).filter(Boolean);
 
   // Colors
   const colorArray = Array.isArray(ad.colors) ? ad.colors : [];
@@ -115,8 +123,8 @@ export default async function AdDetailPage({ params, searchParams }: AdDetailPag
                 <div className="mb-2">
                   <span className="text-muted-foreground text-xs">Receiving Ports:</span>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {receivingPorts.map((port: any) => (
-                      <Badge key={port.id} variant="secondary">{port.name} ({port.city_name})</Badge>
+                    {receivingPorts.map((port: Port) => (
+                      <Badge key={port.id} variant="secondary">{port.name} {port.city_name ? `(${port.city_name})` : ""}</Badge>
                     ))}
                   </div>
                 </div>
@@ -125,8 +133,8 @@ export default async function AdDetailPage({ params, searchParams }: AdDetailPag
                 <div>
                   <span className="text-muted-foreground text-xs">Export Ports:</span>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {exportPorts.map((port: any) => (
-                      <Badge key={port.id} variant="secondary">{port.name} ({port.city_name})</Badge>
+                    {exportPorts.map((port: Port) => (
+                      <Badge key={port.id} variant="secondary">{port.name} {port.city_name ? `(${port.city_name})` : ""}</Badge>
                     ))}
                   </div>
                 </div>

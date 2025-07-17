@@ -6,11 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
-interface AdDetailPageProps {
-  params: { [key: string]: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
 type Port = {
   id: string;
   name: string;
@@ -19,7 +14,13 @@ type Port = {
 
 type Media = { media_thumb_path?: string; media_path?: string };
 
-export default async function AdDetailPage({ params, searchParams }: AdDetailPageProps) {
+export default async function AdDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { [key: string]: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   const locale = Array.isArray(searchParams?.lang) ? searchParams.lang[0] : searchParams?.lang || "en";
   let ad = null;
   try {

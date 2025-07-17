@@ -14,8 +14,11 @@ type Port = {
 
 type Media = { media_thumb_path?: string; media_path?: string };
 
-export default async function Page(props: any) {
-  const { params, searchParams } = props;
+export default async function Page(props: unknown) {
+  const { params, searchParams } = props as {
+    params: { [key: string]: string };
+    searchParams?: { [key: string]: string | string[] | undefined };
+  };
   const locale = Array.isArray(searchParams?.lang) ? searchParams.lang[0] : searchParams?.lang || "en";
   let ad = null;
   try {

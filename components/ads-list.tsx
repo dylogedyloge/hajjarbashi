@@ -8,9 +8,35 @@ import { fetchAds } from "@/lib/advertisements";
 import MobileSearchAndFilter from "./sortSearchFilters/mobile/mobile-search-and-filter";
 import MobileCategoryFilters from "./sortSearchFilters/mobile/mobile-category-filters";
 
+// Define the Ad type matching the API
+export type Ad = {
+  id: string;
+  image?: string;
+  stone_type?: string;
+  origin?: string;
+  form?: string;
+  surface?: string | { id: string; name: string };
+  source_port?: string;
+  color?: string | string[];
+  size?: string | { h?: number; w?: number; l?: number };
+  price: number;
+  price_unit?: string;
+  published_at?: string;
+  is_featured?: boolean;
+  is_express?: boolean;
+  description?: string;
+  weight?: number | string;
+  origin_country?: { id: string; name: string };
+  origin_city?: { id: string; name: string };
+  category?: { id: string; name: string };
+  colors?: string[];
+  media?: Array<{ media_thumb_path?: string; media_path?: string }>;
+  // ...add any other fields you use
+};
+
 const AdsList = () => {
   const locale = useLocale();
-  const [ads, setAds] = useState<any[]>([]);
+  const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +44,7 @@ const AdsList = () => {
     setLoading(true);
     setError(null);
     fetchAds({ limit: 10, page: 1, locale })
-      .then((res) => setAds(res.data || []))
+      .then((res) => setAds(res.data as Ad[] || []))
       .catch((err) => setError(err.message || "Failed to load ads"))
       .finally(() => setLoading(false));
   }, [locale]);

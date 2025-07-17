@@ -24,6 +24,7 @@ interface AdCardProps {
     origin_city?: { id: string; name: string };
     category?: { id: string; name: string };
     colors?: string[];
+    media?: Array<{ media_thumb_path?: string; media_path?: string }>;
   };
 }
 
@@ -37,8 +38,9 @@ const AdCard = ({ ad }: AdCardProps) => {
     ? ad.color.split(/[,\s]+/).filter(Boolean)
     : [];
   // Prefer first media image if available
-  const mediaImage = Array.isArray((ad as any).media) && (ad as any).media.length > 0
-    ? (ad as any).media[0].media_thumb_path || (ad as any).media[0].media_path
+  const mediaArray = Array.isArray(ad.media) ? ad.media as Array<{ media_thumb_path?: string; media_path?: string }> : [];
+  const mediaImage = mediaArray.length > 0
+    ? mediaArray[0].media_thumb_path || mediaArray[0].media_path
     : null;
   const imageSrc = mediaImage
     ? (mediaImage.startsWith("http") ? mediaImage : `https://api.hajjardevs.ir/${mediaImage}`)

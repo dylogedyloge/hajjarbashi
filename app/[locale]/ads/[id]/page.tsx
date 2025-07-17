@@ -226,6 +226,14 @@ export default async function Page(props: unknown) {
           name={creatorProfile?.name || "-"}
           company={creatorProfile?.company_name || "-"}
           adId={ad.id || "-"}
+          isChatEnabled={!!ad.is_chat_enabled}
+          isContactInfoEnabled={!!ad.contact_info_enabled}
+          isExpressEnabled={!!ad.is_express}
+          contactInfo={
+            Array.isArray(creatorProfile?.contact_info)
+              ? creatorProfile.contact_info
+              : []
+          }
         />
       </div>
     </div>

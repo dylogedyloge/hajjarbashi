@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { fetchAds } from "@/lib/advertisements";
 import MobileSearchAndFilter from "./sortSearchFilters/mobile/mobile-search-and-filter";
 import MobileCategoryFilters from "./sortSearchFilters/mobile/mobile-category-filters";
+import Link from "next/link";
 
 // Define the Ad type matching the API
 export type Ad = {
@@ -67,7 +68,9 @@ const AdsList = () => {
         <DesktopSortAndCheckboxFilters />
       </div>
       {ads.map((ad) => (
-        <AdCard key={ad.id} ad={ad} />
+        <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
+          <AdCard ad={ad} />
+        </Link>
       ))}
     </div>
   );

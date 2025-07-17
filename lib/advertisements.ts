@@ -190,4 +190,17 @@ export async function fetchAds({ limit, page, locale }: { limit: number; page: n
     throw new Error('Failed to fetch ads');
   }
   return response.json();
+}
+
+export async function fetchAdById({ id, locale }: { id: string; locale: string }) {
+  const response = await fetch(`${API_BASE_URL}/ads/watch/${id}`, {
+    method: 'GET',
+    headers: {
+      'x-lang': locale,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch ad');
+  }
+  return response.json();
 } 

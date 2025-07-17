@@ -92,7 +92,7 @@ export async function getAdDetails({
   return response.json();
 }
 
-export async function updateAd({ payload, locale, token }: { payload: any; locale: string; token: string }) {
+export async function updateAd({ payload, locale, token }: { payload: Record<string, unknown>; locale: string; token: string }) {
   const response = await fetch(`${API_BASE_URL}/ads`, {
     method: 'PATCH',
     headers: {

@@ -88,6 +88,9 @@ const Profile = () => {
   // Get current locale from next-intl
   const locale = useLocale();
 
+  // Watch country field for changes
+  const watchedCountry = accountInfoForm.watch("country");
+
   useEffect(() => {
     setCountriesLoading(true);
     setCountriesError(null);
@@ -146,18 +149,16 @@ const Profile = () => {
     };
   }, []);
 
-  // Fetch cities when selectedCountry changes
+  // Fetch cities when watchedCountry changes
   useEffect(() => {
-    if (!accountInfoForm.getValues("country")) {
+    if (!watchedCountry) {
       setCities([]);
       return;
     }
     setCitiesLoading(true);
     setCitiesError(null);
     // Find the selected country id
-    const countryObj = countries.find(
-      (c) => c.name === accountInfoForm.getValues("country")
-    );
+    const countryObj = countries.find((c) => c.name === watchedCountry);
     const countryId = countryObj?.id || "";
     if (!countryId) {
       setCities([]);
@@ -168,7 +169,7 @@ const Profile = () => {
       .then((data) => setCities(data))
       .catch((err) => setCitiesError(err.message || "Failed to load cities"))
       .finally(() => setCitiesLoading(false));
-  }, [accountInfoForm.getValues("country"), countries, locale]);
+  }, [watchedCountry, countries, locale]);
 
   return (
     <>

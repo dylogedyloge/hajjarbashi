@@ -158,7 +158,6 @@ export default function CreateAdPage() {
   const [originCityId, setOriginCityId] = useState<string>("");
   const [benefits, setBenefits] = useState<string>("");
   const [defects, setDefects] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
   const [saleUnitType, setSaleUnitType] = useState<string>("");
   const [formType, setFormType] = useState<string>("");
   const [grade, setGrade] = useState<string>("");

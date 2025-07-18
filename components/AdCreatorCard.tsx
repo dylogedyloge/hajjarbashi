@@ -72,6 +72,7 @@ export function AdCreatorCard({
         </Button>
       </div>
       <Button
+        // variant="destructive"
         className="w-full mt-2 bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
         size="lg"
         onClick={onExpress}

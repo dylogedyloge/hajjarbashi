@@ -152,7 +152,7 @@ export default function CreateAdPage() {
   const [contactInfo, setContactInfo] = useState(false);
 
   // Add state for all form fields
- 
+
   const [surfaceId, setSurfaceId] = useState<string>("");
   const [originCountryId, setOriginCountryId] = useState<string>("");
   const [originCityId, setOriginCityId] = useState<string>("");
@@ -172,25 +172,37 @@ export default function CreateAdPage() {
   const [description, setDescription] = useState<string>("");
 
   // Add state for country/city options and loading
-  const [countryOptions, setCountryOptions] = useState<{ id: string; name: string }[]>([]);
-  const [cityOptions, setCityOptions] = useState<{ id: string; name: string }[]>([]);
+  const [countryOptions, setCountryOptions] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [cityOptions, setCityOptions] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [countryLoading, setCountryLoading] = useState(false);
   const [cityLoading, setCityLoading] = useState(false);
   const [countryError, setCountryError] = useState<string | null>(null);
   const [cityError, setCityError] = useState<string | null>(null);
-  const [surfaceOptions, setSurfaceOptions] = useState<{ id: string; name: string }[]>([]);
+  const [surfaceOptions, setSurfaceOptions] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [surfaceLoading, setSurfaceLoading] = useState(false);
   const [surfaceError, setSurfaceError] = useState<string | null>(null);
-  const [categoryOptions, setCategoryOptions] = useState<{ id: string; name: string; colors: string[] }[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<
+    { id: string; name: string; colors: string[] }[]
+  >([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [categoryError, setCategoryError] = useState<string | null>(null);
   const [colorOptions, setColorOptions] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [portOptions, setPortOptions] = useState<{ id: string; name: string }[]>([]);
+  const [portOptions, setPortOptions] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [portLoading, setPortLoading] = useState(false);
   const [portError, setPortError] = useState<string | null>(null);
-  const [selectedReceivingPorts, setSelectedReceivingPorts] = useState<string[]>([]);
+  const [selectedReceivingPorts, setSelectedReceivingPorts] = useState<
+    string[]
+  >([]);
   const [selectedExportPorts, setSelectedExportPorts] = useState<string[]>([]);
 
   useEffect(() => {
@@ -222,11 +234,14 @@ export default function CreateAdPage() {
     setCountryError(null);
     fetchCountries(locale)
       .then((data) => setCountryOptions(data))
-      .catch((err) => setCountryError(err.message || "Failed to load countries"))
+      .catch((err) =>
+        setCountryError(err.message || "Failed to load countries")
+      )
       .finally(() => setCountryLoading(false));
   }, [locale]);
   // Fetch cities when originCountryId changes
   useEffect(() => {
+    setOriginCityId(""); // Reset city selection when country changes
     if (!originCountryId) {
       setCityOptions([]);
       return;
@@ -255,7 +270,9 @@ export default function CreateAdPage() {
     setCategoryError(null);
     fetchCategories(locale)
       .then((data) => setCategoryOptions(data))
-      .catch((err) => setCategoryError(err.message || "Failed to load categories"))
+      .catch((err) =>
+        setCategoryError(err.message || "Failed to load categories")
+      )
       .finally(() => setCategoryLoading(false));
   }, [locale]);
   // Update color options when categoryId changes
@@ -380,16 +397,31 @@ export default function CreateAdPage() {
           media_thumb_path,
         };
       }),
-      benefits: benefits.split(",").map(b => b.trim()).filter(Boolean),
-      defects: defects.split(",").map(d => d.trim()).filter(Boolean),
+      benefits: benefits
+        .split(",")
+        .map((b) => b.trim())
+        .filter(Boolean),
+      defects: defects
+        .split(",")
+        .map((d) => d.trim())
+        .filter(Boolean),
     };
     setSubmitting(true);
     try {
-      const res = await updateAd({ payload: updateAdPayload, locale, token: token! });
+      const res = await updateAd({
+        payload: updateAdPayload,
+        locale,
+        token: token!,
+      });
       if (res?.success) {
-        toast.success(t("adUpdateSuccess", { defaultValue: "Ad updated successfully!" }));
+        toast.success(
+          t("adUpdateSuccess", { defaultValue: "Ad updated successfully!" })
+        );
       } else {
-        toast.error(res?.message || t("adUpdateError", { defaultValue: "Failed to update ad." }));
+        toast.error(
+          res?.message ||
+            t("adUpdateError", { defaultValue: "Failed to update ad." })
+        );
       }
     } catch (err: unknown) {
       const message =
@@ -417,7 +449,12 @@ export default function CreateAdPage() {
         <div className="flex flex-col gap-3">
           {/* Map checkboxes to API fields */}
           <div className="flex items-center gap-2">
-            <Checkbox checked={featured} onCheckedChange={checked => typeof checked === 'boolean' && setFeatured(checked)} />
+            <Checkbox
+              checked={featured}
+              onCheckedChange={(checked) =>
+                typeof checked === "boolean" && setFeatured(checked)
+              }
+            />
             <span className="text-sm">{t("featured")}</span>
             <TooltipProvider>
               <Tooltip>
@@ -431,7 +468,12 @@ export default function CreateAdPage() {
             </TooltipProvider>
           </div>
           <div className="flex items-center gap-2">
-            <Checkbox checked={autoRenew} onCheckedChange={checked => typeof checked === 'boolean' && setAutoRenew(checked)} />
+            <Checkbox
+              checked={autoRenew}
+              onCheckedChange={(checked) =>
+                typeof checked === "boolean" && setAutoRenew(checked)
+              }
+            />
             <span className="text-sm">{t("autoRenew")}</span>
             <TooltipProvider>
               <Tooltip>
@@ -445,7 +487,12 @@ export default function CreateAdPage() {
             </TooltipProvider>
           </div>
           <div className="flex items-center gap-2">
-            <Checkbox checked={expressReady} onCheckedChange={checked => typeof checked === 'boolean' && setExpressReady(checked)} />
+            <Checkbox
+              checked={expressReady}
+              onCheckedChange={(checked) =>
+                typeof checked === "boolean" && setExpressReady(checked)
+              }
+            />
             <span className="text-sm">{t("expressReady")}</span>
             <TooltipProvider>
               <Tooltip>
@@ -459,7 +506,12 @@ export default function CreateAdPage() {
             </TooltipProvider>
           </div>
           <div className="flex items-center gap-2">
-            <Checkbox checked={enableChat} onCheckedChange={checked => typeof checked === 'boolean' && setEnableChat(checked)} />
+            <Checkbox
+              checked={enableChat}
+              onCheckedChange={(checked) =>
+                typeof checked === "boolean" && setEnableChat(checked)
+              }
+            />
             <span className="text-sm">{t("enableChat")}</span>
             <TooltipProvider>
               <Tooltip>
@@ -473,7 +525,12 @@ export default function CreateAdPage() {
             </TooltipProvider>
           </div>
           <div className="flex items-center gap-2">
-            <Checkbox checked={contactInfo} onCheckedChange={checked => typeof checked === 'boolean' && setContactInfo(checked)} />
+            <Checkbox
+              checked={contactInfo}
+              onCheckedChange={(checked) =>
+                typeof checked === "boolean" && setContactInfo(checked)
+              }
+            />
             <span className="text-sm">{t("contactInfo")}</span>
             <TooltipProvider>
               <Tooltip>
@@ -488,7 +545,12 @@ export default function CreateAdPage() {
           </div>
         </div>
         <div className="flex flex-col gap-3 mt-4">
-          <Button className="bg-foreground text-background w-full rounded-full py-2 text-base font-semibold" onClick={handlePayAndPublish} type="button" disabled={submitting}>
+          <Button
+            className="bg-foreground text-background w-full rounded-full py-2 text-base font-semibold"
+            onClick={handlePayAndPublish}
+            type="button"
+            disabled={submitting}
+          >
             {submitting ? t("updating") : t("payAndPublish")}
           </Button>
           <Button
@@ -602,7 +664,13 @@ export default function CreateAdPage() {
           </div>
         </div>
         {/* Product Info Form */}
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={e => { e.preventDefault(); handlePayAndPublish(); }}>
+        <form
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handlePayAndPublish();
+          }}
+        >
           {/* Status */}
           <div className="flex flex-col gap-1">
             <Label>Status</Label>
@@ -611,8 +679,8 @@ export default function CreateAdPage() {
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">Draft</SelectItem>
-                <SelectItem value="3">Published</SelectItem>
+                <SelectItem value="3">Draft</SelectItem>
+                <SelectItem value="0">Published</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -661,36 +729,76 @@ export default function CreateAdPage() {
           <div className="flex flex-col gap-1 md:col-span-2">
             <Label>Size (H × W × L)</Label>
             <div className="flex gap-2">
-              <Input placeholder="Height (h)" type="number" min={0} value={sizeH} onChange={e => setSizeH(e.target.value)} />
-              <Input placeholder="Width (w)" type="number" min={0} value={sizeW} onChange={e => setSizeW(e.target.value)} />
-              <Input placeholder="Length (l)" type="number" min={0} value={sizeL} onChange={e => setSizeL(e.target.value)} />
+              <Input
+                placeholder="Height (h)"
+                type="number"
+                min={0}
+                value={sizeH}
+                onChange={(e) => setSizeH(e.target.value)}
+              />
+              <Input
+                placeholder="Width (w)"
+                type="number"
+                min={0}
+                value={sizeW}
+                onChange={(e) => setSizeW(e.target.value)}
+              />
+              <Input
+                placeholder="Length (l)"
+                type="number"
+                min={0}
+                value={sizeL}
+                onChange={(e) => setSizeL(e.target.value)}
+              />
             </div>
           </div>
           {/* Weight */}
           <div className="flex flex-col gap-1">
             <Label>Weight</Label>
-            <Input placeholder="Weight" type="number" min={0} value={weight} onChange={e => setWeight(e.target.value)} />
+            <Input
+              placeholder="Weight"
+              type="number"
+              min={0}
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+            />
           </div>
           {/* Minimum Order */}
           <div className="flex flex-col gap-1">
             <Label>Minimum Order</Label>
-            <Input placeholder="Minimum Order" type="number" min={0} value={minimumOrder} onChange={e => setMinimumOrder(e.target.value)} />
+            <Input
+              placeholder="Minimum Order"
+              type="number"
+              min={0}
+              value={minimumOrder}
+              onChange={(e) => setMinimumOrder(e.target.value)}
+            />
           </div>
           {/* Category ID */}
           <div className="flex flex-col gap-1">
             <Label>Category</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
-                <SelectValue placeholder={categoryLoading ? "Loading..." : "Select category"} />
+                <SelectValue
+                  placeholder={
+                    categoryLoading ? "Loading..." : "Select category"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {categoryOptions.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {categoryError && <span className="text-xs text-destructive">{categoryError}</span>}
-            <span className="text-xs text-muted-foreground">Must be a valid UUID</span>
+            {categoryError && (
+              <span className="text-xs text-destructive">{categoryError}</span>
+            )}
+            {/* <span className="text-xs text-muted-foreground">
+              Must be a valid UUID
+            </span> */}
           </div>
           {/* Colors */}
           <div className="flex flex-col gap-1 md:col-span-2">
@@ -699,7 +807,13 @@ export default function CreateAdPage() {
               options={colorOptions.map((c) => ({ label: c, value: c }))}
               value={selectedColors}
               onChange={setSelectedColors}
-              placeholder={!categoryId ? "Select category first" : (colorOptions.length ? "Select colors" : "No colors available")}
+              placeholder={
+                !categoryId
+                  ? "Select category first"
+                  : colorOptions.length
+                  ? "Select colors"
+                  : "No colors available"
+              }
               disabled={!colorOptions.length}
             />
           </div>
@@ -710,10 +824,14 @@ export default function CreateAdPage() {
               options={portOptions.map((p) => ({ label: p.name, value: p.id }))}
               value={selectedReceivingPorts}
               onChange={setSelectedReceivingPorts}
-              placeholder={portLoading ? "Loading..." : "Select receiving ports"}
+              placeholder={
+                portLoading ? "Loading..." : "Select receiving ports"
+              }
               disabled={portLoading || !portOptions.length}
             />
-            {portError && <span className="text-xs text-destructive">{portError}</span>}
+            {portError && (
+              <span className="text-xs text-destructive">{portError}</span>
+            )}
           </div>
           {/* Export Ports */}
           <div className="flex flex-col gap-1 md:col-span-2">
@@ -725,75 +843,130 @@ export default function CreateAdPage() {
               placeholder={portLoading ? "Loading..." : "Select export ports"}
               disabled={portLoading || !portOptions.length}
             />
-            {portError && <span className="text-xs text-destructive">{portError}</span>}
+            {portError && (
+              <span className="text-xs text-destructive">{portError}</span>
+            )}
           </div>
           {/* Surface */}
           <div className="flex flex-col gap-1">
             <Label>Surface</Label>
             <Select value={surfaceId} onValueChange={setSurfaceId}>
               <SelectTrigger>
-                <SelectValue placeholder={surfaceLoading ? "Loading..." : "Select surface"} />
+                <SelectValue
+                  placeholder={surfaceLoading ? "Loading..." : "Select surface"}
+                />
               </SelectTrigger>
               <SelectContent>
                 {surfaceOptions.map((surface) => (
-                  <SelectItem key={surface.id} value={surface.id}>{surface.name}</SelectItem>
+                  <SelectItem key={surface.id} value={surface.id}>
+                    {surface.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {surfaceError && <span className="text-xs text-destructive">{surfaceError}</span>}
-            <span className="text-xs text-muted-foreground">Must be a valid UUID</span>
+            {surfaceError && (
+              <span className="text-xs text-destructive">{surfaceError}</span>
+            )}
+            {/* <span className="text-xs text-muted-foreground">
+              Must be a valid UUID
+            </span> */}
           </div>
           {/* Origin Country ID */}
           <div className="flex flex-col gap-1">
             <Label>Origin Country</Label>
             <Select value={originCountryId} onValueChange={setOriginCountryId}>
               <SelectTrigger>
-                <SelectValue placeholder={countryLoading ? "Loading..." : "Select country"} />
+                <SelectValue
+                  placeholder={countryLoading ? "Loading..." : "Select country"}
+                />
               </SelectTrigger>
               <SelectContent>
                 {countryOptions.map((country) => (
-                  <SelectItem key={country.id} value={country.id}>{country.name}</SelectItem>
+                  <SelectItem key={country.id} value={country.id}>
+                    {country.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {countryError && <span className="text-xs text-destructive">{countryError}</span>}
-            <span className="text-xs text-muted-foreground">Must be a valid UUID</span>
+            {countryError && (
+              <span className="text-xs text-destructive">{countryError}</span>
+            )}
+            {/* <span className="text-xs text-muted-foreground">
+              Must be a valid UUID
+            </span> */}
           </div>
           {/* Origin City ID */}
           <div className="flex flex-col gap-1">
             <Label>Origin City</Label>
-            <Select value={originCityId} onValueChange={setOriginCityId} disabled={!originCountryId || cityLoading}>
+            <Select
+              value={originCityId}
+              onValueChange={setOriginCityId}
+              disabled={!originCountryId || cityLoading}
+            >
               <SelectTrigger>
-                <SelectValue placeholder={cityLoading ? "Loading..." : (!originCountryId ? "Select country first" : "Select city")}/>
+                <SelectValue
+                  placeholder={
+                    cityLoading
+                      ? "Loading..."
+                      : !originCountryId
+                      ? "Select country first"
+                      : "Select city"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {cityOptions.map((city) => (
-                  <SelectItem key={city.id} value={city.id}>{city.name}</SelectItem>
+                  <SelectItem key={city.id} value={city.id}>
+                    {city.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {cityError && <span className="text-xs text-destructive">{cityError}</span>}
-            <span className="text-xs text-muted-foreground">Must be a valid UUID</span>
+            {cityError && (
+              <span className="text-xs text-destructive">{cityError}</span>
+            )}
+            {/* <span className="text-xs text-muted-foreground">
+              Must be a valid UUID
+            </span> */}
           </div>
           {/* Benefits */}
           <div className="flex flex-col gap-1 md:col-span-2">
             <Label>Benefits (comma separated)</Label>
-            <Input placeholder="e.g. benefit1,benefit2" value={benefits} onChange={e => setBenefits(e.target.value)} />
+            <Input
+              placeholder="e.g. benefit1,benefit2"
+              value={benefits}
+              onChange={(e) => setBenefits(e.target.value)}
+            />
           </div>
           {/* Defects */}
           <div className="flex flex-col gap-1 md:col-span-2">
             <Label>Defects (comma separated)</Label>
-            <Input placeholder="e.g. defect1,defect2" value={defects} onChange={e => setDefects(e.target.value)} />
+            <Input
+              placeholder="e.g. defect1,defect2"
+              value={defects}
+              onChange={(e) => setDefects(e.target.value)}
+            />
           </div>
           {/* Description */}
           <div className="flex flex-col gap-1 md:col-span-2">
             <Label>Description</Label>
-            <Textarea placeholder="Description" rows={3} value={description} onChange={e => setDescription(e.target.value)} />
+            <Textarea
+              placeholder="Description"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
           {/* Price */}
           <div className="flex flex-col gap-1">
             <Label>Price</Label>
-            <Input placeholder="Price" type="number" min={0} value={price} onChange={e => setPrice(e.target.value)} />
+            <Input
+              placeholder="Price"
+              type="number"
+              min={0}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
           </div>
           {/* Checkboxes */}
           {/* In the right panel form, remove checkboxes for Enable Chat, Enable Contact Info, Express */}

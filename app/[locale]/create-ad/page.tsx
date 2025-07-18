@@ -360,11 +360,11 @@ export default function CreateAdPage() {
     }
   };
 
-  // Add handler for Pay and Publish
-  const handlePayAndPublish = async () => {
+  // Unified submit handler for both actions
+  const handleSubmit = async (statusValue: string) => {
     const updateAdPayload = {
       id: adId!,
-      status: Number(status),
+      status: Number(statusValue),
       sale_unit_type: saleUnitType,
       form: formType,
       grade,
@@ -437,7 +437,7 @@ export default function CreateAdPage() {
   return (
     <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto py-12">
       {/* Left Panel */}
-      <Card className="w-full md:w-80 flex-shrink-0 p-6 flex flex-col gap-6">
+      <Card className="w-full md:w-80 flex-shrink-0 p-6 flex flex-col gap-6 h-fit mb-8 md:mb-0">
         <div>
           <div className="text-muted-foreground text-sm">
             {t("advertisementCost")}
@@ -547,7 +547,7 @@ export default function CreateAdPage() {
         <div className="flex flex-col gap-3 mt-4">
           <Button
             className="bg-foreground text-background w-full rounded-full py-2 text-base font-semibold"
-            onClick={handlePayAndPublish}
+            onClick={() => handleSubmit("0")}
             type="button"
             disabled={submitting}
           >
@@ -556,6 +556,9 @@ export default function CreateAdPage() {
           <Button
             variant="outline"
             className="w-full rounded-full py-2 text-base font-semibold border-2"
+            onClick={() => handleSubmit("3")}
+            type="button"
+            disabled={submitting}
           >
             {t("saveDraft")}
           </Button>
@@ -567,12 +570,13 @@ export default function CreateAdPage() {
           </Button>
         </div>
       </Card>
-      {/* Right Panel */}
-      <Card className="flex-1 p-8 flex flex-col gap-8">
-        {/* Product Image Upload */}
-        <div>
-          <div className="font-semibold mb-2">{t("productImage")}</div>
+      {/* Main Form Panel */}
+      <div className="flex-1 flex flex-col gap-8">
+        {/* Product Images Section */}
+        <Card className="p-8 flex flex-col gap-4">
+          <h2 className="text-xl font-bold mb-2">{t("productImage")}</h2>
           <div className="border border-dashed border-muted rounded-lg p-6 flex flex-col items-center justify-center text-center mb-2 min-h-[120px]">
+            {/* ...image upload grid (same as before)... */}
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -582,12 +586,10 @@ export default function CreateAdPage() {
                 items={imageUrls.map((img) => img.mediaPath)}
                 strategy={rectSortingStrategy}
               >
-                {/* Always show 6 slots (first is cover, rest are regular) */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 justify-center">
                   {Array.from({ length: 6 }, (_, idx) => {
                     const img = imageUrls[idx] || null;
                     const isCover = idx === 0;
-                    // Show the upload button in the first empty slot only
                     const showUpload =
                       imageUrls.length < 6 && imageUrls.length === idx;
                     if (img) {
@@ -603,7 +605,6 @@ export default function CreateAdPage() {
                         />
                       );
                     }
-                    // Skeleton slot (static, not draggable)
                     return (
                       <div
                         key={`skeleton-${idx}`}
@@ -662,316 +663,325 @@ export default function CreateAdPage() {
               </div>
             )}
           </div>
-        </div>
-        {/* Product Info Form */}
-        <form
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handlePayAndPublish();
-          }}
-        >
-          {/* Status */}
-          <div className="flex flex-col gap-1">
-            <Label>Status</Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3">Draft</SelectItem>
-                <SelectItem value="0">Published</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Sale Unit Type */}
-          <div className="flex flex-col gap-1">
-            <Label>Sale Unit Type</Label>
-            <Select value={saleUnitType} onValueChange={setSaleUnitType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select unit type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weight">Weight</SelectItem>
-                <SelectItem value="volume">Volume</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Form */}
-          <div className="flex flex-col gap-1">
-            <Label>Form</Label>
-            <Select value={formType} onValueChange={setFormType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select form" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="slab">Slab</SelectItem>
-                <SelectItem value="block">Block</SelectItem>
-                <SelectItem value="tile">Tile</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Grade */}
-          <div className="flex flex-col gap-1">
-            <Label>Grade</Label>
-            <Select value={grade} onValueChange={setGrade}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select grade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="a">A</SelectItem>
-                <SelectItem value="b">B</SelectItem>
-                <SelectItem value="c">C</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Size (h, w, l) */}
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>Size (H × W × L)</Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Height (h)"
-                type="number"
-                min={0}
-                value={sizeH}
-                onChange={(e) => setSizeH(e.target.value)}
-              />
-              <Input
-                placeholder="Width (w)"
-                type="number"
-                min={0}
-                value={sizeW}
-                onChange={(e) => setSizeW(e.target.value)}
-              />
-              <Input
-                placeholder="Length (l)"
-                type="number"
-                min={0}
-                value={sizeL}
-                onChange={(e) => setSizeL(e.target.value)}
+        </Card>
+        {/* Main Form Section */}
+        <Card className="p-8 flex flex-col gap-8">
+          <form
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+          >
+            {/* Product Details Section */}
+            <div className="col-span-1 md:col-span-2">
+              <h2 className="text-lg font-semibold mb-4">
+                {t("productDetails")}
+              </h2>
+            </div>
+            {/* Category */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("categoryLabel")}</Label>
+              <Select value={categoryId} onValueChange={setCategoryId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      categoryLoading ? t("loading") : t("selectCategory")
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOptions.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {categoryError && (
+                <span className="text-xs text-destructive">
+                  {categoryError}
+                </span>
+              )}
+            </div>
+            {/* Colors */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("colorsLabel")}</Label>
+              <DropdownMultiSelect
+                options={colorOptions.map((c) => ({ label: c, value: c }))}
+                value={selectedColors}
+                onChange={setSelectedColors}
+                placeholder={
+                  !categoryId
+                    ? t("selectCategory")
+                    : colorOptions.length
+                    ? t("selectColors")
+                    : t("noColorsAvailable")
+                }
+                disabled={!colorOptions.length}
               />
             </div>
-          </div>
-          {/* Weight */}
-          <div className="flex flex-col gap-1">
-            <Label>Weight</Label>
-            <Input
-              placeholder="Weight"
-              type="number"
-              min={0}
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
-          </div>
-          {/* Minimum Order */}
-          <div className="flex flex-col gap-1">
-            <Label>Minimum Order</Label>
-            <Input
-              placeholder="Minimum Order"
-              type="number"
-              min={0}
-              value={minimumOrder}
-              onChange={(e) => setMinimumOrder(e.target.value)}
-            />
-          </div>
-          {/* Category ID */}
-          <div className="flex flex-col gap-1">
-            <Label>Category</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    categoryLoading ? "Loading..." : "Select category"
-                  }
+            {/* Description */}
+            <div className="flex flex-col gap-1 md:col-span-2">
+              <Label>{t("descriptionLabel")}</Label>
+              <Textarea
+                placeholder={t("descriptionPlaceholder")}
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            {/* Benefits */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("benefitsLabel")}</Label>
+              <Input
+                placeholder={t("benefitsExample")}
+                value={benefits}
+                onChange={(e) => setBenefits(e.target.value)}
+              />
+            </div>
+            {/* Defects */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("defectsLabel")}</Label>
+              <Input
+                placeholder={t("defectsExample")}
+                value={defects}
+                onChange={(e) => setDefects(e.target.value)}
+              />
+            </div>
+            {/* Physical Specifications Section */}
+            <div className="col-span-1 md:col-span-2 mt-6">
+              <h2 className="text-lg font-semibold mb-4">
+                {t("physicalSpecifications")}
+              </h2>
+            </div>
+            {/* Form */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("formLabel")}</Label>
+              <Select value={formType} onValueChange={setFormType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t("selectForm")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="slab">Slab</SelectItem>
+                  <SelectItem value="block">Block</SelectItem>
+                  <SelectItem value="tile">Tile</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Grade */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("gradeLabel")}</Label>
+              <Select value={grade} onValueChange={setGrade}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t("selectGrade")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="a">A</SelectItem>
+                  <SelectItem value="b">B</SelectItem>
+                  <SelectItem value="c">C</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Size (h, w, l) */}
+            <div className="flex flex-col gap-1 md:col-span-2">
+              <Label>{t("sizeLabel")}</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder={t("heightPlaceholder")}
+                  type="number"
+                  min={0}
+                  value={sizeH}
+                  onChange={(e) => setSizeH(e.target.value)}
                 />
-              </SelectTrigger>
-              <SelectContent>
-                {categoryOptions.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {categoryError && (
-              <span className="text-xs text-destructive">{categoryError}</span>
-            )}
-            {/* <span className="text-xs text-muted-foreground">
-              Must be a valid UUID
-            </span> */}
-          </div>
-          {/* Colors */}
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>Colors</Label>
-            <DropdownMultiSelect
-              options={colorOptions.map((c) => ({ label: c, value: c }))}
-              value={selectedColors}
-              onChange={setSelectedColors}
-              placeholder={
-                !categoryId
-                  ? "Select category first"
-                  : colorOptions.length
-                  ? "Select colors"
-                  : "No colors available"
-              }
-              disabled={!colorOptions.length}
-            />
-          </div>
-          {/* Receiving Ports */}
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>Receiving Ports</Label>
-            <DropdownMultiSelect
-              options={portOptions.map((p) => ({ label: p.name, value: p.id }))}
-              value={selectedReceivingPorts}
-              onChange={setSelectedReceivingPorts}
-              placeholder={
-                portLoading ? "Loading..." : "Select receiving ports"
-              }
-              disabled={portLoading || !portOptions.length}
-            />
-            {portError && (
-              <span className="text-xs text-destructive">{portError}</span>
-            )}
-          </div>
-          {/* Export Ports */}
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>Export Ports</Label>
-            <DropdownMultiSelect
-              options={portOptions.map((p) => ({ label: p.name, value: p.id }))}
-              value={selectedExportPorts}
-              onChange={setSelectedExportPorts}
-              placeholder={portLoading ? "Loading..." : "Select export ports"}
-              disabled={portLoading || !portOptions.length}
-            />
-            {portError && (
-              <span className="text-xs text-destructive">{portError}</span>
-            )}
-          </div>
-          {/* Surface */}
-          <div className="flex flex-col gap-1">
-            <Label>Surface</Label>
-            <Select value={surfaceId} onValueChange={setSurfaceId}>
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={surfaceLoading ? "Loading..." : "Select surface"}
+                <Input
+                  placeholder={t("widthPlaceholder")}
+                  type="number"
+                  min={0}
+                  value={sizeW}
+                  onChange={(e) => setSizeW(e.target.value)}
                 />
-              </SelectTrigger>
-              <SelectContent>
-                {surfaceOptions.map((surface) => (
-                  <SelectItem key={surface.id} value={surface.id}>
-                    {surface.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {surfaceError && (
-              <span className="text-xs text-destructive">{surfaceError}</span>
-            )}
-            {/* <span className="text-xs text-muted-foreground">
-              Must be a valid UUID
-            </span> */}
-          </div>
-          {/* Origin Country ID */}
-          <div className="flex flex-col gap-1">
-            <Label>Origin Country</Label>
-            <Select value={originCountryId} onValueChange={setOriginCountryId}>
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={countryLoading ? "Loading..." : "Select country"}
+                <Input
+                  placeholder={t("lengthPlaceholder")}
+                  type="number"
+                  min={0}
+                  value={sizeL}
+                  onChange={(e) => setSizeL(e.target.value)}
                 />
-              </SelectTrigger>
-              <SelectContent>
-                {countryOptions.map((country) => (
-                  <SelectItem key={country.id} value={country.id}>
-                    {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {countryError && (
-              <span className="text-xs text-destructive">{countryError}</span>
-            )}
-            {/* <span className="text-xs text-muted-foreground">
-              Must be a valid UUID
-            </span> */}
-          </div>
-          {/* Origin City ID */}
-          <div className="flex flex-col gap-1">
-            <Label>Origin City</Label>
-            <Select
-              value={originCityId}
-              onValueChange={setOriginCityId}
-              disabled={!originCountryId || cityLoading}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    cityLoading
-                      ? "Loading..."
-                      : !originCountryId
-                      ? "Select country first"
-                      : "Select city"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {cityOptions.map((city) => (
-                  <SelectItem key={city.id} value={city.id}>
-                    {city.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {cityError && (
-              <span className="text-xs text-destructive">{cityError}</span>
-            )}
-            {/* <span className="text-xs text-muted-foreground">
-              Must be a valid UUID
-            </span> */}
-          </div>
-          {/* Benefits */}
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>Benefits (comma separated)</Label>
-            <Input
-              placeholder="e.g. benefit1,benefit2"
-              value={benefits}
-              onChange={(e) => setBenefits(e.target.value)}
-            />
-          </div>
-          {/* Defects */}
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>Defects (comma separated)</Label>
-            <Input
-              placeholder="e.g. defect1,defect2"
-              value={defects}
-              onChange={(e) => setDefects(e.target.value)}
-            />
-          </div>
-          {/* Description */}
-          <div className="flex flex-col gap-1 md:col-span-2">
-            <Label>Description</Label>
-            <Textarea
-              placeholder="Description"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          {/* Price */}
-          <div className="flex flex-col gap-1">
-            <Label>Price</Label>
-            <Input
-              placeholder="Price"
-              type="number"
-              min={0}
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
-          </div>
-          {/* Checkboxes */}
-          {/* In the right panel form, remove checkboxes for Enable Chat, Enable Contact Info, Express */}
-        </form>
-      </Card>
+              </div>
+            </div>
+            {/* Weight */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("weightLabel")}</Label>
+              <Input
+                placeholder={t("weightPlaceholder")}
+                type="number"
+                min={0}
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+              />
+            </div>
+            {/* Minimum Order */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("minimumOrderLabel")}</Label>
+              <Input
+                placeholder={t("minimumOrderPlaceholder")}
+                type="number"
+                min={0}
+                value={minimumOrder}
+                onChange={(e) => setMinimumOrder(e.target.value)}
+              />
+            </div>
+            {/* Sale Unit Type */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("saleUnitTypeLabel")}</Label>
+              <Select value={saleUnitType} onValueChange={setSaleUnitType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t("selectUnitType")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weight">Weight</SelectItem>
+                  <SelectItem value="volume">Volume</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Price */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("priceLabel")}</Label>
+              <Input
+                placeholder={t("pricePlaceholder")}
+                type="number"
+                min={0}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            {/* Origin & Ports Section */}
+            <div className="col-span-1 md:col-span-2 mt-6">
+              <h2 className="text-lg font-semibold mb-4">
+                {t("originAndPorts")}
+              </h2>
+            </div>
+            {/* Origin Country ID */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("originCountryLabel")}</Label>
+              <Select
+                value={originCountryId}
+                onValueChange={setOriginCountryId}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      countryLoading ? t("loading") : t("selectCountry")
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {countryOptions.map((country) => (
+                    <SelectItem key={country.id} value={country.id}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {countryError && (
+                <span className="text-xs text-destructive">{countryError}</span>
+              )}
+            </div>
+            {/* Origin City ID */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("originCityLabel")}</Label>
+              <Select
+                value={originCityId}
+                onValueChange={setOriginCityId}
+                disabled={!originCountryId || cityLoading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      cityLoading
+                        ? t("loading")
+                        : !originCountryId
+                        ? t("selectCountry")
+                        : t("selectCity")
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {cityOptions.map((city) => (
+                    <SelectItem key={city.id} value={city.id}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {cityError && (
+                <span className="text-xs text-destructive">{cityError}</span>
+              )}
+            </div>
+            {/* Surface */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("surfaceLabel")}</Label>
+              <Select value={surfaceId} onValueChange={setSurfaceId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      surfaceLoading ? t("loading") : t("selectSurface")
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {surfaceOptions.map((surface) => (
+                    <SelectItem key={surface.id} value={surface.id}>
+                      {surface.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {surfaceError && (
+                <span className="text-xs text-destructive">{surfaceError}</span>
+              )}
+            </div>
+            {/* Receiving Ports */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("receivingPortsLabel")}</Label>
+              <DropdownMultiSelect
+                options={portOptions.map((p) => ({
+                  label: p.name,
+                  value: p.id,
+                }))}
+                value={selectedReceivingPorts}
+                onChange={setSelectedReceivingPorts}
+                placeholder={
+                  portLoading ? t("loading") : t("selectReceivingPorts")
+                }
+                disabled={portLoading || !portOptions.length}
+              />
+              {portError && (
+                <span className="text-xs text-destructive">{portError}</span>
+              )}
+            </div>
+            {/* Export Ports */}
+            <div className="flex flex-col gap-1">
+              <Label>{t("exportPortsLabel")}</Label>
+              <DropdownMultiSelect
+                options={portOptions.map((p) => ({
+                  label: p.name,
+                  value: p.id,
+                }))}
+                value={selectedExportPorts}
+                onChange={setSelectedExportPorts}
+                placeholder={
+                  portLoading ? t("loading") : t("selectExportPorts")
+                }
+                disabled={portLoading || !portOptions.length}
+              />
+              {portError && (
+                <span className="text-xs text-destructive">{portError}</span>
+              )}
+            </div>
+          </form>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -179,8 +179,17 @@ export async function fetchPorts(lang: string) {
   return data.data || [];
 }
 
-export async function fetchAds({ limit, page, locale }: { limit: number; page: number; locale: string }) {
-  const response = await fetch(`${API_BASE_URL}/ads/explore?limit=${limit}&page=${page}`, {
+export async function fetchAds({ limit, page, locale, user_id }: { limit: number; page: number; locale: string; user_id?: string }) {
+  const params = new URLSearchParams({
+    limit: limit.toString(),
+    page: page.toString(),
+  });
+  
+  if (user_id) {
+    params.append('user_id', user_id);
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/ads/explore?${params.toString()}`, {
     method: 'GET',
     headers: {
       'x-lang': locale,

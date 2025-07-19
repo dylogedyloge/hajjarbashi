@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchUserAds } from "@/lib/advertisements";
 import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +88,7 @@ type UserAd = {
 export default function ViewYourAdsPage() {
   const { token, isAuthenticated } = useAuth();
   const locale = useLocale();
+  const t = useTranslations("ViewYourAds");
   const [ads, setAds] = useState<UserAd[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -146,11 +148,11 @@ export default function ViewYourAdsPage() {
   const getStatusText = (status?: string | number) => {
     switch (status) {
       case 1:
-        return 'Published';
+        return t("published");
       case 3:
-        return 'Draft';
+        return t("draft");
       default:
-        return 'Unknown';
+        return t("unknown");
     }
   };
 
@@ -179,8 +181,8 @@ export default function ViewYourAdsPage() {
   if (!isAuthenticated) {
     return (
       <div className="w-full max-w-6xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
-        <h2 className="text-2xl font-semibold">View Your Ads</h2>
-        <p className="text-muted-foreground">Please sign in to view your advertisements.</p>
+        <h2 className="text-2xl font-semibold">{t("title")}</h2>
+        <p className="text-muted-foreground">{t("signInRequired")}</p>
       </div>
     );
   }
@@ -188,8 +190,8 @@ export default function ViewYourAdsPage() {
   if (loading) {
     return (
       <div className="w-full max-w-6xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
-        <h2 className="text-2xl font-semibold">View Your Ads</h2>
-        <p className="text-muted-foreground">Loading your advertisements...</p>
+        <h2 className="text-2xl font-semibold">{t("title")}</h2>
+        <p className="text-muted-foreground">{t("loading")}</p>
       </div>
     );
   }
@@ -197,8 +199,8 @@ export default function ViewYourAdsPage() {
   if (error) {
     return (
       <div className="w-full max-w-6xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
-        <h2 className="text-2xl font-semibold">View Your Ads</h2>
-        <p className="text-destructive">Error: {error}</p>
+        <h2 className="text-2xl font-semibold">{t("title")}</h2>
+        <p className="text-destructive">{t("error", { message: error })}</p>
       </div>
     );
   }
@@ -207,18 +209,18 @@ export default function ViewYourAdsPage() {
     <div className="w-full max-w-6xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold">Your Advertisements</h2>
+          <h2 className="text-2xl font-semibold">{t("title")}</h2>
           <p className="text-muted-foreground">
             {ads.length === 0 
-              ? "You haven't created any advertisements yet." 
-              : `You have ${ads.length} advertisement${ads.length === 1 ? '' : 's'}.`
+              ? t("noAds")
+              : t("subtitle", { count: ads.length })
             }
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
+        {/* <Button className="bg-primary hover:bg-primary/90">
           <Package className="w-4 h-4 mr-2" />
-          Create New Ad
-        </Button>
+          {t("createNewAd")}
+        </Button> */}
       </div>
       
       {ads.length > 0 && (
@@ -284,10 +286,10 @@ export default function ViewYourAdsPage() {
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <DollarSign className="w-4 h-4" />
-                          <span className="text-sm font-medium">Price</span>
+                          <span className="text-sm font-medium">{t("price")}</span>
                         </div>
                         <div className="text-lg font-semibold text-green-600">
-                          {formatPrice(ad.price, ad.sale_unit_type) || 'Not specified'}
+                          {formatPrice(ad.price, ad.sale_unit_type) || t("notSpecified")}
                         </div>
                       </div>
 
@@ -295,7 +297,7 @@ export default function ViewYourAdsPage() {
                         <div className="space-y-3">
                           <div className="flex items-center gap-2">
                             <Package className="w-4 h-4" />
-                            <span className="text-sm font-medium">Weight</span>
+                            <span className="text-sm font-medium">{t("weight")}</span>
                           </div>
                           <div className="text-lg font-semibold">
                             {ad.weight.toLocaleString()} kg
@@ -309,7 +311,7 @@ export default function ViewYourAdsPage() {
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <Package className="w-4 h-4" />
-                          <span className="text-sm font-medium">Colors</span>
+                          <span className="text-sm font-medium">{t("colors")}</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {ad.colors.map((color, index) => (
@@ -328,14 +330,14 @@ export default function ViewYourAdsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {ad.category && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Category</span>
+                          <span className="text-xs text-muted-foreground">{t("category")}</span>
                           <div className="text-sm font-medium capitalize">{ad.category.name}</div>
                         </div>
                       )}
 
                       {ad.surface && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Surface</span>
+                          <span className="text-xs text-muted-foreground">{t("surface")}</span>
                           <div className="text-sm font-medium capitalize">
                             {typeof ad.surface === 'string' ? ad.surface : ad.surface.name}
                           </div>
@@ -344,25 +346,25 @@ export default function ViewYourAdsPage() {
 
                       {ad.grade && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Grade</span>
+                          <span className="text-xs text-muted-foreground">{t("grade")}</span>
                           <div className="text-sm font-medium uppercase">{ad.grade}</div>
                         </div>
                       )}
 
                       {ad.form && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Form</span>
+                          <span className="text-xs text-muted-foreground">{t("form")}</span>
                           <div className="text-sm font-medium capitalize">{ad.form}</div>
                         </div>
                       )}
 
                       {(ad.origin_country || ad.origin_city) && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Origin</span>
+                          <span className="text-xs text-muted-foreground">{t("origin")}</span>
                           <div className="text-sm font-medium capitalize">
                             {ad.origin_city?.name && ad.origin_country?.name 
                               ? `${ad.origin_city.name}, ${ad.origin_country.name}`
-                              : ad.origin_country?.name || ad.origin_city?.name || 'Not specified'
+                              : ad.origin_country?.name || ad.origin_city?.name || t("notSpecified")
                             }
                           </div>
                         </div>
@@ -370,7 +372,7 @@ export default function ViewYourAdsPage() {
 
                       {ad.size && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Size</span>
+                          <span className="text-xs text-muted-foreground">{t("size")}</span>
                           <div className="text-sm font-medium">
                             {typeof ad.size === 'string' 
                               ? ad.size 
@@ -382,35 +384,35 @@ export default function ViewYourAdsPage() {
 
                       {ad.weight_range_type && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Weight Range</span>
+                          <span className="text-xs text-muted-foreground">{t("weightRange")}</span>
                           <div className="text-sm font-medium capitalize">{ad.weight_range_type}</div>
                         </div>
                       )}
 
                       {ad.size_range_type && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Size Range</span>
+                          <span className="text-xs text-muted-foreground">{t("sizeRange")}</span>
                           <div className="text-sm font-medium capitalize">{ad.size_range_type}</div>
                         </div>
                       )}
 
                       {ad.minimum_order && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Min Order</span>
+                          <span className="text-xs text-muted-foreground">{t("minOrder")}</span>
                           <div className="text-sm font-medium">{ad.minimum_order.toLocaleString()} kg</div>
                         </div>
                       )}
 
                       <div className="space-y-1">
-                        <span className="text-xs text-muted-foreground">Created</span>
+                        <span className="text-xs text-muted-foreground">{t("created")}</span>
                         <div className="text-sm font-medium">
-                          {ad.created_at ? new Date(ad.created_at).toLocaleDateString() : 'Not specified'}
+                          {ad.created_at ? new Date(ad.created_at).toLocaleDateString() : t("notSpecified")}
                         </div>
                       </div>
 
                       {ad.views !== undefined && (
                         <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">Views</span>
+                          <span className="text-xs text-muted-foreground">{t("views")}</span>
                           <div className="text-sm font-medium">{ad.views.toLocaleString()}</div>
                         </div>
                       )}
@@ -419,24 +421,24 @@ export default function ViewYourAdsPage() {
                     {/* Features */}
                     {(ad.is_chat_enabled || ad.contact_info_enabled || ad.express) && (
                       <div className="space-y-3">
-                        <h4 className="text-sm font-medium">Features</h4>
+                        <h4 className="text-sm font-medium">{t("features")}</h4>
                         <div className="flex flex-wrap gap-2">
                           {ad.is_chat_enabled && (
                             <Badge variant="secondary" className="text-xs">
                               <CheckCircle className="w-3 h-3 mr-1" />
-                              Chat Enabled
+                              {t("chatEnabled")}
                             </Badge>
                           )}
                           {ad.contact_info_enabled && (
                             <Badge variant="secondary" className="text-xs">
                               <CheckCircle className="w-3 h-3 mr-1" />
-                              Contact Info
+                              {t("contactInfo")}
                             </Badge>
                           )}
                           {ad.express && (
                             <Badge variant="secondary" className="text-xs">
                               <CheckCircle className="w-3 h-3 mr-1" />
-                              Express
+                              {t("express")}
                             </Badge>
                           )}
                         </div>
@@ -446,11 +448,11 @@ export default function ViewYourAdsPage() {
                     {/* Ports Information */}
                     {((ad.receiving_ports_details && ad.receiving_ports_details.length > 0) || (ad.export_ports_details && ad.export_ports_details.length > 0)) && (
                       <div className="space-y-3">
-                        <h4 className="text-sm font-medium">Ports</h4>
+                        <h4 className="text-sm font-medium">{t("ports")}</h4>
                         <div className="space-y-2">
                           {ad.receiving_ports_details && ad.receiving_ports_details.length > 0 && (
                             <div className="text-xs">
-                              <span className="text-muted-foreground">Receiving: </span>
+                              <span className="text-muted-foreground">{t("receiving")}: </span>
                               <span className="font-medium">
                                 {ad.receiving_ports_details.map(port => `${port.name} (${port.city_name})`).join(', ')}
                               </span>
@@ -458,7 +460,7 @@ export default function ViewYourAdsPage() {
                           )}
                           {ad.export_ports_details && ad.export_ports_details.length > 0 && (
                             <div className="text-xs">
-                              <span className="text-muted-foreground">Export: </span>
+                              <span className="text-muted-foreground">{t("export")}: </span>
                               <span className="font-medium">
                                 {ad.export_ports_details.map(port => `${port.name} (${port.city_name})`).join(', ')}
                               </span>
@@ -473,7 +475,7 @@ export default function ViewYourAdsPage() {
                       <div className="space-y-3">
                         {ad.benefits && ad.benefits.length > 0 && (
                           <div className="space-y-2">
-                            <h4 className="text-sm font-medium text-green-700">Benefits</h4>
+                            <h4 className="text-sm font-medium text-green-700">{t("benefits")}</h4>
                             <div className="text-xs text-green-600 space-y-1">
                               {ad.benefits.map((benefit, index) => (
                                 <div key={index}>• {benefit}</div>
@@ -484,7 +486,7 @@ export default function ViewYourAdsPage() {
 
                         {ad.defects && ad.defects.length > 0 && (
                           <div className="space-y-2">
-                            <h4 className="text-sm font-medium text-red-700">Defects</h4>
+                            <h4 className="text-sm font-medium text-red-700">{t("defects")}</h4>
                             <div className="text-xs text-red-600 space-y-1">
                               {ad.defects.map((defect, index) => (
                                 <div key={index}>• {defect}</div>

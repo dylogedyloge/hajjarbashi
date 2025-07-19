@@ -2,22 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { fetchAds } from "@/lib/advertisements";
-import { getMyProfile } from "@/lib/profile";
+import { fetchUserAds } from "@/lib/advertisements";
 import { useLocale } from "next-intl";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { 
-  Calendar, 
+  // Calendar, 
   DollarSign, 
-  MapPin, 
+  // MapPin, 
   Package, 
-  Eye, 
-  Edit, 
-  Trash2,
+  // Eye, 
+  // Edit, 
+  // Trash2,
   TrendingUp,
   Clock,
   CheckCircle,
@@ -99,24 +98,19 @@ export default function ViewYourAdsPage() {
       return;
     }
 
-    const fetchUserAds = async () => {
+    const fetchUserAdsData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // First, get the current user's profile to get their user_id
-        const profileResponse = await getMyProfile(token, locale);
-        const userId = profileResponse.data.id;
-        
-        // Then fetch the user's ads using their user_id
-        const adsResponse = await fetchAds({ 
+        const response = await fetchUserAds({ 
           limit: 50, 
           page: 1, 
           locale, 
-          user_id: userId 
+          token 
         });
         
-        setAds(adsResponse.data || []);
+        setAds(response.data || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load your ads");
       } finally {
@@ -124,32 +118,39 @@ export default function ViewYourAdsPage() {
       }
     };
 
-    fetchUserAds();
+    fetchUserAdsData();
   }, [isAuthenticated, token, locale]);
 
-  const getStatusIcon = (status?: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
+  const getStatusIcon = (status?: string | number) => {
+    switch (status) {
+      case 1:
         return <CheckCircle className="w-4 h-4" />;
-      case 'pending':
+      case 3:
         return <Clock className="w-4 h-4" />;
-      case 'rejected':
-        return <XCircle className="w-4 h-4" />;
       default:
         return <AlertCircle className="w-4 h-4" />;
     }
   };
 
-  const getStatusColor = (status?: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
+  const getStatusColor = (status?: string | number) => {
+    switch (status) {
+      case 1:
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending':
+      case 3:
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusText = (status?: string | number) => {
+    switch (status) {
+      case 1:
+        return 'Published';
+      case 3:
+        return 'Draft';
+      default:
+        return 'Unknown';
     }
   };
 
@@ -228,9 +229,9 @@ export default function ViewYourAdsPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      {/* <CardTitle className="text-lg">
+                      <CardTitle className="text-lg">
                         {ad.title || ad.stone_type || `Advertisement #${ad.id}`}
-                      </CardTitle> */}
+                      </CardTitle>
                       <div className="flex items-center gap-2">
                         {ad.is_featured && (
                           <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
@@ -243,10 +244,10 @@ export default function ViewYourAdsPage() {
                             Express
                           </Badge>
                         )}
-                        {/* <Badge className={`${getStatusColor(ad.status)} flex items-center gap-1`}>
+                        <Badge className={`${getStatusColor(ad.status)} flex items-center gap-1`}>
                           {getStatusIcon(ad.status)}
-                          {ad.status || 'Unknown'}
-                        </Badge> */}
+                          {getStatusText(ad.status)}
+                        </Badge>
                       </div>
                     </div>
                     {ad.description && (

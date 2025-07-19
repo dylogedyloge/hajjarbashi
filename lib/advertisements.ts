@@ -213,3 +213,17 @@ export async function fetchAdById({ id, locale }: { id: string; locale: string }
   }
   return response.json();
 } 
+
+export async function fetchUserAds({ limit, page, locale, token }: { limit: number; page: number; locale: string; token: string }) {
+  const response = await fetch(`${API_BASE_URL}/ads?limit=${limit}&page=${page}`, {
+    method: 'GET',
+    headers: {
+      'x-lang': locale,
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch user ads');
+  }
+  return response.json();
+} 

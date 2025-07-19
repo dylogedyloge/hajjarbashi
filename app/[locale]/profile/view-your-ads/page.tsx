@@ -21,7 +21,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  XCircle
+  // XCircle
 } from "lucide-react";
 
 type UserAd = {
@@ -159,14 +159,14 @@ export default function ViewYourAdsPage() {
     return `$${price.toLocaleString()}${unit ? `/${unit}` : ''}`;
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return null;
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
+  // const formatDate = (dateString?: string) => {
+  //   if (!dateString) return null;
+  //   return new Date(dateString).toLocaleDateString('en-US', {
+  //     year: 'numeric',
+  //     month: 'short',
+  //     day: 'numeric'
+  //   });
+  // };
 
   const getMainImage = (ad: UserAd) => {
     if (ad.media && ad.media.length > 0) {

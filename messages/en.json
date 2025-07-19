@@ -339,7 +339,7 @@
       "defectsPlaceholder": "Defects (comma separated)",
       "benefitsExample": "e.g. benefit1,benefit2",
       "defectsExample": "e.g. defect1,defect2",
-      "selectCategory": "Select category",
+      "selectCategory": "Select a category",
       "selectColors": "Select colors",
       "noColorsAvailable": "No colors available",
       "selectForm": "Select form",

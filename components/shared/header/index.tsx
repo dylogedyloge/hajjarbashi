@@ -80,14 +80,16 @@ const Header = () => {
             className="h-8 w-auto"
           />
         </Link>
-        <div className="flex items-center gap-2 bg-muted rounded-full px-2 py-1">
-          <Button variant="default" size="sm" className="rounded-full px-6 ">
-            {t("home")}
+        {/* <div className="flex items-center gap-2 bg-muted rounded-full px-2 py-1"> */}
+          <Button 
+            variant={pathname.includes("/bookmarks") ? "default" : "outline"}
+            size="sm" 
+            className="rounded-full px-4 py-2 text-sm font-medium transition-colors"
+            onClick={() => intlRouter.push("/bookmarks")}
+          >
+            {t("bookmarks")}
           </Button>
-          <button className="px-4 py-2 rounded-full text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
-            {t("bookmark")}
-          </button>
-        </div>
+        {/* </div> */}
       </div>
       {/* Mobile: Menu Icon */}
       <div className="flex md:hidden items-center">

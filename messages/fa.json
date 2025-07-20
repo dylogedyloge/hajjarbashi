@@ -406,6 +406,11 @@
       "notSpecified": "مشخص نشده",
       "published": "منتشر شده",
       "draft": "پیش‌نویس",
+      "waiting": "در انتظار",
+      "rejected": "رد شده",
+      "deleted": "حذف شده",
+      "expired": "منقضی شده",
+      "temp": "موقت",
       "unknown": "نامشخص"
     },
     "Settings": {

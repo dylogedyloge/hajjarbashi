@@ -367,7 +367,8 @@
       "originCityLabel": "Origin City",
       "surfaceLabel": "Surface",
       "receivingPortsLabel": "Receiving Ports",
-      "exportPortsLabel": "Export Ports"
+      "exportPortsLabel": "Export Ports",
+      "loading": "Loading..."
     },
     "ViewYourAds": {
       "title": "Your Advertisements",
@@ -403,6 +404,11 @@
       "notSpecified": "Not specified",
       "published": "Published",
       "draft": "Draft",
+      "waiting": "Waiting",
+      "rejected": "Rejected",
+      "deleted": "Deleted",
+      "expired": "Expired",
+      "temp": "Temporary",
       "unknown": "Unknown"
     },
     "Settings": {

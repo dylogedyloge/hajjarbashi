@@ -213,13 +213,51 @@ export default function CreateAdPage() {
           locale,
           token: token || undefined,
         });
-        if (res?.success && res?.data?.uploaded_files) {
-          setImageUrls(
-            res.data.uploaded_files.map((file: UploadedFile) => ({
-              url: `https://api.hajjardevs.ir/${file.thumb_path}`,
-              mediaPath: file.path,
-            }))
-          );
+        
+        if (res?.success && res?.data) {
+          const adData = res.data;
+          
+          // Set images
+          if (adData.uploaded_files) {
+            setImageUrls(
+              adData.uploaded_files.map((file: UploadedFile) => ({
+                url: `https://api.hajjardevs.ir/${file.thumb_path}`,
+                mediaPath: file.path,
+              }))
+            );
+          }
+          
+          // Set form fields
+          if (adData.sale_unit_type) setSaleUnitType(adData.sale_unit_type);
+          if (adData.form) setFormType(adData.form);
+          if (adData.grade) setGrade(adData.grade);
+          if (adData.size) {
+            if (typeof adData.size === 'object') {
+              setSizeH(adData.size.h?.toString() || '');
+              setSizeW(adData.size.w?.toString() || '');
+              setSizeL(adData.size.l?.toString() || '');
+            }
+          }
+          if (adData.weight) setWeight(adData.weight.toString());
+          if (adData.minimum_order) setMinimumOrder(adData.minimum_order.toString());
+          if (adData.category_id) setCategoryId(adData.category_id);
+          if (adData.price) setPrice(adData.price.toString());
+          if (adData.description) setDescription(adData.description);
+          if (adData.colors) setSelectedColors(adData.colors);
+          if (adData.benefits) setBenefits(adData.benefits.join(', '));
+          if (adData.defects) setDefects(adData.defects.join(', '));
+          if (adData.surface_id) setSurfaceId(adData.surface_id);
+          if (adData.origin_country_id) setOriginCountryId(adData.origin_country_id);
+          if (adData.origin_city_id) setOriginCityId(adData.origin_city_id);
+          if (adData.receiving_ports) setSelectedReceivingPorts(adData.receiving_ports);
+          if (adData.export_ports) setSelectedExportPorts(adData.export_ports);
+          
+          // Set checkboxes
+          if (adData.is_chat_enabled !== undefined) setEnableChat(adData.is_chat_enabled);
+          if (adData.contact_info_enabled !== undefined) setContactInfo(adData.contact_info_enabled);
+          if (adData.express !== undefined) setExpressReady(adData.express);
+          if (adData.auto_renew !== undefined) setAutoRenew(adData.auto_renew);
+          if (adData.is_featured !== undefined) setFeatured(adData.is_featured);
         }
       } catch (err) {
         console.error(err);

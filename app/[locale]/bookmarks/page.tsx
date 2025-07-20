@@ -136,13 +136,13 @@ export default function BookmarksPage() {
       ) : (
         <div className="space-y-6">
           {bookmarkedAds.map((ad) => (
-            <div key={ad.id}>
+            <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
               <AdCard 
                 ad={ad} 
                 isFromBookmarksPage={true}
                 onBookmarkChange={(isBookmarked) => handleAdUpdate(ad.id, isBookmarked)}
               />
-            </div>
+            </Link>
           ))}
           
           {hasMore && (

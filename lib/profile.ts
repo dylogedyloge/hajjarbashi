@@ -221,4 +221,32 @@ export async function fetchUserProfile(id: string, lang: string) {
   if (!response.ok) throw new Error("Failed to fetch user profile");
   const data = await response.json();
   return data.data;
+}
+
+export async function deleteAccount({ locale, token }: { locale: string; token: string }) {
+  console.log('🗑️ Deleting user account');
+  console.log('📡 API URL:', `${API_BASE_URL}/users/delete_account`);
+  console.log('🔑 Token:', token ? 'Present' : 'Missing');
+  console.log('🌐 Locale:', locale);
+  
+  const response = await fetch(`${API_BASE_URL}/users/delete_account`, {
+    method: 'DELETE',
+    headers: {
+      'x-lang': locale,
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  
+  console.log('📊 Response status:', response.status);
+  console.log('📊 Response ok:', response.ok);
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ Delete account failed:', errorText);
+    throw new Error(`Failed to delete account: ${response.status} ${response.statusText}`);
+  }
+  
+  const result = await response.json();
+  console.log('✅ Delete account success:', result);
+  return result;
 } 

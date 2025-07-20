@@ -19,12 +19,26 @@ import {
   Check,
   X,
   Sun,
-  Moon
+  Moon,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { GB, IR } from "country-flag-icons/react/3x2";
+import { deleteAccount } from "@/lib/profile";
+import { useAuth } from "@/lib/auth-context";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function SettingsPage() {
   const t = useTranslations("Settings");
@@ -35,6 +49,10 @@ export default function SettingsPage() {
   const currentLocale = (params?.locale as string) || "en";
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
   const [mounted, setMounted] = useState(false);
+  const { token, logout } = useAuth();
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -113,6 +131,37 @@ export default function SettingsPage() {
         newPassword: "",
         confirmPassword: ""
       }));
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!token) {
+      toast.error("Authentication required");
+      return;
+    }
+
+    if (confirmText !== "DELETE") {
+      toast.error("Please type 'DELETE' to confirm");
+      return;
+    }
+
+    try {
+      setIsDeletingAccount(true);
+      await deleteAccount({
+        locale: currentLocale,
+        token,
+      });
+      
+      toast.success("Account deleted successfully");
+      logout(); // Logout the user after successful deletion
+      intlRouter.replace("/"); // Redirect to home page
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete account");
+    } finally {
+      setIsDeletingAccount(false);
+      setIsDeleteDialogOpen(false);
+      setConfirmText("");
     }
   };
 
@@ -448,6 +497,100 @@ export default function SettingsPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Delete Account */}
+        <Card className="border-destructive/20 bg-destructive/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              {t("deleteAccount.title")}
+            </CardTitle>
+            <CardDescription className="text-destructive/80">
+              {t("deleteAccount.description")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-destructive">
+                    {t("deleteAccount.warning")}
+                  </p>
+                  <ul className="text-sm text-destructive/80 space-y-1">
+                    <li>• {t("deleteAccount.warning1")}</li>
+                    <li>• {t("deleteAccount.warning2")}</li>
+                    <li>• {t("deleteAccount.warning3")}</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" className="w-full sm:w-auto">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t("deleteAccount.deleteButton")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-destructive">
+                      <AlertTriangle className="h-5 w-5" />
+                      {t("deleteAccount.confirmTitle")}
+                    </DialogTitle>
+                    <DialogDescription className="text-destructive/80">
+                      {t("deleteAccount.confirmDescription")}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <p className="text-sm text-destructive/90">
+                        {t("deleteAccount.confirmWarning")}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmText" className="text-sm font-medium">
+                        {t("deleteAccount.confirmLabel")}
+                      </Label>
+                      <Input
+                        id="confirmText"
+                        value={confirmText}
+                        onChange={(e) => setConfirmText(e.target.value)}
+                        placeholder={t("deleteAccount.confirmPlaceholder")}
+                        className="border-destructive/20 focus:border-destructive"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter className="gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setIsDeleteDialogOpen(false);
+                        setConfirmText("");
+                      }}
+                    >
+                      {t("deleteAccount.cancel")}
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      disabled={confirmText !== "DELETE" || isDeletingAccount}
+                      onClick={handleDeleteAccount}
+                    >
+                      {isDeletingAccount ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                          {t("deleteAccount.deleting")}
+                        </>
+                      ) : (
+                        t("deleteAccount.confirmDelete")
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>

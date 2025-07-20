@@ -47,17 +47,6 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
     { label: t("overview"), href: "/profile/overview", icon: LayoutDashboard },
     { label: t("viewYourAds"), href: "/profile/view-your-ads", icon: List },
     {
-      label: t("plansAndBilling"),
-      href: "/profile/plans-and-billing",
-      icon: Wallet,
-    },
-    { label: t("royaltyClub"), href: "/profile/royalty-club", icon: Crown },
-    {
-      label: t("accountSetting"),
-      href: "/profile/account-setting",
-      icon: Settings,
-    },
-    {
       label: t("settings"),
       href: "/profile/settings",
       icon: Settings,

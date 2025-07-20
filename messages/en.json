@@ -453,6 +453,23 @@
         "notConnected": "Not Connected",
         "connect": "Connect",
         "disconnect": "Disconnect"
+      },
+      "deleteAccount": {
+        "title": "Delete Account",
+        "description": "Permanently delete your account and all associated data",
+        "warning": "This action cannot be undone",
+        "warning1": "All your advertisements will be permanently deleted",
+        "warning2": "Your profile and personal information will be removed",
+        "warning3": "You will lose access to all account features",
+        "deleteButton": "Delete Account",
+        "confirmTitle": "Confirm Account Deletion",
+        "confirmDescription": "This action is irreversible. Please confirm your decision.",
+        "confirmWarning": "By deleting your account, you will permanently lose all your data including advertisements, bookmarks, and account settings.",
+        "confirmLabel": "Type 'DELETE' to confirm",
+        "confirmPlaceholder": "Type DELETE to confirm",
+        "cancel": "Cancel",
+        "confirmDelete": "Permanently Delete Account",
+        "deleting": "Deleting..."
       }
     },
     "Bookmarks": {

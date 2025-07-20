@@ -303,4 +303,6 @@ export async function fetchBookmarkedAds({ limit, page, locale, token }: { limit
     throw new Error('Failed to fetch bookmarked ads');
   }
   return response.json();
-} 
+}
+
+ 

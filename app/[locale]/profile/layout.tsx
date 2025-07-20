@@ -57,6 +57,11 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
       href: "/profile/account-setting",
       icon: Settings,
     },
+    {
+      label: t("settings"),
+      href: "/profile/settings",
+      icon: Settings,
+    },
     { label: t("signOut"), href: "/profile/sign-out", icon: LogOut },
   ];
 

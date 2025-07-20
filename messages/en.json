@@ -278,6 +278,7 @@
         "plansAndBilling": "Plans & Billing",
         "royaltyClub": "Royalty Club",
         "accountSetting": "Account Setting",
+        "settings": "Settings",
         "signOut": "Sign Out"
       }
     },
@@ -403,5 +404,49 @@
       "published": "Published",
       "draft": "Draft",
       "unknown": "Unknown"
+    },
+    "Settings": {
+      "title": "Settings",
+      "subtitle": "Manage your account settings and preferences",
+      "contactInformation": {
+        "title": "Contact Information",
+        "description": "Update your phone number and email address",
+        "phoneNumber": "Phone Number",
+        "emailAddress": "Email Address"
+      },
+      "password": {
+        "title": "Password",
+        "description": "Change your password to keep your account secure",
+        "changePassword": "Change Password",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "currentPasswordPlaceholder": "Enter current password",
+        "newPasswordPlaceholder": "Enter new password",
+        "confirmPasswordPlaceholder": "Confirm new password",
+        "savePassword": "Save Password",
+        "cancel": "Cancel"
+      },
+      "preferences": {
+        "title": "Preferences",
+        "description": "Customize your app experience",
+        "theme": "Theme",
+        "language": "Language",
+        "selectTheme": "Select theme",
+        "selectLanguage": "Select language",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System",
+        "english": "English",
+        "persian": "فارسی"
+      },
+      "linkedAccounts": {
+        "title": "Linked Accounts",
+        "description": "Manage your connected social media accounts",
+        "connected": "Connected",
+        "notConnected": "Not Connected",
+        "connect": "Connect",
+        "disconnect": "Disconnect"
+      }
     }
   }

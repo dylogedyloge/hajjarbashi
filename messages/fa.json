@@ -274,6 +274,7 @@
         "plansAndBilling": "پلن‌ها و صورتحساب",
         "royaltyClub": "باشگاه رویالتی",
         "accountSetting": "تنظیمات حساب",
+        "settings": "تنظیمات",
         "signOut": "خروج"
       },
       "profileUpdated": "پروفایل با موفقیت به‌روزرسانی شد!",
@@ -406,6 +407,50 @@
       "published": "منتشر شده",
       "draft": "پیش‌نویس",
       "unknown": "نامشخص"
+    },
+    "Settings": {
+      "title": "تنظیمات",
+      "subtitle": "مدیریت تنظیمات حساب کاربری و ترجیحات",
+      "contactInformation": {
+        "title": "اطلاعات تماس",
+        "description": "به‌روزرسانی شماره موبایل و آدرس ایمیل",
+        "phoneNumber": "شماره موبایل",
+        "emailAddress": "آدرس ایمیل"
+      },
+      "password": {
+        "title": "رمز عبور",
+        "description": "تغییر رمز عبور برای حفظ امنیت حساب کاربری",
+        "changePassword": "تغییر رمز عبور",
+        "currentPassword": "رمز عبور فعلی",
+        "newPassword": "رمز عبور جدید",
+        "confirmPassword": "تکرار رمز عبور جدید",
+        "currentPasswordPlaceholder": "رمز عبور فعلی را وارد کنید",
+        "newPasswordPlaceholder": "رمز عبور جدید را وارد کنید",
+        "confirmPasswordPlaceholder": "رمز عبور جدید را تکرار کنید",
+        "savePassword": "ذخیره رمز عبور",
+        "cancel": "لغو"
+      },
+      "preferences": {
+        "title": "ترجیحات",
+        "description": "شخصی‌سازی تجربه استفاده از برنامه",
+        "theme": "تم",
+        "language": "زبان",
+        "selectTheme": "انتخاب تم",
+        "selectLanguage": "انتخاب زبان",
+        "light": "روشن",
+        "dark": "تاریک",
+        "system": "سیستم",
+        "english": "انگلیسی",
+        "persian": "فارسی"
+      },
+      "linkedAccounts": {
+        "title": "حساب‌های مرتبط",
+        "description": "مدیریت حساب‌های شبکه‌های اجتماعی متصل",
+        "connected": "متصل",
+        "notConnected": "غیر متصل",
+        "connect": "اتصال",
+        "disconnect": "قطع اتصال"
+      }
     },
     "productDetails": "جزئیات محصول",
     "physicalSpecifications": "مشخصات فیزیکی",

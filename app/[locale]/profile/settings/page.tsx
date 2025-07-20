@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTheme } from "next-themes";
 import { 
   Phone, 
   Lock, 
@@ -16,12 +17,25 @@ import {
   EyeOff,
   Edit3,
   Check,
-  X
+  X,
+  Sun,
+  Moon
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
+import { useParams } from "next/navigation";
+import { GB, IR } from "country-flag-icons/react/3x2";
 
 export default function SettingsPage() {
   const t = useTranslations("Settings");
+  const { setTheme, resolvedTheme } = useTheme();
+  const intlRouter = useIntlRouter();
+  const pathname = usePathname();
+  const params = useParams();
+  const currentLocale = (params?.locale as string) || "en";
+  const [language, setLanguage] = useState(currentLocale.toUpperCase());
+  const [mounted, setMounted] = useState(false);
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -36,8 +50,6 @@ export default function SettingsPage() {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-    theme: "system",
-    language: "en",
   });
 
   const [linkedAccounts] = useState([
@@ -45,6 +57,23 @@ export default function SettingsPage() {
     { provider: "Facebook", email: "user@facebook.com", connected: true },
     { provider: "Apple", email: "user@apple.com", connected: false },
   ]);
+
+  // Update language state when locale changes
+  useEffect(() => {
+    setLanguage(currentLocale.toUpperCase());
+  }, [currentLocale]);
+
+  // Handle language change
+  const handleLanguageChange = (newLanguage: string) => {
+    const locale = newLanguage.toLowerCase();
+    intlRouter.replace(pathname, { locale });
+  };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -323,34 +352,62 @@ export default function SettingsPage() {
             {/* Theme */}
             <div className="space-y-2">
               <Label htmlFor="theme">{t("preferences.theme")}</Label>
-              <Select
-                value={formData.theme}
-                onValueChange={(value) => handleInputChange('theme', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("preferences.selectTheme")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">{t("preferences.light")}</SelectItem>
-                  <SelectItem value="dark">{t("preferences.dark")}</SelectItem>
-                  <SelectItem value="system">{t("preferences.system")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {resolvedTheme === "dark" ? t("preferences.dark") : t("preferences.light")}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Toggle theme"
+                    onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                    className="rounded-full"
+                  >
+                    {resolvedTheme === "dark" ? (
+                      <Sun className="size-5" />
+                    ) : (
+                      <Moon className="size-5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Language */}
             <div className="space-y-2">
               <Label htmlFor="language">{t("preferences.language")}</Label>
-              <Select
-                value={formData.language}
-                onValueChange={(value) => handleInputChange('language', value)}
-              >
+              <Select value={language} onValueChange={handleLanguageChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("preferences.selectLanguage")} />
+                  <SelectValue>
+                    <div className="flex items-center gap-2">
+                      {language === "EN" ? (
+                        <>
+                          <GB className="w-4 h-4" />
+                          {t("preferences.english")}
+                        </>
+                      ) : (
+                        <>
+                          <IR className="w-4 h-4" />
+                          {t("preferences.persian")}
+                        </>
+                      )}
+                    </div>
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">{t("preferences.english")}</SelectItem>
-                  <SelectItem value="fa">{t("preferences.persian")}</SelectItem>
+                  <SelectItem value="EN">
+                    <div className="flex items-center gap-2">
+                      <GB className="w-4 h-4" />
+                      {t("preferences.english")}
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="FA">
+                    <div className="flex items-center gap-2">
+                      <IR className="w-4 h-4" />
+                      {t("preferences.persian")}
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

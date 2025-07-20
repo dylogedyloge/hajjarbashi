@@ -32,6 +32,7 @@ export type Ad = {
   category?: { id: string; name: string };
   colors?: string[];
   media?: Array<{ media_thumb_path?: string; media_path?: string }>;
+  bookmarked?: boolean;
   // ...add any other fields you use
 };
 

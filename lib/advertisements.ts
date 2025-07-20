@@ -226,4 +226,81 @@ export async function fetchUserAds({ limit, page, locale, token }: { limit: numb
     throw new Error('Failed to fetch user ads');
   }
   return response.json();
+}
+
+export async function createBookmark({ adId, locale, token }: { adId: string; locale: string; token: string }) {
+  console.log('🔖 Creating bookmark for ad:', adId);
+  console.log('📡 API URL:', `${API_BASE_URL}/ads/bookmarks/bookmarks`);
+  console.log('🔑 Token:', token ? 'Present' : 'Missing');
+  console.log('🌐 Locale:', locale);
+  
+  const response = await fetch(`${API_BASE_URL}/ads/bookmarks/bookmarks`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-lang': locale,
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ id: adId }),
+  });
+  
+  console.log('📊 Response status:', response.status);
+  console.log('📊 Response ok:', response.ok);
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ Create bookmark failed:', errorText);
+    throw new Error(`Failed to create bookmark: ${response.status} ${response.statusText}`);
+  }
+  
+  const result = await response.json();
+  console.log('✅ Create bookmark success:', result);
+  return result;
+}
+
+export async function deleteBookmark({ adId, locale, token }: { adId: string; locale: string; token: string }) {
+  console.log('🗑️ Deleting bookmark for ad:', adId);
+  console.log('📡 API URL:', `${API_BASE_URL}/ads/bookmarks/bookmarks/${adId}`);
+  console.log('🔑 Token:', token ? 'Present' : 'Missing');
+  console.log('🌐 Locale:', locale);
+  
+  const response = await fetch(`${API_BASE_URL}/ads/bookmarks/bookmarks/${adId}`, {
+    method: 'DELETE',
+    headers: {
+      'x-lang': locale,
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  
+  console.log('📊 Response status:', response.status);
+  console.log('📊 Response ok:', response.ok);
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ Delete bookmark failed:', errorText);
+    throw new Error(`Failed to delete bookmark: ${response.status} ${response.statusText}`);
+  }
+  
+  const result = await response.json();
+  console.log('✅ Delete bookmark success:', result);
+  return result;
+}
+
+export async function fetchBookmarkedAds({ limit, page, locale, token }: { limit: number; page: number; locale: string; token: string }) {
+  const params = new URLSearchParams({
+    limit: limit.toString(),
+    page: page.toString(),
+  });
+  
+  const response = await fetch(`${API_BASE_URL}/ads/bookmarks/bookmarks?${params.toString()}`, {
+    method: 'GET',
+    headers: {
+      'x-lang': locale,
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch bookmarked ads');
+  }
+  return response.json();
 } 

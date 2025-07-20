@@ -452,6 +452,20 @@
         "disconnect": "قطع اتصال"
       }
     },
+    "Bookmarks": {
+      "title": "آگهی‌های نشان شده",
+      "subtitle": "آگهی‌های ذخیره شده شما",
+      "signInRequired": "برای مشاهده نشان‌ها وارد شوید",
+      "signInRequiredDescription": "برای مشاهده آگهی‌های نشان شده خود باید وارد شوید.",
+      "noBookmarks": "هنوز نشان‌ای وجود ندارد",
+      "noBookmarksDescription": "شروع به نشان کردن آگهی‌ها کنید تا آن‌ها را اینجا ببینید.",
+      "browseAds": "مرور آگهی‌ها",
+      "loadMore": "بارگذاری بیشتر",
+      "loading": "در حال بارگذاری...",
+      "error": "خطا در بارگذاری نشان‌ها",
+      "tryAgain": "تلاش مجدد",
+      "loadingBookmarks": "در حال بارگذاری نشان‌های شما..."
+    },
     "productDetails": "جزئیات محصول",
     "physicalSpecifications": "مشخصات فیزیکی",
     "originAndPorts": "مبدا و بنادر"

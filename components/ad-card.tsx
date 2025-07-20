@@ -1,7 +1,11 @@
 import Image from "next/image";
-import { Clock, Weight } from "lucide-react";
+import { Clock, Weight, Bookmark } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { createBookmark, deleteBookmark } from "@/lib/advertisements";
+import { useAuth } from "@/lib/auth-context";
 
 interface AdCardProps {
   ad: {
@@ -26,12 +30,19 @@ interface AdCardProps {
     category?: { id: string; name: string };
     colors?: string[];
     media?: Array<{ media_thumb_path?: string; media_path?: string }>;
+    bookmarked?: boolean;
   };
+  onBookmarkChange?: (isBookmarked: boolean) => void;
+  isFromBookmarksPage?: boolean;
 }
 
-const AdCard = ({ ad }: AdCardProps) => {
+const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardProps) => {
   const t = useTranslations("AdCard");
   const locale = useLocale();
+  const { user, token, isAuthenticated } = useAuth();
+  const [isBookmarked, setIsBookmarked] = useState(ad.bookmarked || isFromBookmarksPage);
+  const [isBookmarking, setIsBookmarking] = useState(false);
+  
   // Prefer ad.colors (array) over ad.color (string)
   const colorArray = Array.isArray(ad.colors)
     ? ad.colors
@@ -46,8 +57,63 @@ const AdCard = ({ ad }: AdCardProps) => {
   const imageSrc = mediaImage
     ? (mediaImage.startsWith("http") ? mediaImage : `https://api.hajjardevs.ir/${mediaImage}`)
     : ad.image;
+
+  const handleBookmarkToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isAuthenticated || !token) {
+      // Handle unauthenticated user - could show login prompt
+      console.log("User must be authenticated to bookmark ads");
+      return;
+    }
+
+    if (isBookmarking) return; // Prevent multiple simultaneous requests
+
+    setIsBookmarking(true);
+    
+    try {
+      if (isBookmarked) {
+        // Remove bookmark
+        await deleteBookmark({
+          adId: ad.id,
+          locale,
+          token: token,
+        });
+        setIsBookmarked(false);
+        onBookmarkChange?.(false);
+      } else {
+        // Add bookmark
+        await createBookmark({
+          adId: ad.id,
+          locale,
+          token: token,
+        });
+        setIsBookmarked(true);
+        onBookmarkChange?.(true);
+      }
+    } catch (error) {
+      console.error('Bookmark operation failed:', error);
+      // Revert the UI state on error
+      setIsBookmarked(!isBookmarked);
+    } finally {
+      setIsBookmarking(false);
+    }
+  };
   return (
-    <div className="flex flex-col md:flex-row bg-background rounded-2xl shadow-sm border border-muted overflow-hidden w-full">
+    <div className="relative flex flex-col md:flex-row bg-background rounded-2xl shadow-sm border border-muted overflow-hidden w-full">
+      {/* Bookmark Button */}
+      <Button
+        onClick={handleBookmarkToggle}
+        className="absolute top-3 right-3 z-10  transition-colors shadow-sm"
+        aria-label={isBookmarked ? "Remove from bookmarks" : "Add to bookmarks"}
+        variant={isBookmarked ? "default" : "outline"}
+
+      >
+        <Bookmark
+          className="w-5 h-5"
+        />
+      </Button>
       {/* Image & Badge */}
       <div className="relative md:w-80 w-full aspect-square md:aspect-auto flex-shrink-0">
         {imageSrc && imageSrc !== "" ? (

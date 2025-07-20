@@ -448,5 +448,19 @@
         "connect": "Connect",
         "disconnect": "Disconnect"
       }
+    },
+    "Bookmarks": {
+      "title": "Bookmarked Ads",
+      "subtitle": "Your saved advertisements",
+      "signInRequired": "Sign in to view bookmarks",
+      "signInRequiredDescription": "You need to be signed in to view your bookmarked ads.",
+      "noBookmarks": "No bookmarks yet",
+      "noBookmarksDescription": "Start bookmarking ads to see them here.",
+      "browseAds": "Browse Ads",
+      "loadMore": "Load More",
+      "loading": "Loading...",
+      "error": "Error loading bookmarks",
+      "tryAgain": "Try Again",
+      "loadingBookmarks": "Loading your bookmarks..."
     }
   }

@@ -9,10 +9,10 @@ import {
 import {
   LayoutDashboard,
   List,
-  Wallet,
-  Crown,
+  // Wallet,
+  // Crown,
   Settings,
-  LogOut,
+  // LogOut,
 } from "lucide-react";
 import {
   NavigationMenu,
@@ -51,7 +51,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
       href: "/profile/settings",
       icon: Settings,
     },
-    { label: t("signOut"), href: "/profile/sign-out", icon: LogOut },
+    // { label: t("signOut"), href: "/profile/sign-out", icon: LogOut },
   ];
 
   const handleTabClick = (href: string) => {

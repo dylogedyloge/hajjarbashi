@@ -39,7 +39,7 @@ interface AdCardProps {
 const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardProps) => {
   const t = useTranslations("AdCard");
   const locale = useLocale();
-  const { user, token, isAuthenticated } = useAuth();
+  const {  token, isAuthenticated } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(ad.bookmarked || isFromBookmarksPage);
   const [isBookmarking, setIsBookmarking] = useState(false);
   

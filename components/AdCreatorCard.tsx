@@ -34,8 +34,6 @@ export function AdCreatorCard({
   company,
   adId,
   adCreatorUserId,
-  onContact,
-  onChat,
   onExpress,
   isChatEnabled = true,
   isContactInfoEnabled = true,

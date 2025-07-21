@@ -46,8 +46,12 @@ export default function InboxPage() {
         const data = await res.json();
         // Adjust this based on your backend's response structure
         setConversations(data.chats || data.results || []);
-      } catch (e: any) {
-        setError(e.message || "Unknown error");
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Unknown error");
+        }
       } finally {
         setLoading(false);
       }

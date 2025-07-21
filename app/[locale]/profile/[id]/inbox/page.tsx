@@ -6,8 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ChatBox } from "@/components/ChatBox";
 
+type Conversation = {
+  id: string;
+  name: string;
+  company: string;
+  avatarUrl: string;
+  lastMessage: string;
+  lastTime: string;
+};
+
 // Mock conversations data
-const mockConversations = [
+const mockConversations: Conversation[] = [
   {
     id: "userB",
     name: "User B",
@@ -29,7 +38,7 @@ const mockConversations = [
 export default function InboxPage() {
   const params = useParams();
   const router = useRouter();
-  const [activeChat, setActiveChat] = useState<any | null>(null);
+  const [activeChat, setActiveChat] = useState<Conversation | null>(null);
 
   return (
     <div className="max-w-2xl mx-auto p-4">

@@ -12,6 +12,14 @@ interface ChatBoxProps {
   onClose: () => void;
 }
 
+type ChatMessage = {
+  content: string;
+  senderName: string;
+  time: string;
+  self: boolean;
+  // Add any other fields your backend provides
+};
+
 export function ChatBox({
   avatarUrl,
   name,
@@ -21,7 +29,7 @@ export function ChatBox({
 }: ChatBoxProps) {
   const [minimized, setMinimized] = useState(false);
   const [connected, setConnected] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,7 +55,7 @@ export function ChatBox({
     socket.on("disconnect", handleDisconnect);
 
     // Listen for incoming messages
-    const handleReceive = (msg: any) => {
+    const handleReceive = (msg: ChatMessage) => {
       setMessages((prev) => [...prev, { ...msg, self: false }]);
     };
     socket.on("receive_message", handleReceive);
@@ -126,7 +134,7 @@ export function ChatBox({
       self: true,
     };
     setMessages((prev) => [...prev, msg]);
-    socket.emit("send_message", { content: input }); // Add recipient/adId as needed
+    socket.emit("sendMessage", { content: input }); // Add recipient/adId as needed
     setInput("");
   };
 

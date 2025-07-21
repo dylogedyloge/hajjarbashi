@@ -68,7 +68,7 @@ export function ChatBox({
       .then((data) => {
         // Adjust this based on your backend's response structure
         setMessages(
-          (data.messages || data.results || []).map((msg: any) => ({
+          (data.messages || data.results || []).map((msg: ChatMessage) => ({
             ...msg,
             self: msg.sender_id === params.id,
           }))
@@ -88,7 +88,7 @@ export function ChatBox({
     socket.emit("seenMessage", { chat_id: chatId });
 
     // Listen for new messages
-    const handleNewMessage = (msg: any) => {
+    const handleNewMessage = (msg: ChatMessage) => {
       if (msg.chat_id === chatId) {
         setMessages((prev) => [...prev, { ...msg, self: msg.sender_id === params.id }]);
         // Mark as seen if chat is open
@@ -99,7 +99,7 @@ export function ChatBox({
 
     // Listen for seen events
     const handleNewSeen = (data: { chat_id: number }) => {
-      // Optionally update UI to show messages as seen
+      console.log("newSeen", data);
     };
     socket.on("newSeen", handleNewSeen);
 

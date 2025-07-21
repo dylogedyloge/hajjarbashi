@@ -1,3 +1,4 @@
+
 import { fetchAdById } from "@/lib/advertisements";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -226,6 +227,7 @@ export default async function Page(props: unknown) {
           name={creatorProfile?.name || "-"}
           company={creatorProfile?.company_name || "-"}
           adId={ad.id || "-"}
+          adCreatorUserId={ad.creator_id}
           isChatEnabled={!!ad.is_chat_enabled}
           isContactInfoEnabled={!!ad.contact_info_enabled}
           isExpressEnabled={!!ad.is_express}

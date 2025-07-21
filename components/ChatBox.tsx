@@ -3,6 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Minus, X } from "lucide-react";
 import socket from "./socket";
+import { useParams } from "next/navigation";
 
 interface ChatBoxProps {
   avatarUrl: string;
@@ -10,14 +11,18 @@ interface ChatBoxProps {
   company: string;
   open: boolean;
   onClose: () => void;
+  chatId: number;
+  otherUserId: string;
 }
 
 type ChatMessage = {
-  content: string;
-  senderName: string;
+  id: number;
+  chat_id: number;
+  sender_id: string;
+  message: string;
   time: string;
-  self: boolean;
-  // Add any other fields your backend provides
+  attachments?: string[];
+  self?: boolean;
 };
 
 export function ChatBox({
@@ -26,13 +31,18 @@ export function ChatBox({
   company,
   open,
   onClose,
+  chatId,
+  otherUserId,
 }: ChatBoxProps) {
   const [minimized, setMinimized] = useState(false);
   const [connected, setConnected] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const params = useParams();
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -41,53 +51,73 @@ export function ChatBox({
     }
   }, [messages, minimized]);
 
-  // Socket connection and listeners
+  // Fetch messages and set up socket listeners
   useEffect(() => {
-    if (!open) return;
-    // Connection status
-    const handleConnect = () => {
-      setConnected(true);
-    };
-    const handleDisconnect = () => {
-      setConnected(false);
-    };
+    if (!open || !chatId) return;
+    setLoading(true);
+    setError(null);
+    // Fetch chat history
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    fetch(`https://api.hajjardevs.ir/messages/${chatId}?limit=50&page=1`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch messages");
+        return res.json();
+      })
+      .then((data) => {
+        // Adjust this based on your backend's response structure
+        setMessages(
+          (data.messages || data.results || []).map((msg: any) => ({
+            ...msg,
+            self: msg.sender_id === params.id,
+          }))
+        );
+      })
+      .catch((e) => setError(e.message || "Unknown error"))
+      .finally(() => setLoading(false));
+
+    // Socket connection status
+    const handleConnect = () => setConnected(true);
+    const handleDisconnect = () => setConnected(false);
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
 
-    // Listen for incoming messages
-    const handleReceive = (msg: ChatMessage) => {
-      setMessages((prev) => [...prev, { ...msg, self: false }]);
-    };
-    socket.on("receive_message", handleReceive);
+    // Join online tracking and mark as seen
+    socket.emit("joinOnlineTrack", { id: otherUserId });
+    socket.emit("seenMessage", { chat_id: chatId });
 
-    // Fetch chat history (replace with real API call)
-    setLoading(true);
-    // Example: fetch(`/api/chat/history?...`).then(...)
-    setTimeout(() => {
-      setMessages([
-        {
-          content: "Hello! How can I help you?",
-          senderName: name,
-          time: "09:00",
-          self: false,
-        },
-        {
-          content: "Hi, I am interested in your ad.",
-          senderName: "You",
-          time: "09:01",
-          self: true,
-        },
-      ]);
-      setLoading(false);
-    }, 500);
+    // Listen for new messages
+    const handleNewMessage = (msg: any) => {
+      if (msg.chat_id === chatId) {
+        setMessages((prev) => [...prev, { ...msg, self: msg.sender_id === params.id }]);
+        // Mark as seen if chat is open
+        socket.emit("seenMessage", { chat_id: chatId });
+      }
+    };
+    socket.on("newMessage", handleNewMessage);
+
+    // Listen for seen events
+    const handleNewSeen = (data: { chat_id: number }) => {
+      // Optionally update UI to show messages as seen
+    };
+    socket.on("newSeen", handleNewSeen);
+
+    // Listen for online status
+    const handleOnlineStatus = (data: { user_id: string; is_online: boolean }) => {
+      if (data.user_id === otherUserId) setIsOnline(data.is_online);
+    };
+    socket.on(otherUserId, handleOnlineStatus);
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
-      socket.off("receive_message", handleReceive);
+      socket.off("newMessage", handleNewMessage);
+      socket.off("newSeen", handleNewSeen);
+      socket.off(otherUserId, handleOnlineStatus);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, chatId, otherUserId]);
 
   if (!open) return null;
 
@@ -128,13 +158,22 @@ export function ChatBox({
     e.preventDefault();
     if (!input.trim() || !connected) return;
     const msg = {
-      content: input,
-      senderName: "You",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      self: true,
+      chat_id: chatId,
+      message: input,
+      attachments: [],
     };
-    setMessages((prev) => [...prev, msg]);
-    socket.emit("sendMessage", { content: input }); // Add recipient/adId as needed
+    socket.emit("sendMessage", msg);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        chat_id: chatId,
+        sender_id: params.id as string,
+        message: input,
+        time: new Date().toISOString(),
+        self: true,
+      },
+    ]);
     setInput("");
   };
 
@@ -150,6 +189,7 @@ export function ChatBox({
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-lg truncate">{name}</div>
             <div className="text-xs text-muted-foreground truncate">{company}</div>
+            <div className="text-xs text-green-600">{isOnline ? "Online" : "Offline"}</div>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setMinimized(true)}>
             <Minus className="w-5 h-5" />
@@ -162,12 +202,14 @@ export function ChatBox({
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted">
           {loading ? (
             <div className="text-center text-muted-foreground">Loading...</div>
+          ) : error ? (
+            <div className="text-center text-red-500">{error}</div>
           ) : messages.length === 0 ? (
             <div className="text-center text-muted-foreground">No messages yet.</div>
           ) : (
             messages.map((msg, idx) => (
               <div
-                key={idx}
+                key={msg.id || idx}
                 className={`flex flex-col ${msg.self ? "items-end" : "items-start"}`}
               >
                 <div
@@ -175,10 +217,10 @@ export function ChatBox({
                     ${msg.self ? "bg-secondary text-secondary-foreground" : "bg-card card-foreground"}
                   `}
                 >
-                  {msg.content}
+                  {msg.message}
                 </div>
                 <span className="text-xs text-muted-foreground mt-1">
-                  {msg.self ? "You" : msg.senderName || name} • {msg.time || ""}
+                  {msg.self ? "You" : name} • {msg.time ? new Date(msg.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
                 </span>
               </div>
             ))

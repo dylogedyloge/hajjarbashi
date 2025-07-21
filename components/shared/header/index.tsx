@@ -146,7 +146,13 @@ const Header = () => {
           </SelectContent>
         </Select>
         <ThemeToggler />
-        <Bell size={20} className="cursor-pointer" />
+        {isAuthenticated && user && user.id && (
+          <Bell
+            size={20}
+            className="cursor-pointer"
+            onClick={() => intlRouter.push(`/profile/${user.id}/inbox`)}
+          />
+        )}
         {/* Desktop: Sign In/Up Button or User Profile */}
         <div className="hidden md:block">
           {isAuthenticated && user ? (

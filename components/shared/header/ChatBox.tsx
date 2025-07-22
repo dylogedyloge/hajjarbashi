@@ -287,9 +287,9 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   const {
     startRecording,
     stopRecording,
-    mediaBlobUrl,
+    // mediaBlobUrl,
     clearBlobUrl,
-    status: recordingStatus,
+    // status: recordingStatus,
   } = useReactMediaRecorder({
     audio: true,
     onStop: (url, blob) => {

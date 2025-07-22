@@ -40,7 +40,7 @@ import ChatBox from "./ChatBox";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DialogTitle } from "@/components/ui/dialog";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
-import { useRef } from "react";
+// import { useRef } from "react";
 
 const Header = () => {
   const t = useTranslations("Header");

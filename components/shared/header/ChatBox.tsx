@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Paperclip, Mic, SendHorizontal, ArrowLeft, ArrowRight, Trash2 } from "lucide-react";
@@ -109,11 +108,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When a conversation is selected, show its messages
-  const handleSelect = (conv: Conversation) => {
-    setSelected(conv);
-    setMessages(conv.messages);
-  };
+
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -150,7 +145,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
 
     // Listen for seen events
     const handleNewSeen = (data: any) => {
-      // Optionally update UI for seen status
+      console.log(data);
     };
     socket.on("newSeen", handleNewSeen);
 
@@ -382,7 +377,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-lg truncate">{selected.name}</div>
-              <div className={`text-xs ${selected.isOnline ? "text-green-600" : "text-gray-400"}`}>{selected.isOnline ? t('online') : t('offline')}</div>
+              <div className={`text-xs ${isOnline ? "text-green-600" : "text-gray-400"}`}>{isOnline ? t('online') : t('offline')}</div>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
               ×

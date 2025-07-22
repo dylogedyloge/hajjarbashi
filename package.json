@@ -41,6 +41,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.60.0",
     "react-image-crop": "^11.0.10",
+    "react-media-recorder": "^1.7.1",
     "react-phone-number-input": "^3.4.12",
     "socket.io-client": "^4.8.1",
     "sonner": "^2.0.5",

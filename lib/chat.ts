@@ -52,4 +52,22 @@ export async function getMessages({ chatId, token, lang = 'en', limit = 50, page
   const data = await res.json();
   if (!data.success) throw new Error(data.message || 'Failed to fetch messages');
   return data.data || [];
+}
+
+export async function uploadAttachment({ chatId, file, token, lang = 'en' }: { chatId: number; file: File; token: string; lang?: string }) {
+  const formData = new FormData();
+  formData.append('chat_id', chatId.toString());
+  formData.append('attachment', file);
+  const res = await fetch(`${API_BASE_URL}/messages/upload_attachment`, {
+    method: 'POST',
+    headers: {
+      'x-lang': lang,
+      'Authorization': `Bearer ${token}`,
+      // 'Content-Type' is automatically set by the browser for FormData
+    },
+    body: formData,
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message || 'Failed to upload attachment');
+  return data.data;
 } 

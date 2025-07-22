@@ -8,8 +8,9 @@ import { Paperclip, Mic, SendHorizontal, ArrowLeft, ArrowRight, Trash2 } from "l
 import { useTranslations } from 'next-intl';
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import { useParams } from "next/navigation";
-import { getChatList, deleteChat as deleteChatApi, getMessages } from "@/lib/chat";
+import { getChatList, deleteChat as deleteChatApi, getMessages, uploadAttachment } from "@/lib/chat";
 import socket from "@/lib/socket";
+import { useReactMediaRecorder } from "react-media-recorder";
 
 // No more mockConversations; use chatList from API
 
@@ -61,11 +62,19 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [messagesError, setMessagesError] = useState<string | null>(null);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   // Real-time chat state
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [connected, setConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Voice recorder state
+  const [recording, setRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [sendingVoice, setSendingVoice] = useState(false);
 
   // Fetch chat list from API
   const fetchChatList = async () => {
@@ -240,23 +249,101 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
     setInput("");
   };
 
-  // Attach file (no upload logic, just show file name)
-  const handleAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Attach file and upload
+  const handleAttach = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files[0]) {
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now(), sender: "me", text: `📎 ${t('attachFile')}: ${files[0].name}`, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
-      ]);
+    if (files && files[0] && selected) {
+      setUploadingAttachment(true);
+      setAttachmentError(null);
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const data = await uploadAttachment({ chatId: selected.id, file: files[0], token: token || '', lang: locale });
+        // Send the attachment as a message
+        socket.emit("sendMessage", {
+          chat_id: selected.id,
+          message: '',
+          attachments: [data.media_path],
+        });
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now(),
+            chat_id: selected.id,
+            sender: "me",
+            text: '',
+            time: new Date().toISOString(),
+            attachments: [data.media_path],
+          },
+        ]);
+      } catch (err: any) {
+        setAttachmentError(err.message || 'Failed to upload attachment');
+      } finally {
+        setUploadingAttachment(false);
+      }
     }
   };
 
-  // Send voice message (mock)
-  const handleVoice = () => {
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now(), sender: "me", text: `🎤 ${t('voiceMessageMock')}`, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
-    ]);
+  // Voice recorder setup
+  const {
+    startRecording,
+    stopRecording,
+    mediaBlobUrl,
+    clearBlobUrl,
+    status: recordingStatus,
+  } = useReactMediaRecorder({
+    audio: true,
+    onStop: (url, blob) => {
+      setAudioBlob(blob);
+      setAudioUrl(url);
+    },
+  });
+
+  const handleStartVoice = () => {
+    setAudioBlob(null);
+    setAudioUrl(null);
+    setRecording(true);
+    startRecording();
+  };
+
+  const handleStopVoice = () => {
+    stopRecording();
+    setRecording(false);
+  };
+
+  const handleSendVoice = async () => {
+    if (!audioBlob || !selected) return;
+    setSendingVoice(true);
+    setAttachmentError(null);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      // Convert blob to File
+      const file = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: audioBlob.type });
+      const data = await uploadAttachment({ chatId: selected.id, file, token: token || '', lang: locale });
+      // Send the attachment as a message
+      socket.emit("sendMessage", {
+        chat_id: selected.id,
+        message: '',
+        attachments: [data.media_path],
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          chat_id: selected.id,
+          sender: "me",
+          text: '',
+          time: new Date().toISOString(),
+          attachments: [data.media_path],
+        },
+      ]);
+      setAudioBlob(null);
+      setAudioUrl(null);
+      clearBlobUrl();
+    } catch (err: any) {
+      setAttachmentError(err.message || 'Failed to upload voice message');
+    } finally {
+      setSendingVoice(false);
+    }
   };
 
   // Delete chat handler
@@ -423,11 +510,17 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
                       >
                         {msg.text}
                         {msg.attachments && msg.attachments.length > 0 && (
-                          <div className="mt-2">
+                          <div className="mt-2 flex flex-col gap-1">
                             {msg.attachments.map((att, i) => (
-                              <div key={i} className="text-xs text-blue-700 underline break-all cursor-pointer">
-                                📎 {typeof att === 'string' ? att : att.name || 'Attachment'}
-                              </div>
+                              <a
+                                key={i}
+                                href={typeof att === 'string' ? `/${att}` : '#'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-700 underline break-all cursor-pointer"
+                              >
+                                📎 {typeof att === 'string' ? att.split('/').pop() : att.name || 'Attachment'}
+                              </a>
                             ))}
                           </div>
                         )}
@@ -456,8 +549,13 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
               onClick={() => fileInputRef.current?.click()}
               className="shrink-0"
               title={t('attachFile')}
+              disabled={uploadingAttachment}
             >
-              <Paperclip className="w-5 h-5" />
+              {uploadingAttachment ? (
+                <span className="w-5 h-5 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block align-middle" />
+              ) : (
+                <Paperclip className="w-5 h-5" />
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -465,16 +563,65 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
                 onChange={handleAttach}
               />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
-              onClick={handleVoice}
-              className="shrink-0"
-              title={t('sendVoiceMessage')}
-            >
-              <Mic className="w-5 h-5" />
-            </Button>
+            {attachmentError && (
+              <span className="text-xs text-red-500 ml-2">{attachmentError}</span>
+            )}
+            {/* Voice message controls */}
+            <div className="flex items-center gap-1">
+              {!recording && !audioBlob && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  onClick={handleStartVoice}
+                  className="shrink-0"
+                  title={t('sendVoiceMessage')}
+                  disabled={uploadingAttachment || sendingVoice}
+                >
+                  <Mic className="w-5 h-5" />
+                </Button>
+              )}
+              {recording && (
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  type="button"
+                  onClick={handleStopVoice}
+                  className="shrink-0 animate-pulse"
+                  title={t('sendVoiceMessage')}
+                >
+                  <Mic className="w-5 h-5" />
+                </Button>
+              )}
+              {audioBlob && audioUrl && !recording && (
+                <div className="flex items-center gap-1">
+                  <audio src={audioUrl} controls className="max-w-[120px]" />
+                  <Button
+                    variant="default"
+                    size="icon"
+                    type="button"
+                    onClick={handleSendVoice}
+                    className="shrink-0"
+                    disabled={sendingVoice}
+                  >
+                    {sendingVoice ? (
+                      <span className="w-5 h-5 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block align-middle" />
+                    ) : (
+                      <SendHorizontal className="w-5 h-5" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    onClick={() => { setAudioBlob(null); setAudioUrl(null); clearBlobUrl(); }}
+                    className="shrink-0"
+                  >
+                    ×
+                  </Button>
+                </div>
+              )}
+            </div>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}

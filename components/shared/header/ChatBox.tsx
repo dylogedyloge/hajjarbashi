@@ -13,7 +13,14 @@ import socket from "@/lib/socket";
 
 // No more mockConversations; use chatList from API
 
-type Message = { id: number; sender: "me" | "them"; text: string; time: string };
+type Message = {
+  id: number;
+  sender: "me" | "them";
+  text: string;
+  time: string;
+  attachments?: any[];
+  seen?: boolean;
+};
 
 type Conversation = {
   id: number;
@@ -136,6 +143,8 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
           sender: msg.sender_id === params.id ? "me" : "them",
           text: msg.message,
           time: msg.time || new Date().toISOString(),
+          attachments: msg.attachments,
+          seen: msg.seen,
         }]);
         // Mark as seen
         socket.emit("seenMessage", { chat_id: selected.id });
@@ -186,10 +195,16 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
         setMessages(
           (msgs || []).map((msg: any) => ({
             id: msg.id,
-            chat_id: msg.chat_id,
-            sender: msg.sender_id === params.id ? "me" : "them",
+            chat_id: selected.id,
+            sender: msg.maker_id === params.id ? "me" : "them",
             text: msg.message,
-            time: msg.time || msg.created_at || new Date().toISOString(),
+            time: msg.time
+              ? msg.time
+              : msg.created_at
+                ? new Date(typeof msg.created_at === 'number' ? msg.created_at : parseInt(msg.created_at)).toISOString()
+                : new Date().toISOString(),
+            attachments: msg.attachments,
+            seen: msg.seen,
           }))
         );
       } catch (e: any) {
@@ -383,7 +398,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
               ×
             </Button>
           </div>
-          <ScrollArea className="flex-1 p-4 space-y-3 bg-muted">
+          <ScrollArea className="flex-1 min-h-0 p-4 space-y-3 bg-muted">
             {loadingMessages ? (
               <div className="text-center text-muted-foreground">{t('loading')}</div>
             ) : messagesError ? (
@@ -391,27 +406,47 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
             ) : messages.length === 0 ? (
               <div className="text-center text-muted-foreground">{t('noMessages')}</div>
             ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex flex-col ${msg.sender === "me" ? "items-end" : "items-start"}`}
-                >
+              [...messages]
+                .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+                .map((msg) => (
                   <div
-                    className={`rounded-lg px-4 py-2 shadow text-sm max-w-xs ${msg.sender === "me" ? "bg-secondary text-secondary-foreground" : "bg-card card-foreground"}`}
+                    key={msg.id}
+                    className={`flex w-full mb-2 ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
                   >
-                    {msg.text}
+                    <div className="flex flex-col max-w-xs">
+                      <div
+                        className={`rounded-2xl px-4 py-2 shadow text-sm break-words
+                          ${msg.sender === "me"
+                            ? "bg-blue-500 text-white ml-auto"
+                            : "bg-gray-100 text-gray-900 mr-auto border border-gray-200"}
+                        `}
+                      >
+                        {msg.text}
+                        {msg.attachments && msg.attachments.length > 0 && (
+                          <div className="mt-2">
+                            {msg.attachments.map((att, i) => (
+                              <div key={i} className="text-xs text-blue-700 underline break-all cursor-pointer">
+                                📎 {typeof att === 'string' ? att : att.name || 'Attachment'}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <span className={`text-xs mt-1 ${msg.sender === "me" ? "text-blue-400 text-right ml-auto" : "text-gray-400 text-left mr-auto"}`}>
+                        {msg.sender === "me" ? t('you') : selected.name} • {msg.time ? new Date(msg.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                        {msg.sender === "me" && msg.seen && (
+                          <span className="ml-2 text-green-500">✓✓</span>
+                        )}
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-xs text-muted-foreground mt-1">
-                    {msg.sender === "me" ? t('you') : selected.name} • {msg.time ? new Date(msg.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
-                  </span>
-                </div>
-              ))
+                ))
             )}
             <div ref={messagesEndRef} />
           </ScrollArea>
           {/* Input Area */}
           <form
-            className="flex items-center gap-2 p-4 border-t bg-background"
+            className="flex items-center gap-2 p-4 border-t bg-background shrink-0"
             onSubmit={handleSend}
           >
             <Button

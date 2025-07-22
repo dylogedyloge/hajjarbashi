@@ -48,7 +48,7 @@ export function AdCreatorCard({
   // const [chatId, setChatId] = useState<number | null>(null);
   // const [otherUserId, setOtherUserId] = useState<string>("");
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+  // const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 
   // Remove handleOpenChat function
   // const handleOpenChat = async () => { ... }

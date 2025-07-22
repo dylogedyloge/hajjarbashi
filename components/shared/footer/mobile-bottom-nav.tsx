@@ -6,11 +6,15 @@ import { useTranslations } from "next-intl";
 import SignInSignUpButton from "@/components/shared/header/sign-in-sign-up-button";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "@/i18n/navigation";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import ChatBox from "@/components/shared/header/ChatBox";
+import { useState } from "react";
 
 const MobileBottomNav = () => {
   const t = useTranslations("MobileBottomNav");
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
+  const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
 
   const handleProfileClick = () => {
     router.push("/profile/overview");
@@ -35,6 +39,7 @@ const MobileBottomNav = () => {
           variant="ghost"
           className="flex flex-col items-center flex-1 text-foreground py-1 px-0 gap-0 pr-4"
           tabIndex={0}
+          onClick={() => setChatDrawerOpen(true)}
         >
           <MessageSquare className="size-5 mb-0.5" strokeWidth={2} />
           <span className="text-xs mt-0.5 font-medium leading-none">
@@ -86,6 +91,12 @@ const MobileBottomNav = () => {
           )}
         </div>
       </div>
+      {/* ChatBox Drawer for mobile */}
+      <Drawer open={chatDrawerOpen} onOpenChange={setChatDrawerOpen}>
+        <DrawerContent className="max-w-md mx-auto rounded-t-2xl p-0 h-[500px] flex flex-col justify-end">
+          {chatDrawerOpen && <ChatBox onClose={() => setChatDrawerOpen(false)} />}
+        </DrawerContent>
+      </Drawer>
     </nav>
   );
 };

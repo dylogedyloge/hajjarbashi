@@ -490,5 +490,18 @@
     },
     "productDetails": "جزئیات محصول",
     "physicalSpecifications": "مشخصات فیزیکی",
-    "originAndPorts": "مبدا و بنادر"
+    "originAndPorts": "مبدا و بنادر",
+    "ChatBox": {
+      "chats": "گفتگوها",
+      "typeMessage": "پیام خود را بنویسید...",
+      "noMessages": "هنوز پیامی وجود ندارد.",
+      "online": "آنلاین",
+      "offline": "آفلاین",
+      "voiceMessageMock": "پیام صوتی (شبیه‌سازی)",
+      "attachFile": "ضمیمه فایل",
+      "sendVoiceMessage": "ارسال پیام صوتی",
+      "send": "ارسال",
+      "you": "شما",
+      "loading": "در حال بارگذاری..."
+    }
   }

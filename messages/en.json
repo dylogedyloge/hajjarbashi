@@ -485,5 +485,18 @@
       "error": "Error loading bookmarks",
       "tryAgain": "Try Again",
       "loadingBookmarks": "Loading your bookmarks..."
+    },
+    "ChatBox": {
+      "chats": "Chats",
+      "typeMessage": "Type a message...",
+      "noMessages": "No messages yet.",
+      "online": "Online",
+      "offline": "Offline",
+      "voiceMessageMock": "Voice message (mock)",
+      "attachFile": "Attach file",
+      "sendVoiceMessage": "Send voice message",
+      "send": "Send",
+      "you": "You",
+      "loading": "Loading..."
     }
   }

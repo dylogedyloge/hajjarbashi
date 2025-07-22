@@ -46,7 +46,7 @@ export function AvatarUploader({ user, token, login, t }: AvatarUploaderProps) {
     try {
       const data = await profileService.updateProfileImage(file, token);
       if (data.success) {
-        const baseUrl = 'https://api.hajjardevs.ir/';
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir/';
         const updatedUser = {
           ...user,
           avatar: baseUrl + data.data.avatar,

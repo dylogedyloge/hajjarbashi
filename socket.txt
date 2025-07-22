@@ -1,0 +1,100 @@
+Here’s a clean and well-structured English version of the WebSocket documentation tailored for the frontend team:
+
+---
+
+## 🔌 WebSocket Channels Documentation (Frontend)
+
+### 📥 You Can **Listen** to These Channels:
+
+#### 1. `authenticate`
+
+* This channel returns:
+
+  ```js
+  { failed: true }
+  ```
+
+  after the first connection attempt **if the token is expired or invalid**.
+* You can catch this error on this channel and know that the socket connection cannot be used further.
+* You'll need to reconnect with a valid token.
+* **Recommendation**: If you receive this error, you can immediately redirect the user to the **login page**.
+
+---
+
+#### 2. `newMessage`
+
+* Triggered **when a new message is sent to the user**.
+* The payload contains useful info like `chat_id`, so you can:
+
+  * Determine whether the user is currently in that chat to **update messages in real-time**, and
+  * Update the **chat list view** to reflect which chat has a new message.
+* Includes the **full message content and metadata**.
+
+---
+
+#### 3. `newSeen`
+
+* Triggered **when a message is marked as seen** by the receiver.
+* Notifies the **sender** via this channel.
+* Payload includes `chat_id`, so you can:
+
+  * Identify which chat has been seen and update the UI accordingly (e.g., showing the "seen" indicator).
+
+---
+
+#### 4. `[userId]` (Dynamic Channel)
+
+* When the socket connects, it automatically **joins a channel named after the current user's ID**.
+* You **must listen** to this channel to:
+
+  * Receive **online/offline status updates** of users you are tracking.
+  * Payload format:
+
+    ```js
+    { user_id: string, is_online: boolean }
+    ```
+* You can check whether the user whose profile or chat is open is currently online or not.
+
+---
+
+### 📤 You Can **Emit** to These Channels:
+
+#### 1. `sendMessage`
+
+* When a user sends a message from the chat screen, emit to this channel.
+* Payload format:
+
+  ```js
+  {
+    chat_id: number,
+    message: string,
+    attachments: string[] // optional
+  }
+  ```
+
+---
+
+#### 2. `seenMessage`
+
+* Emit to this channel when a user **marks a message as seen**.
+* Payload format:
+
+  ```js
+  { chat_id: number }
+  ```
+
+---
+
+#### 3. `joinOnlineTrack`
+
+* To **track the online status of another user**, emit their user ID to this channel.
+* Payload format:
+
+  ```js
+  { id: string }
+  ```
+* After emitting, you'll start receiving real-time online status updates of that user on your `[userId]` channel.
+
+---
+
+Let me know if you'd like this exported as a Markdown or Notion-compatible file.

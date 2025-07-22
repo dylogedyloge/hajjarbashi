@@ -44,13 +44,15 @@ export function getUserInitials(user: { name?: string | null; email?: string | n
   return "U";
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir/';
+
 /**
  * Constructs full avatar URLs from relative paths
  */
 export function constructAvatarUrls(
   avatarPath: string,
   avatarThumbPath: string,
-  baseUrl: string = 'https://api.hajjardevs.ir/'
+  baseUrl: string = API_BASE_URL
 ): { avatar: string; avatar_thumb: string } {
   return {
     avatar: baseUrl + avatarPath,
@@ -65,7 +67,7 @@ export function updateUserWithAvatars(
   user: User,
   avatarPath: string,
   avatarThumbPath: string,
-  baseUrl: string = 'https://api.hajjardevs.ir/'
+  baseUrl: string = API_BASE_URL
 ): User {
   return {
     ...user,

@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import {
-  Bell,
+  // Bell,
   ChevronDown,
   Menu,
   User,
@@ -10,6 +10,7 @@ import {
   Settings,
   HelpCircle,
   LogOut,
+  MessageCircle,
 } from "lucide-react";
 import { GB, IR } from "country-flag-icons/react/3x2";
 import SearchInput from "./search-input";
@@ -35,6 +36,11 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import Image from "next/image";
+import ChatBox from "./ChatBox";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { DialogTitle } from "@/components/ui/dialog";
+import { useLocaleDirection } from "@/hooks/useLocaleDirection";
+import { useRef } from "react";
 
 const Header = () => {
   const t = useTranslations("Header");
@@ -44,6 +50,9 @@ const Header = () => {
   const currentLocale = (params?.locale as string) || "en";
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
   const { user, isAuthenticated, logout } = useAuth();
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInitialUser, setChatInitialUser] = useState(null);
+  const { isRTL } = useLocaleDirection();
 
   // Helper function to validate URL
   const isValidUrl = (url: string | null): boolean => {
@@ -61,6 +70,18 @@ const Header = () => {
     setLanguage(currentLocale.toUpperCase());
   }, [currentLocale]);
 
+  // Listen for global open-chatbox event
+  useEffect(() => {
+    const handler = (e:any) => {
+      if (e.detail) {
+        setChatInitialUser(e.detail);
+      }
+      setChatOpen(true);
+    };
+    window.addEventListener('open-chatbox', handler);
+    return () => window.removeEventListener('open-chatbox', handler);
+  }, []);
+
   // Handle language change
   const handleLanguageChange = (newLanguage: string) => {
     const locale = newLanguage.toLowerCase();
@@ -68,7 +89,7 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full flex items-center justify-between px-4 md:px-8 py-4 bg-background border-b border">
+    <header className="sticky top-0 z-50 w-full flex items-center justify-between px-4 md:px-8 py-4 bg-background border-b border">
       {/* Desktop: Logo and Nav */}
       <div className="hidden md:flex items-center gap-8">
         <Link className="text-lg text-foreground flex items-center" href="/">
@@ -147,11 +168,18 @@ const Header = () => {
         </Select>
         <ThemeToggler />
         {isAuthenticated && user && user.id && (
-          <Bell
-            size={20}
-            className="cursor-pointer"
-            onClick={() => intlRouter.push(`/profile/${user.id}/inbox`)}
-          />
+          <>
+            <MessageCircle
+              size={22}
+              className="cursor-pointer"
+              onClick={() => setChatOpen((v) => !v)}
+            />
+            {/* <Bell
+              size={20}
+              className="cursor-pointer"
+              onClick={() => intlRouter.push(`/profile/${user.id}/inbox`)}
+            /> */}
+          </>
         )}
         {/* Desktop: Sign In/Up Button or User Profile */}
         <div className="hidden md:block">
@@ -275,6 +303,15 @@ const Header = () => {
           )}
         </div>
       </div>
+      {/* Simple floating ChatBox placeholder */}
+      {/* ChatBox in a Sheet (slide-in from right-bottom) */}
+      <Sheet open={chatOpen} onOpenChange={setChatOpen}>
+        <SheetContent side={isRTL ? "left" : "right"} fitContent={true} className="!bottom-0 !top-auto max-w-md w-full p-0 border-none shadow-none bg-transparent">
+          {/* Visually hidden title for accessibility */}
+          <DialogTitle className="sr-only">Chat</DialogTitle>
+          {chatOpen && <ChatBox onClose={() => setChatOpen(false)} initialSelectedUser={chatInitialUser} />}
+        </SheetContent>
+      </Sheet>
     </header>
   );
 };

@@ -1,5 +1,5 @@
 // const API_BASE_URL = 'http://192.168.10.6:3001';
-const API_BASE_URL = 'https://api.hajjardevs.ir';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir';
 
 export async function initAdvertisement(locale: string, token: string) {
   const response = await fetch(`${API_BASE_URL}/ads/init`, {

@@ -46,13 +46,14 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     setError(null);
-    fetch(`https://api.hajjardevs.ir/users/profile/${id}`, {
-    // fetch(`http://192.168.10.6:3001/users/profile/${id}`, {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir';
+    fetch(`${apiBaseUrl}/users/profile/${id}`, {
       headers: lang ? { "x-lang": lang } : {},
     })
       .then(async (res) => {

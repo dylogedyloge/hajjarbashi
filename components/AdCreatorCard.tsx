@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Phone, MessageCircle, ChevronRight } from "lucide-react";
-import { ChatBox } from "./ChatBox";
+// Remove ChatBox import
+// import { ChatBox } from "./ChatBox";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+import { openChat } from "@/lib/chat";
 
 interface AdCreatorCardProps {
   avatarUrl: string;
@@ -41,23 +43,15 @@ export function AdCreatorCard({
   contactInfo = [],
 }: AdCreatorCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatId, setChatId] = useState<number | null>(null);
-  const [otherUserId, setOtherUserId] = useState<string>("");
+  // Remove chat-related state
+  // const [chatOpen, setChatOpen] = useState(false);
+  // const [chatId, setChatId] = useState<number | null>(null);
+  // const [otherUserId, setOtherUserId] = useState<string>("");
 
   const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 
-  const handleOpenChat = async () => {
-    const res = await fetch("https://api.hajjardevs.ir/chats/open", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-lang": "en", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ad_id: adId }),
-    });
-    const data = await res.json();
-    setChatId(data.data.id); // Use data.data.id based on backend response
-    setOtherUserId(adCreatorUserId);
-    setChatOpen(true);
-  };
+  // Remove handleOpenChat function
+  // const handleOpenChat = async () => { ... }
 
   return (
     <Card className="bg-background rounded-xl p-4 flex flex-col gap-3 w-full max-w-md shadow-md">
@@ -86,7 +80,18 @@ export function AdCreatorCard({
         <Button
           variant="destructive"
           className="flex-1 flex gap-2 items-center cursor-pointer"
-          onClick={handleOpenChat}
+          onClick={async () => {
+            const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+            await openChat({ adId, token: token || '', lang: 'en' });
+            window.dispatchEvent(new CustomEvent('open-chatbox', {
+              detail: {
+                userId: adCreatorUserId,
+                name,
+                avatarUrl,
+                company,
+              },
+            }));
+          }}
           disabled={!isChatEnabled}
         >
           <MessageCircle size={18} /> Chat
@@ -126,7 +131,8 @@ export function AdCreatorCard({
       </Dialog>
 
       {/* Chat Widget (bottom-right) */}
-      {chatId && otherUserId && (
+      {/* Remove ChatBox rendering */}
+      {/* {chatId && otherUserId && (
         <ChatBox
           avatarUrl={avatarUrl}
           name={name}
@@ -136,7 +142,7 @@ export function AdCreatorCard({
           chatId={chatId}
           otherUserId={otherUserId}
         />
-      )}
+      )} */}
     </Card>
   );
 }

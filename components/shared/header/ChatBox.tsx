@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Paperclip, Mic, SendHorizontal, ArrowLeft, ArrowRight, Trash2 } from "lucide-react";
+import { Paperclip, Mic, SendHorizontal, ArrowLeft, ArrowRight, Trash2, X } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import { useParams } from "next/navigation";
-import { getChatList, deleteChat as deleteChatApi, getMessages, uploadAttachment } from "@/lib/chat";
+import { getChatList, deleteChat as deleteChatApi, getMessages, uploadAttachment, blockUser, unblockUser } from "@/lib/chat";
 import socket from "@/lib/socket";
 import { useReactMediaRecorder } from "react-media-recorder";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Ban, Undo2 } from "lucide-react";
 
 // No more mockConversations; use chatList from API
 
@@ -75,6 +77,40 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [sendingVoice, setSendingVoice] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recordingInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Blocked state for the selected user
+  const [blocked, setBlocked] = useState(false);
+  const [blockError, setBlockError] = useState<string | null>(null);
+
+  // Placeholder handlers for block/unblock
+  const handleBlockUser = async () => {
+    setBlockError(null);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const lang = locale;
+      const userId = selected?.userId;
+      if (!userId) throw new Error('No user selected');
+      await blockUser({ userId, token: token || '', lang });
+      setBlocked(true);
+    } catch (err: any) {
+      setBlockError(err.message || 'Failed to block user');
+    }
+  };
+  const handleUnblockUser = async () => {
+    setBlockError(null);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const lang = locale;
+      const userId = selected?.userId;
+      if (!userId) throw new Error('No user selected');
+      await unblockUser({ userId, token: token || '', lang });
+      setBlocked(false);
+    } catch (err: any) {
+      setBlockError(err.message || 'Failed to unblock user');
+    }
+  };
 
   // Helper to get current user id from localStorage
   const getMyUserId = () => {
@@ -352,12 +388,21 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
     setAudioBlob(null);
     setAudioUrl(null);
     setRecording(true);
+    setRecordingTime(0);
+    if (recordingInterval.current) clearInterval(recordingInterval.current);
+    recordingInterval.current = setInterval(() => {
+      setRecordingTime((prev) => prev + 1);
+    }, 1000);
     startRecording();
   };
 
   const handleStopVoice = () => {
     stopRecording();
     setRecording(false);
+    if (recordingInterval.current) {
+      clearInterval(recordingInterval.current);
+      recordingInterval.current = null;
+    }
   };
 
   const handleSendVoice = async () => {
@@ -399,6 +444,13 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
       setSendingVoice(false);
     }
   };
+
+  // Reset timer on cancel
+  useEffect(() => {
+    if (!recording && recordingTime !== 0 && !audioBlob) {
+      setRecordingTime(0);
+    }
+  }, [recording, audioBlob, recordingTime]);
 
   // Delete chat handler
   const handleDeleteChat = async (chatId: number) => {
@@ -535,6 +587,33 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
               <div className="font-semibold text-lg truncate">{selected.name}</div>
               <div className={`text-xs ${isOnline ? "text-green-600" : "text-gray-400"}`}>{isOnline ? t('online') : t('offline')}</div>
             </div>
+            {/* Block/Unblock Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {blocked ? (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleUnblockUser}
+                    className="shrink-0"
+                    title="Unblock user"
+                  >
+                    <Undo2 className="w-5 h-5 text-green-600" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={handleBlockUser}
+                    className="shrink-0"
+                    title="Block user"
+                  >
+                    <Ban className="w-5 h-5" />
+                  </Button>
+                )}
+              </TooltipTrigger>
+              <TooltipContent>{blocked ? t('unblockUser') || 'Unblock user' : t('blockUser') || 'Block user'}</TooltipContent>
+            </Tooltip>
             <Button variant="ghost" size="icon" onClick={onClose}>
               ×
             </Button>
@@ -565,17 +644,41 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
                         {msg.text}
                         {msg.attachments && msg.attachments.length > 0 && (
                           <div className="mt-2 flex flex-col gap-1">
-                            {msg.attachments.map((att, i) => (
-                              <a
-                                key={i}
-                                href={typeof att === 'string' ? `/${att}` : '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-blue-700 underline break-all cursor-pointer"
-                              >
-                                📎 {typeof att === 'string' ? att.split('/').pop() : att.name || 'Attachment'}
-                              </a>
-                            ))}
+                            {msg.attachments.map((att, i) => {
+                              const url = typeof att === 'string' ? `/${att}` : '#';
+                              const filename = typeof att === 'string' ? att.split('/').pop() : att.name || 'Attachment';
+                              const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'webm'];
+                              const ext = filename.split('.').pop()?.toLowerCase();
+                              if (audioExts.includes(ext || '')) {
+                                return (
+                                  <div key={i} className="flex flex-col items-start w-full">
+                                    <span className={`text-xs font-medium mb-1 ${msg.sender === 'me' ? 'text-white' : 'text-gray-700'}`}>{t('voiceMessage') || 'Voice message'}</span>
+                                    <audio
+                                      src={url}
+                                      controls
+                                      className={`max-w-[180px] mt-0 rounded shadow-none border-none bg-transparent ${msg.sender === 'me' ? 'text-white' : ''}`}
+                                      style={{
+                                        background: 'none',
+                                        boxShadow: 'none',
+                                        border: 'none',
+                                        color: msg.sender === 'me' ? 'white' : undefined,
+                                      }}
+                                    />
+                                  </div>
+                                );
+                              }
+                              return (
+                                <a
+                                  key={i}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-700 underline break-all cursor-pointer"
+                                >
+                                  📎 {filename}
+                                </a>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -592,107 +695,142 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
             <div ref={messagesEndRef} />
           </ScrollArea>
           {/* Input Area */}
-          <form
-            className="flex items-center gap-2 p-4 border-t bg-background shrink-0"
-            onSubmit={handleSend}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="shrink-0"
-              title={t('attachFile')}
-              disabled={uploadingAttachment}
-            >
-              {uploadingAttachment ? (
-                <span className="w-5 h-5 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block align-middle" />
-              ) : (
-                <Paperclip className="w-5 h-5" />
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                onChange={handleAttach}
-              />
-            </Button>
-            {attachmentError && (
-              <span className="text-xs text-red-500 ml-2">{attachmentError}</span>
-            )}
-            {/* Voice message controls */}
-            <div className="flex items-center gap-1">
-              {!recording && !audioBlob && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  onClick={handleStartVoice}
-                  className="shrink-0"
-                  title={t('sendVoiceMessage')}
-                  disabled={uploadingAttachment || sendingVoice}
-                >
-                  <Mic className="w-5 h-5" />
-                </Button>
-              )}
-              {recording && (
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  type="button"
-                  onClick={handleStopVoice}
-                  className="shrink-0 animate-pulse"
-                  title={t('sendVoiceMessage')}
-                >
-                  <Mic className="w-5 h-5" />
-                </Button>
-              )}
-              {audioBlob && audioUrl && !recording && (
-                <div className="flex items-center gap-1">
-                  <audio src={audioUrl} controls className="max-w-[120px]" />
-                  <Button
-                    variant="default"
-                    size="icon"
-                    type="button"
-                    onClick={handleSendVoice}
-                    className="shrink-0"
-                    disabled={sendingVoice}
-                  >
-                    {sendingVoice ? (
-                      <span className="w-5 h-5 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block align-middle" />
-                    ) : (
-                      <SendHorizontal className="w-5 h-5" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    type="button"
-                    onClick={() => { setAudioBlob(null); setAudioUrl(null); clearBlobUrl(); }}
-                    className="shrink-0"
-                  >
-                    ×
-                  </Button>
-                </div>
-              )}
+          {/* Blocked message or input area */}
+          {blocked ? (
+            <div className="flex flex-col items-center justify-center p-4 border-t bg-background text-destructive text-sm font-medium">
+              {t('userBlocked') || 'You have blocked this user. Unblock to continue chatting.'}
+              {blockError && <span className="text-xs text-red-500 mt-2">{blockError}</span>}
             </div>
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={t('typeMessage')}
-              className="flex-1"
-              disabled={!connected}
-            />
-            <Button
-              variant="default"
-              type="submit"
-              className="rounded-full"
-              disabled={!connected || !input.trim()}
-              title={t('send')}
+          ) : (
+            <form
+              className="flex items-center gap-2 p-4 border-t bg-background shrink-0"
+              onSubmit={handleSend}
             >
-              <SendHorizontal className={`w-5 h-5${isRTL ? ' rotate-180' : ''}`} />
-            </Button>
-          </form>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="shrink-0"
+                title={t('attachFile')}
+                disabled={uploadingAttachment || recording}
+              >
+                {uploadingAttachment ? (
+                  <span className="w-5 h-5 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block align-middle" />
+                ) : (
+                  <Paperclip className="w-5 h-5" />
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleAttach}
+                />
+              </Button>
+              {attachmentError && (
+                <span className="text-xs text-red-500 ml-2">{attachmentError}</span>
+              )}
+              {/* Voice message controls */}
+              <div className="flex items-center gap-2 min-w-[120px]">
+                {/* Idle: show mic button with tooltip */}
+                {!recording && !audioBlob && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        type="button"
+                        onClick={handleStartVoice}
+                        className="shrink-0 border-blue-500 text-blue-500 hover:bg-blue-50"
+                        disabled={uploadingAttachment || sendingVoice}
+                      >
+                        <Mic className="w-5 h-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('sendVoiceMessage')}</TooltipContent>
+                  </Tooltip>
+                )}
+                {/* Recording: show stop button and timer in a Card with tooltip */}
+                {recording && (
+                  <Card className="flex flex-row items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-1 animate-pulse mb-0">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          type="button"
+                          onClick={handleStopVoice}
+                          className="shrink-0"
+                        >
+                          <Mic className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('stopRecording')}</TooltipContent>
+                    </Tooltip>
+                    <span className="font-mono text-xs text-red-600 min-w-[40px] text-center">
+                      {`${Math.floor(recordingTime / 60).toString().padStart(2, '0')}:${(recordingTime % 60).toString().padStart(2, '0')}`}
+                    </span>
+                    <span className="text-xs text-red-400">{t('recording')}</span>
+                  </Card>
+                )}
+                {/* Preview: show audio player, send/cancel in a Card with tooltips */}
+                {audioBlob && audioUrl && !recording && (
+                  <Card className="flex flex-row items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1 mb-0">
+                    <audio src={audioUrl} controls className="max-w-[120px]" />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="default"
+                          size="icon"
+                          type="button"
+                          onClick={handleSendVoice}
+                          className="shrink-0"
+                          disabled={sendingVoice}
+                        >
+                          {sendingVoice ? (
+                            <span className="w-5 h-5 animate-spin border-2 border-blue-400 border-t-transparent rounded-full inline-block align-middle" />
+                          ) : (
+                            <SendHorizontal className="w-5 h-5" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('sendVoiceMessage')}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          type="button"
+                          onClick={() => { setAudioBlob(null); setAudioUrl(null); clearBlobUrl(); }}
+                          className="shrink-0"
+                        >
+                          <X className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('cancel')}</TooltipContent>
+                    </Tooltip>
+                  </Card>
+                )}
+              </div>
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={t('typeMessage')}
+                className="flex-1"
+                disabled={!connected}
+              />
+              <Button
+                variant="default"
+                type="submit"
+                className="rounded-full"
+                disabled={!connected || !input.trim()}
+                title={t('send')}
+              >
+                <SendHorizontal className={`w-5 h-5${isRTL ? ' rotate-180' : ''}`} />
+              </Button>
+            </form>
+          )}
         </>
       )}
     </Card>

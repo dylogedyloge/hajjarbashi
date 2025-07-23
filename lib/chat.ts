@@ -70,4 +70,36 @@ export async function uploadAttachment({ chatId, file, token, lang = 'en' }: { c
   const data = await res.json();
   if (!data.success) throw new Error(data.message || 'Failed to upload attachment');
   return data.data;
+}
+
+// Block a user
+export async function blockUser({ userId, token, lang = 'en' }: { userId: string; token: string; lang?: string }) {
+  const res = await fetch(`${API_BASE_URL}/block_list/block`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-lang': lang,
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ user_id: userId }),
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message || 'Failed to block user');
+  return data;
+}
+
+// Unblock a user
+export async function unblockUser({ userId, token, lang = 'en' }: { userId: string; token: string; lang?: string }) {
+  const res = await fetch(`${API_BASE_URL}/block_list/unblock`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-lang': lang,
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ user_id: userId }),
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message || 'Failed to unblock user');
+  return data;
 } 

@@ -28,6 +28,7 @@ import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { GB, IR } from "country-flag-icons/react/3x2";
 import { deleteAccount } from "@/lib/profile";
+import { upsertPhoneRequest, authService } from '@/lib/auth';
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import {
@@ -39,6 +40,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { InputOTP } from '@/components/ui/input-otp';
+
+// Helper for OTP slot rendering
+const renderOtpSlots = ({ slots }: { slots: any[] }) => (
+  <div className="flex gap-2 w-full">
+    {slots.map((slot, idx) => (
+      <div
+        key={idx}
+        className="w-10 h-14 text-2xl flex items-center justify-center border rounded-md bg-background relative"
+        data-active={slot.isActive}
+      >
+        {slot.char ?? slot.placeholderChar}
+        {slot.hasFakeCaret && (
+          <div className="absolute pointer-events-none inset-0 flex items-center justify-center animate-caret-blink">
+            <div className="w-px h-8 bg-primary" />
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+);
 
 export default function SettingsPage() {
   const t = useTranslations("Settings");
@@ -49,7 +71,7 @@ export default function SettingsPage() {
   const currentLocale = (params?.locale as string) || "en";
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
   const [mounted, setMounted] = useState(false);
-  const { token, logout } = useAuth();
+  const { token, logout, user } = useAuth();
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -60,6 +82,10 @@ export default function SettingsPage() {
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
 
   // Hardcoded data for now
   const [formData, setFormData] = useState({
@@ -97,9 +123,34 @@ export default function SettingsPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSavePhone = () => {
+  const handleSavePhone = async () => {
     setIsEditingPhone(false);
-    // Here you would typically save to backend
+    try {
+      if (!token) throw new Error('Authentication required');
+      const res = await upsertPhoneRequest({ newPhone: formData.phone, lang: currentLocale, token });
+      toast.success(`OTP code: ${res.data}`);
+      setOtpSent(true);
+      setOtpValue('');
+      setIsOtpDialogOpen(true);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update phone number');
+    }
+  };
+
+  const handleVerifyPhone = async () => {
+    setVerifyingOtp(true);
+    try {
+      if (!token) throw new Error('Authentication required');
+      const res = await authService.verifyPhone({ phone: formData.phone, otp_code: otpValue }, currentLocale);
+      toast.success(res.message || 'Phone number verified!');
+      setOtpSent(false);
+      setOtpValue('');
+      setIsOtpDialogOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to verify phone number');
+    } finally {
+      setVerifyingOtp(false);
+    }
   };
 
   const handleSaveEmail = () => {
@@ -196,8 +247,9 @@ export default function SettingsPage() {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  disabled={!isEditingPhone}
+                  disabled={!isEditingPhone || otpSent}
                   className="flex-1"
+                  placeholder={user?.phone || ''}
                 />
                 {!isEditingPhone ? (
                   <Button
@@ -213,6 +265,7 @@ export default function SettingsPage() {
                       variant="outline"
                       size="sm"
                       onClick={handleSavePhone}
+                      disabled={otpSent}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -226,6 +279,40 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
+              {/* OTP Verification Dialog */}
+              <Dialog open={isOtpDialogOpen} onOpenChange={setIsOtpDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Enter OTP</DialogTitle>
+                    <DialogDescription>
+                      Please enter the 6-digit code sent to your new phone number.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex flex-col gap-2 mt-2">
+                    <InputOTP
+                      value={otpValue}
+                      onChange={setOtpValue}
+                      maxLength={5}
+                      containerClassName="gap-2"
+                      render={renderOtpSlots}
+                    />
+                  </div>
+                  <DialogFooter className="gap-2 mt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsOtpDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleVerifyPhone}
+                      disabled={verifyingOtp || otpValue.length !== 5}
+                    >
+                      {verifyingOtp ? 'Verifying...' : 'Verify'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
 
             {/* Email */}

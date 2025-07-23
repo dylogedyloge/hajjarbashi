@@ -321,4 +321,22 @@ export const authService = {
     }
     return response.json();
   },
-}; 
+};
+
+/**
+ * Request to upsert (change) phone number, returns OTP code in data
+ */
+export async function upsertPhoneRequest({ newPhone, lang = 'en', token }: { newPhone: string; lang?: string; token: string }) {
+  const response = await fetch(`${API_BASE_URL}/users/upsert_phone_request`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-lang': lang,
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ new_phone: newPhone }),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || 'Failed to request phone change');
+  return data;
+} 

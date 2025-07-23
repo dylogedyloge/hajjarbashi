@@ -499,6 +499,8 @@
       "you": "You",
       "loading": "Loading...",
       "noChats": "No chats yet.",
-      "deleteChat": "Delete chat"
+      "deleteChat": "Delete chat",
+      "voiceMessage": "Voice message",
+      "recording": "Recording..."
     }
   }

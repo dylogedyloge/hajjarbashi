@@ -149,7 +149,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   // Socket setup for real-time chat
   useEffect(() => {
     if (!selected) return;
-    const myUserId = getMyUserId();
+    
     console.log('[ChatBox] Initial socket connection state:', socket.connected); // Log initial connection state
     setConnected(socket.connected);
     // Listen for connect/disconnect

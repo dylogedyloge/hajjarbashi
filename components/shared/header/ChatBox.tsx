@@ -76,6 +76,19 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [sendingVoice, setSendingVoice] = useState(false);
 
+  // Helper to get current user id from localStorage
+  const getMyUserId = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (!userData) return null;
+      const parsed = JSON.parse(userData);
+      return parsed.id;
+    } catch {
+      return null;
+    }
+  };
+
   // Fetch chat list from API
   const fetchChatList = async () => {
     setLoadingChats(true);
@@ -136,20 +149,47 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   // Socket setup for real-time chat
   useEffect(() => {
     if (!selected) return;
+    const myUserId = getMyUserId();
+    console.log('[ChatBox] Initial socket connection state:', socket.connected); // Log initial connection state
     setConnected(socket.connected);
     // Listen for connect/disconnect
-    const handleConnect = () => setConnected(true);
-    const handleDisconnect = () => setConnected(false);
+    const handleConnect = () => {
+      console.log('[ChatBox] Socket connected');
+      setConnected(true);
+    };
+    const handleDisconnect = () => {
+      console.log('[ChatBox] Socket disconnected');
+      setConnected(false);
+    };
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
 
     // Listen for new messages
     const handleNewMessage = (msg: any) => {
+      console.log('[ChatBox] RAW incoming message object:', msg);
+      const myUserId = getMyUserId();
+      const senderType = msg.msg_sender_id === myUserId ? 'me' : 'them';
+      const senderName = senderType === 'me' ? '[You]' : (selected?.name || '[Unknown]');
+      console.log('[ChatBox] handleNewMessage debug:', {
+        msg_sender_id: msg.msg_sender_id,
+        myUserId,
+        computed_senderType: senderType,
+        msg,
+      });
+      console.log('[ChatBox] Received new message:', {
+        from: senderName,
+        sender_id: msg.msg_sender_id,
+        chat_id: msg.chat_id,
+        text: msg.message,
+        attachments: msg.attachments,
+        time: msg.time || new Date().toISOString(),
+        raw: msg
+      });
       if (msg.chat_id === selected.id) {
         setMessages((prev) => [...prev, {
           id: msg.id || Date.now(),
           chat_id: msg.chat_id,
-          sender: msg.sender_id === params.id ? "me" : "them",
+          sender: senderType,
           text: msg.message,
           time: msg.time || new Date().toISOString(),
           attachments: msg.attachments,
@@ -157,13 +197,14 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
         }]);
         // Mark as seen
         socket.emit("seenMessage", { chat_id: selected.id });
+        console.log('[ChatBox] Emitted seenMessage for chat_id:', selected.id);
       }
     };
     socket.on("newMessage", handleNewMessage);
 
     // Listen for seen events
     const handleNewSeen = (data: any) => {
-      console.log(data);
+      console.log('[ChatBox] newSeen event:', data);
     };
     socket.on("newSeen", handleNewSeen);
 
@@ -171,7 +212,9 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
     const selectedUserId = selected.userId || (initialSelectedUser && typeof initialSelectedUser === 'object' ? initialSelectedUser.userId : undefined);
     if (selected && selectedUserId) {
       socket.emit("joinOnlineTrack", { id: selectedUserId });
+      console.log('[ChatBox] Emitted joinOnlineTrack for user:', selected.name);
       const handleOnlineStatus = (data: any) => {
+        console.log('[ChatBox] Online status update for', selected.name + ':', data);
         if (data.user_id === selectedUserId) setIsOnline(data.is_online);
       };
       socket.on(selectedUserId, handleOnlineStatus);
@@ -179,6 +222,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
 
     // Mark all messages as seen when chat is opened
     socket.emit("seenMessage", { chat_id: selected.id });
+    console.log('[ChatBox] Emitted seenMessage for chat_id (on open):', selected.id);
 
     return () => {
       socket.off("connect", handleConnect);
@@ -200,12 +244,13 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
       setMessagesError(null);
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const myUserId = getMyUserId();
         const msgs = await getMessages({ chatId: selected.id, token: token || '', lang: locale, limit: 50, page: 1, search: '' });
         setMessages(
           (msgs || []).map((msg: any) => ({
             id: msg.id,
             chat_id: selected.id,
-            sender: msg.maker_id === params.id ? "me" : "them",
+            sender: msg.maker_id === myUserId ? "me" : "them",
             text: msg.message,
             time: msg.time
               ? msg.time
@@ -235,6 +280,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
       message: input,
       attachments: [],
     };
+    console.log('[ChatBox] Sending message:', msg);
     socket.emit("sendMessage", msg);
     setMessages((prev) => [
       ...prev,
@@ -257,13 +303,16 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
       setAttachmentError(null);
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        console.log('[ChatBox] Uploading attachment:', files[0]);
         const data = await uploadAttachment({ chatId: selected.id, file: files[0], token: token || '', lang: locale });
         // Send the attachment as a message
-        socket.emit("sendMessage", {
+        const attachmentMsg = {
           chat_id: selected.id,
           message: '',
           attachments: [data.media_path],
-        });
+        };
+        console.log('[ChatBox] Sending attachment message:', attachmentMsg);
+        socket.emit("sendMessage", attachmentMsg);
         setMessages((prev) => [
           ...prev,
           {
@@ -277,6 +326,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
         ]);
       } catch (err: any) {
         setAttachmentError(err.message || 'Failed to upload attachment');
+        console.error('[ChatBox] Attachment upload error:', err);
       } finally {
         setUploadingAttachment(false);
       }
@@ -318,13 +368,16 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       // Convert blob to File
       const file = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: audioBlob.type });
+      console.log('[ChatBox] Uploading voice message:', file);
       const data = await uploadAttachment({ chatId: selected.id, file, token: token || '', lang: locale });
       // Send the attachment as a message
-      socket.emit("sendMessage", {
+      const voiceMsg = {
         chat_id: selected.id,
         message: '',
         attachments: [data.media_path],
-      });
+      };
+      console.log('[ChatBox] Sending voice message:', voiceMsg);
+      socket.emit("sendMessage", voiceMsg);
       setMessages((prev) => [
         ...prev,
         {
@@ -341,6 +394,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
       clearBlobUrl();
     } catch (err: any) {
       setAttachmentError(err.message || 'Failed to upload voice message');
+      console.error('[ChatBox] Voice message upload error:', err);
     } finally {
       setSendingVoice(false);
     }

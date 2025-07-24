@@ -523,7 +523,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
                     <div className="relative">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={conv.avatar} alt={conv.name} />
-                        <AvatarFallback>{conv.name[0]}</AvatarFallback>
+                        <AvatarFallback>{conv?.name?.[0] || "U"}</AvatarFallback>
                       </Avatar>
                       {/* Availability dot */}
                       <span
@@ -576,7 +576,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
             <div className="relative">
               <Avatar className="w-10 h-10">
                 <AvatarImage src={selected.avatarUrl} alt={selected.name} />
-                <AvatarFallback>{selected.name[0]}</AvatarFallback>
+                <AvatarFallback>{selected?.name?.[0] || "U"}</AvatarFallback>
               </Avatar>
               {/* Availability dot */}
               <span

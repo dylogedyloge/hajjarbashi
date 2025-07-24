@@ -557,23 +557,53 @@ export default function SettingsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="resetNewPassword">{t("password.newPassword")}</Label>
-                      <Input
-                        id="resetNewPassword"
-                        type="password"
-                        value={resetNewPassword}
-                        onChange={(e) => setResetNewPassword(e.target.value)}
-                        placeholder={t("password.newPasswordPlaceholder")}
-                      />
+                      <div className="relative">
+                        <Input
+                          id="resetNewPassword"
+                          type={showNewPassword ? "text" : "password"}
+                          value={resetNewPassword}
+                          onChange={(e) => setResetNewPassword(e.target.value)}
+                          placeholder={t("password.newPasswordPlaceholder")}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                        >
+                          {showNewPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="resetConfirmPassword">{t("password.confirmPassword")}</Label>
-                      <Input
-                        id="resetConfirmPassword"
-                        type="password"
-                        value={resetConfirmPassword}
-                        onChange={(e) => setResetConfirmPassword(e.target.value)}
-                        placeholder={t("password.confirmPasswordPlaceholder")}
-                      />
+                      <div className="relative">
+                        <Input
+                          id="resetConfirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={resetConfirmPassword}
+                          onChange={(e) => setResetConfirmPassword(e.target.value)}
+                          placeholder={t("password.confirmPasswordPlaceholder")}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     {/* Passwords do not match error (shown in settings page, not dialog) */}
                     {resetNewPassword && resetConfirmPassword && resetNewPassword !== resetConfirmPassword && (
@@ -619,23 +649,53 @@ export default function SettingsPage() {
                     </div>
                     <div className="space-y-2 mt-2">
                       <Label htmlFor="resetNewPasswordDialog">{t("password.newPassword")}</Label>
-                      <Input
-                        id="resetNewPasswordDialog"
-                        type="password"
-                        value={resetNewPassword}
-                        onChange={(e) => setResetNewPassword(e.target.value)}
-                        placeholder={t("password.newPasswordPlaceholder")}
-                      />
+                      <div className="relative">
+                        <Input
+                          id="resetNewPasswordDialog"
+                          type={showNewPassword ? "text" : "password"}
+                          value={resetNewPassword}
+                          onChange={(e) => setResetNewPassword(e.target.value)}
+                          placeholder={t("password.newPasswordPlaceholder")}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                        >
+                          {showNewPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="resetConfirmPasswordDialog">{t("password.confirmPassword")}</Label>
-                      <Input
-                        id="resetConfirmPasswordDialog"
-                        type="password"
-                        value={resetConfirmPassword}
-                        onChange={(e) => setResetConfirmPassword(e.target.value)}
-                        placeholder={t("password.confirmPasswordPlaceholder")}
-                      />
+                      <div className="relative">
+                        <Input
+                          id="resetConfirmPasswordDialog"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={resetConfirmPassword}
+                          onChange={(e) => setResetConfirmPassword(e.target.value)}
+                          placeholder={t("password.confirmPasswordPlaceholder")}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     {/* Passwords do not match error */}
                     {resetNewPassword && resetConfirmPassword && resetNewPassword !== resetConfirmPassword && (

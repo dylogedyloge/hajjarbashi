@@ -76,7 +76,7 @@ export default function SettingsPage() {
   const [confirmText, setConfirmText] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
@@ -286,18 +286,18 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSavePassword = () => {
-    if (formData.newPassword === formData.confirmPassword) {
-      setIsEditingPassword(false);
-      setFormData(prev => ({
-        ...prev,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-      }));
-      // Here you would typically save to backend
-    }
-  };
+  // const handleSavePassword = () => {
+  //   if (formData.newPassword === formData.confirmPassword) {
+  //     setIsEditingPassword(false);
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       currentPassword: "",
+  //       newPassword: "",
+  //       confirmPassword: ""
+  //     }));
+  //     // Here you would typically save to backend
+  //   }
+  // };
 
   const handleCancelEdit = (type: 'phone' | 'email' | 'password') => {
     if (type === 'phone') setIsEditingPhone(false);

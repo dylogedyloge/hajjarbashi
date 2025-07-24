@@ -433,7 +433,9 @@
         "newPasswordPlaceholder": "رمز عبور جدید را وارد کنید",
         "confirmPasswordPlaceholder": "رمز عبور جدید را تکرار کنید",
         "savePassword": "ذخیره رمز عبور",
-        "cancel": "لغو"
+        "cancel": "لغو",
+        "email": "ایمیل",
+        "phone": "شماره تلفن"
       },
       "preferences": {
         "title": "ترجیحات",

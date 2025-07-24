@@ -431,7 +431,9 @@
         "newPasswordPlaceholder": "Enter new password",
         "confirmPasswordPlaceholder": "Confirm new password",
         "savePassword": "Save Password",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "email": "Email",
+        "phone": "Phone"
       },
       "preferences": {
         "title": "Preferences",

@@ -71,7 +71,7 @@ export default function SettingsPage() {
   const currentLocale = (params?.locale as string) || "en";
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
   const [mounted, setMounted] = useState(false);
-  const { token, logout, user } = useAuth();
+  const { token, logout, user, login } = useAuth();
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -86,6 +86,8 @@ export default function SettingsPage() {
   const [otpValue, setOtpValue] = useState('');
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+  // Track which OTP dialog is open
+  const [otpType, setOtpType] = useState<'phone' | 'email' | null>(null);
 
   // Hardcoded data for now
   const [formData, setFormData] = useState({
@@ -182,6 +184,8 @@ export default function SettingsPage() {
         verification_code: resetOtp,
       }, currentLocale);
       toast.success('Password reset successful');
+      logout();
+      intlRouter.replace('/');
       setIsEditingPassword(false);
       setIsPasswordOtpDialogOpen(false);
       setResetStep('request');
@@ -246,6 +250,7 @@ export default function SettingsPage() {
       toast.success(`OTP code: ${res.data}`);
       setOtpSent(true);
       setOtpValue('');
+      setOtpType('phone');
       setIsOtpDialogOpen(true);
     } catch (err: any) {
       toast.error(err.message || 'Failed to update phone number');
@@ -257,10 +262,12 @@ export default function SettingsPage() {
     try {
       if (!token) throw new Error('Authentication required');
       const res = await authService.verifyUpsertPhone({ new_phone: formData.phone, verification_code: otpValue }, token, currentLocale);
+      login({ ...res.data, email: res.data.email || '' }, res.data.token);
       toast.success(res.message || 'Phone number verified!');
       setOtpSent(false);
       setOtpValue('');
       setIsOtpDialogOpen(false);
+      setOtpType(null);
     } catch (err: any) {
       toast.error(err.message || 'Failed to verify phone number');
     } finally {
@@ -272,10 +279,12 @@ export default function SettingsPage() {
     try {
       if (!token) throw new Error('Authentication required');
       const res = await authService.verifyUpsertEmail({ new_email: formData.email, verification_code: otpValue }, token, currentLocale);
+      login({ ...res.data, email: res.data.email || '' }, res.data.token);
       toast.success(res.message || 'Email verified!');
       setOtpSent(false);
       setOtpValue('');
       setIsOtpDialogOpen(false);
+      setOtpType(null);
     } catch (err: any) {
       toast.error(err.message || 'Failed to verify email number');
     } finally {
@@ -291,6 +300,7 @@ export default function SettingsPage() {
       toast.success(`OTP code: ${res.data}`);
       setOtpSent(true);
       setOtpValue('');
+      setOtpType('email');
       setIsOtpDialogOpen(true);
     } catch (err: any) {
       toast.error(err.message || 'Failed to update email address');
@@ -394,6 +404,7 @@ export default function SettingsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsEditingPhone(true)}
+                    disabled={isEditingPhone || otpSent}
                   >
                     <Edit3 className="h-4 w-4" />
                   </Button>
@@ -417,40 +428,42 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
-              {/* OTP Verification Dialog */}
-              <Dialog open={isOtpDialogOpen} onOpenChange={setIsOtpDialogOpen}>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Enter OTP</DialogTitle>
-                    <DialogDescription>
-                      Please enter the 6-digit code sent to your new phone number.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex flex-col gap-2 mt-2">
-                    <InputOTP
-                      value={otpValue}
-                      onChange={setOtpValue}
-                      maxLength={5}
-                      containerClassName="gap-2"
-                      render={renderOtpSlots}
-                    />
-                  </div>
-                  <DialogFooter className="gap-2 mt-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsOtpDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleVerifyPhone}
-                      disabled={verifyingOtp || otpValue.length !== 5}
-                    >
-                      {verifyingOtp ? 'Verifying...' : 'Verify'}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              {/* OTP Verification Dialog for Phone */}
+              {otpType === 'phone' && (
+                <Dialog open={isOtpDialogOpen} onOpenChange={(open) => { setIsOtpDialogOpen(open); if (!open) setOtpType(null); }}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Enter OTP</DialogTitle>
+                      <DialogDescription>
+                        Please enter the 6-digit code sent to your new phone number.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-2 mt-2">
+                      <InputOTP
+                        value={otpValue}
+                        onChange={setOtpValue}
+                        maxLength={5}
+                        containerClassName="gap-2"
+                        render={renderOtpSlots}
+                      />
+                    </div>
+                    <DialogFooter className="gap-2 mt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => { setIsOtpDialogOpen(false); setOtpType(null); }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleVerifyPhone}
+                        disabled={verifyingOtp || otpValue.length !== 5}
+                      >
+                        {verifyingOtp ? 'Verifying...' : 'Verify'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
 
             {/* Email */}
@@ -470,6 +483,7 @@ export default function SettingsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsEditingEmail(true)}
+                    disabled={isEditingEmail || otpSent}
                   >
                     <Edit3 className="h-4 w-4" />
                   </Button>
@@ -494,39 +508,41 @@ export default function SettingsPage() {
                 )}
               </div>
               {/* OTP Verification Dialog for Email */}
-              <Dialog open={isOtpDialogOpen && isEditingEmail === false && otpSent} onOpenChange={setIsOtpDialogOpen}>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Enter OTP</DialogTitle>
-                    <DialogDescription>
-                      Please enter the 6-digit code sent to your new email address.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex flex-col gap-2 mt-2">
-                    <InputOTP
-                      value={otpValue}
-                      onChange={setOtpValue}
-                      maxLength={5}
-                      containerClassName="gap-2"
-                      render={renderOtpSlots}
-                    />
-                  </div>
-                  <DialogFooter className="gap-2 mt-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsOtpDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleVerifyEmail}
-                      disabled={verifyingOtp || otpValue.length !== 5}
-                    >
-                      {verifyingOtp ? 'Verifying...' : 'Verify'}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              {otpType === 'email' && (
+                <Dialog open={isOtpDialogOpen} onOpenChange={(open) => { setIsOtpDialogOpen(open); if (!open) setOtpType(null); }}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Enter OTP</DialogTitle>
+                      <DialogDescription>
+                        Please enter the 6-digit code sent to your new email address.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-2 mt-2">
+                      <InputOTP
+                        value={otpValue}
+                        onChange={setOtpValue}
+                        maxLength={5}
+                        containerClassName="gap-2"
+                        render={renderOtpSlots}
+                      />
+                    </div>
+                    <DialogFooter className="gap-2 mt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => { setIsOtpDialogOpen(false); setOtpType(null); }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleVerifyEmail}
+                        disabled={verifyingOtp || otpValue.length !== 5}
+                      >
+                        {verifyingOtp ? 'Verifying...' : 'Verify'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </CardContent>
         </Card>

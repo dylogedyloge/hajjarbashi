@@ -333,6 +333,8 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
         locale
       );
       login(response.data, response.data.token);
+      // Store login method
+      localStorage.setItem('login_method', 'email');
       toast.success(t("loginSuccessful"));
       handleDialogChange(false);
     } catch (err) {
@@ -400,6 +402,8 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
         })}`
       );
       setView("otp");
+      // Store login method for phone
+      localStorage.setItem('login_method', 'phone');
     } catch (err) {
       console.error("Send SMS error:", err);
       const errorMessage =

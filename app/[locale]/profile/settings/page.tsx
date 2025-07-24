@@ -89,12 +89,23 @@ export default function SettingsPage() {
 
   // Hardcoded data for now
   const [formData, setFormData] = useState({
-    phone: "+1 (555) 123-4567",
-    email: "user@example.com",
+    phone: "",
+    email: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
+
+  // Sync formData with real user data when user is loaded
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        phone: user.phone || "",
+        email: user.email || "",
+      }));
+    }
+  }, [user]);
 
   // Add state for password reset flow (moved after formData)
   const [resetStep, setResetStep] = useState<'request' | 'verify'>('request');
@@ -373,11 +384,10 @@ export default function SettingsPage() {
                 <Input
                   id="phone"
                   type="tel"
-                  value={formData.phone}
+                  value={isEditingPhone ? formData.phone : (user?.phone || '')}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   disabled={!isEditingPhone || otpSent}
                   className="flex-1"
-                  placeholder={user?.phone || ''}
                 />
                 {!isEditingPhone ? (
                   <Button
@@ -450,7 +460,7 @@ export default function SettingsPage() {
                 <Input
                   id="email"
                   type="email"
-                  value={formData.email}
+                  value={isEditingEmail ? formData.email : (user?.email || '')}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   disabled={!isEditingEmail || otpSent}
                   className="flex-1"

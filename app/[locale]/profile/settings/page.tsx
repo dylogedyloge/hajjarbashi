@@ -28,7 +28,7 @@ import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { GB, IR } from "country-flag-icons/react/3x2";
 import { deleteAccount } from "@/lib/profile";
-import { upsertPhoneRequest, authService } from '@/lib/auth';
+import { upsertPhoneRequest, authService, upsertEmailRequest } from '@/lib/auth';
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import {
@@ -96,6 +96,110 @@ export default function SettingsPage() {
     confirmPassword: "",
   });
 
+  // Add state for password reset flow (moved after formData)
+  const [resetStep, setResetStep] = useState<'request' | 'verify'>('request');
+  const [resetEmail, setResetEmail] = useState(formData.email || '');
+  const [resetOtp, setResetOtp] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
+  const [resetConfirmPassword, setResetConfirmPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetResendTimer, setResetResendTimer] = useState(114);
+  const [isResendingReset, setIsResendingReset] = useState(false);
+  const [isPasswordOtpDialogOpen, setIsPasswordOtpDialogOpen] = useState(false);
+
+  // Timer effect for resend
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (isPasswordOtpDialogOpen && resetResendTimer > 0) {
+      interval = setInterval(() => {
+        setResetResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    if (!isPasswordOtpDialogOpen) {
+      setResetResendTimer(114);
+    }
+    return () => interval && clearInterval(interval);
+  }, [isPasswordOtpDialogOpen, resetResendTimer]);
+
+  // Handler to start password reset
+  const handleStartPasswordReset = () => {
+    setIsEditingPassword(true);
+    setResetStep('request');
+    setResetEmail(formData.email || '');
+    setResetOtp('');
+    setResetNewPassword('');
+    setResetConfirmPassword('');
+    setResetError('');
+  };
+
+  // Handler to request code
+  const handleRequestPasswordResetCode = async () => {
+    setResetLoading(true);
+    setResetError('');
+    try {
+      const response = await authService.sendResetPasswordVerificationCode({ email: resetEmail }, currentLocale);
+      toast.success(`OTP code: ${response.data.code}`);
+      setResetStep('verify');
+      setIsPasswordOtpDialogOpen(true);
+    } catch (err: any) {
+      setResetError(err.message || 'Failed to send code');
+      toast.error(err.message || 'Failed to send code');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  // Handler to verify and reset password
+  const handleVerifyResetPassword = async () => {
+    setResetLoading(true);
+    setResetError('');
+    if (!resetOtp || !resetNewPassword || !resetConfirmPassword) {
+      setResetError('Please fill all fields');
+      setResetLoading(false);
+      return;
+    }
+    if (resetNewPassword !== resetConfirmPassword) {
+      setResetError('Passwords do not match');
+      setResetLoading(false);
+      return;
+    }
+    try {
+      await authService.resetPassword({
+        email: resetEmail,
+        password: resetNewPassword,
+        verification_code: resetOtp,
+      }, currentLocale);
+      toast.success('Password reset successful');
+      setIsEditingPassword(false);
+      setIsPasswordOtpDialogOpen(false);
+      setResetStep('request');
+      setResetOtp('');
+      setResetNewPassword('');
+      setResetConfirmPassword('');
+      setResetError('');
+    } catch (err: any) {
+      setResetError(err.message || 'Failed to reset password');
+      toast.error(err.message || 'Failed to reset password');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  // Handler to resend code
+  const handleResendPasswordResetCode = async () => {
+    setIsResendingReset(true);
+    try {
+      const response = await authService.sendResetPasswordVerificationCode({ email: resetEmail }, currentLocale);
+      toast.success(`OTP code: ${response.data.code}`);
+      setResetResendTimer(114);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to resend code');
+    } finally {
+      setIsResendingReset(false);
+    }
+  };
+
   const [linkedAccounts] = useState([
     { provider: "Google", email: "user@gmail.com", connected: true },
     { provider: "Facebook", email: "user@facebook.com", connected: true },
@@ -141,7 +245,7 @@ export default function SettingsPage() {
     setVerifyingOtp(true);
     try {
       if (!token) throw new Error('Authentication required');
-      const res = await authService.verifyPhone({ phone: formData.phone, otp_code: otpValue }, currentLocale);
+      const res = await authService.verifyUpsertPhone({ new_phone: formData.phone, verification_code: otpValue }, token, currentLocale);
       toast.success(res.message || 'Phone number verified!');
       setOtpSent(false);
       setOtpValue('');
@@ -152,10 +256,34 @@ export default function SettingsPage() {
       setVerifyingOtp(false);
     }
   };
+  const handleVerifyEmail = async () => {
+    setVerifyingOtp(true);
+    try {
+      if (!token) throw new Error('Authentication required');
+      const res = await authService.verifyUpsertEmail({ new_email: formData.email, verification_code: otpValue }, token, currentLocale);
+      toast.success(res.message || 'Email verified!');
+      setOtpSent(false);
+      setOtpValue('');
+      setIsOtpDialogOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to verify email number');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
 
-  const handleSaveEmail = () => {
+  const handleSaveEmail = async () => {
     setIsEditingEmail(false);
-    // Here you would typically save to backend
+    try {
+      if (!token) throw new Error('Authentication required');
+      const res = await upsertEmailRequest({ newEmail: formData.email, lang: currentLocale, token });
+      toast.success(`OTP code: ${res.data}`);
+      setOtpSent(true);
+      setOtpValue('');
+      setIsOtpDialogOpen(true);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update email address');
+    }
   };
 
   const handleSavePassword = () => {
@@ -324,7 +452,7 @@ export default function SettingsPage() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  disabled={!isEditingEmail}
+                  disabled={!isEditingEmail || otpSent}
                   className="flex-1"
                 />
                 {!isEditingEmail ? (
@@ -341,6 +469,7 @@ export default function SettingsPage() {
                       variant="outline"
                       size="sm"
                       onClick={handleSaveEmail}
+                      disabled={otpSent}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -354,6 +483,40 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
+              {/* OTP Verification Dialog for Email */}
+              <Dialog open={isOtpDialogOpen && isEditingEmail === false && otpSent} onOpenChange={setIsOtpDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Enter OTP</DialogTitle>
+                    <DialogDescription>
+                      Please enter the 6-digit code sent to your new email address.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex flex-col gap-2 mt-2">
+                    <InputOTP
+                      value={otpValue}
+                      onChange={setOtpValue}
+                      maxLength={5}
+                      containerClassName="gap-2"
+                      render={renderOtpSlots}
+                    />
+                  </div>
+                  <DialogFooter className="gap-2 mt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsOtpDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleVerifyEmail}
+                      disabled={verifyingOtp || otpValue.length !== 5}
+                    >
+                      {verifyingOtp ? 'Verifying...' : 'Verify'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>
@@ -373,101 +536,148 @@ export default function SettingsPage() {
             {!isEditingPassword ? (
               <Button
                 variant="outline"
-                onClick={() => setIsEditingPassword(true)}
+                onClick={handleStartPasswordReset}
               >
                 {t("password.changePassword")}
               </Button>
             ) : (
-                              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">{t("password.currentPassword")}</Label>
-                  <div className="relative">
-                    <Input
-                      id="currentPassword"
-                      type={showPassword ? "text" : "password"}
-                      value={formData.currentPassword}
-                      onChange={(e) => handleInputChange('currentPassword', e.target.value)}
-                      placeholder={t("password.currentPasswordPlaceholder")}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
+              <div className="space-y-4">
+                {resetStep === 'request' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="resetEmail">{t("password.email")}</Label>
+                      <Input
+                        id="resetEmail"
+                        type="email"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        disabled
+                        className="flex-1"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="resetNewPassword">{t("password.newPassword")}</Label>
+                      <Input
+                        id="resetNewPassword"
+                        type="password"
+                        value={resetNewPassword}
+                        onChange={(e) => setResetNewPassword(e.target.value)}
+                        placeholder={t("password.newPasswordPlaceholder")}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="resetConfirmPassword">{t("password.confirmPassword")}</Label>
+                      <Input
+                        id="resetConfirmPassword"
+                        type="password"
+                        value={resetConfirmPassword}
+                        onChange={(e) => setResetConfirmPassword(e.target.value)}
+                        placeholder={t("password.confirmPasswordPlaceholder")}
+                      />
+                    </div>
+                    {/* Passwords do not match error (shown in settings page, not dialog) */}
+                    {resetNewPassword && resetConfirmPassword && resetNewPassword !== resetConfirmPassword && (
+                      <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded w-full">
+                        Passwords do not match
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <Button onClick={() => {
+                        if (resetNewPassword !== resetConfirmPassword) return;
+                        handleRequestPasswordResetCode();
+                      }} disabled={resetLoading}>
+                        {resetLoading ? 'Sending...' : 'Send Code'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleCancelEdit('password')}
+                        disabled={resetLoading}
+                      >
+                        {t("password.cancel")}
+                      </Button>
+                    </div>
+                    {resetError && <div className="text-red-500 text-sm">{resetError}</div>}
+                  </>
+                )}
+                {/* OTP Dialog for password reset */}
+                <Dialog open={isPasswordOtpDialogOpen} onOpenChange={setIsPasswordOtpDialogOpen}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Enter OTP</DialogTitle>
+                      <DialogDescription>
+                        Please enter the 6-digit code sent to your email to reset your password.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-2 mt-2">
+                      <InputOTP
+                        value={resetOtp}
+                        onChange={setResetOtp}
+                        maxLength={5}
+                        containerClassName="gap-2"
+                        render={renderOtpSlots}
+                      />
+                    </div>
+                    <div className="space-y-2 mt-2">
+                      <Label htmlFor="resetNewPasswordDialog">{t("password.newPassword")}</Label>
+                      <Input
+                        id="resetNewPasswordDialog"
+                        type="password"
+                        value={resetNewPassword}
+                        onChange={(e) => setResetNewPassword(e.target.value)}
+                        placeholder={t("password.newPasswordPlaceholder")}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="resetConfirmPasswordDialog">{t("password.confirmPassword")}</Label>
+                      <Input
+                        id="resetConfirmPasswordDialog"
+                        type="password"
+                        value={resetConfirmPassword}
+                        onChange={(e) => setResetConfirmPassword(e.target.value)}
+                        placeholder={t("password.confirmPasswordPlaceholder")}
+                      />
+                    </div>
+                    {/* Passwords do not match error */}
+                    {resetNewPassword && resetConfirmPassword && resetNewPassword !== resetConfirmPassword && (
+                      <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded w-full">
+                        Passwords do not match
+                      </div>
+                    )}
+                    <DialogFooter className="gap-2 mt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsPasswordOtpDialogOpen(false)}
+                        disabled={resetLoading}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleVerifyResetPassword}
+                        disabled={resetLoading || resetOtp.length !== 5}
+                      >
+                        {resetLoading ? 'Verifying...' : 'Verify'}
+                      </Button>
+                    </DialogFooter>
+                    <div className="flex flex-col items-center mt-2">
+                      {resetResendTimer > 0 ? (
+                        <span className="text-sm text-muted-foreground">
+                          Resend code in {Math.floor(resetResendTimer / 60)}:{(resetResendTimer % 60).toString().padStart(2, '0')}
+                        </span>
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="underline text-base mt-2 cursor-pointer p-0 h-auto min-h-0 min-w-0"
+                          disabled={isResendingReset}
+                          onClick={handleResendPasswordResetCode}
+                        >
+                          {isResendingReset ? 'Resending...' : 'Resend Code'}
+                        </Button>
                       )}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">{t("password.newPassword")}</Label>
-                  <div className="relative">
-                    <Input
-                      id="newPassword"
-                      type={showNewPassword ? "text" : "password"}
-                      value={formData.newPassword}
-                      onChange={(e) => handleInputChange('newPassword', e.target.value)}
-                      placeholder={t("password.newPasswordPlaceholder")}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                    >
-                      {showNewPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">{t("password.confirmPassword")}</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      placeholder={t("password.confirmPasswordPlaceholder")}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button onClick={handleSavePassword}>
-                    {t("password.savePassword")}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleCancelEdit('password')}
-                  >
-                    {t("password.cancel")}
-                  </Button>
-                </div>
+                    </div>
+                    {resetError && <div className="text-red-500 text-sm mt-2">{resetError}</div>}
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
           </CardContent>

@@ -501,6 +501,8 @@
       "noChats": "No chats yet.",
       "deleteChat": "Delete chat",
       "voiceMessage": "Voice message",
-      "recording": "Recording..."
+      "recording": "Recording...",
+      "blockUser": "Block User",
+      "unblockUser": "Unblock User"
     }
   }

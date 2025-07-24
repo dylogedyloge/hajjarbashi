@@ -288,6 +288,55 @@ export const authService = {
     return response.json();
   },
 
+  /**
+   * Verify upserted phone number (new endpoint)
+   */
+  async verifyUpsertPhone(
+    data: { new_phone: string; verification_code: string | number },
+    token: string,
+    lang: string = 'en'
+  ): Promise<VerifyPhoneResponse> {
+    const response = await fetch(`${API_BASE_URL}/users/verify_upsert_phone`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-lang': lang,
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Phone verification failed: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+  /**
+   * Verify upserted phone number (new endpoint)
+   */
+  async verifyUpsertEmail(
+    data: { new_email: string; verification_code: string | number },
+    token: string,
+    lang: string = 'en'
+  ): Promise<VerifyEmailResponse> {
+    const response = await fetch(`${API_BASE_URL}/users/verify_upsert_email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-lang': lang,
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Email verification failed: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
   async sendResetPasswordVerificationCode(data: SendResetPasswordVerificationCodeRequest, lang: string = 'en'): Promise<SendResetPasswordVerificationCodeResponse> {
     const response = await fetch(`${API_BASE_URL}/users/send_reset_password_verificaton_code`, {
       method: 'POST',
@@ -338,5 +387,19 @@ export async function upsertPhoneRequest({ newPhone, lang = 'en', token }: { new
   });
   const data = await response.json();
   if (!data.success) throw new Error(data.message || 'Failed to request phone change');
+  return data;
+} 
+export async function upsertEmailRequest({ newEmail, lang = 'en', token }: { newEmail: string; lang?: string; token: string }) {
+  const response = await fetch(`${API_BASE_URL}/users/upsert_email_request`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-lang': lang,
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ new_email: newEmail }),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || 'Failed to request email change');
   return data;
 } 

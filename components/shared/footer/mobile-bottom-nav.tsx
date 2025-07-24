@@ -7,7 +7,9 @@ import SignInSignUpButton from "@/components/shared/header/sign-in-sign-up-butto
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "@/i18n/navigation";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import ChatBox from "@/components/shared/header/ChatBox";
+import dynamic from "next/dynamic";
+import { DialogTitle } from "@/components/ui/dialog";
+const ChatBox = dynamic(() => import("@/components/shared/header/ChatBox"), { ssr: false });
 import { useState } from "react";
 
 const MobileBottomNav = () => {
@@ -94,6 +96,7 @@ const MobileBottomNav = () => {
       {/* ChatBox Drawer for mobile */}
       <Drawer open={chatDrawerOpen} onOpenChange={setChatDrawerOpen}>
         <DrawerContent className="max-w-md mx-auto rounded-t-2xl p-0 h-[500px] flex flex-col justify-end">
+          <DialogTitle className="sr-only">Chat</DialogTitle>
           {chatDrawerOpen && <ChatBox onClose={() => setChatDrawerOpen(false)} />}
         </DrawerContent>
       </Drawer>

@@ -506,6 +506,8 @@
       "noChats": "هنوز گفتگویی وجود ندارد.",
       "deleteChat": "حذف گفتگو",
       "voiceMessage": "پیام صوتی",
-      "recording": "در حال ضبط..."
+      "recording": "در حال ضبط...",
+      "blockUser": "مسدود کردن کاربر",
+      "unblockUser": "رفع مسدودی کاربر"
     }
   }

@@ -10,27 +10,64 @@ import { useAuth } from "@/lib/auth-context";
 interface AdCardProps {
   ad: {
     id: string;
+    created_at?: number;
+    updated_at?: number;
+    weight?: number;
+    sale_unit_type?: string;
+    price: number;
+    colors?: string[];
+    category?: { 
+      id: string; 
+      name: string; 
+      description?: string;
+      image?: string;
+      colors?: string[];
+    };
+    form?: string;
+    surface?: { id: string; name: string };
+    grade?: string;
+    is_chat_enabled?: boolean;
+    contact_info_enabled?: boolean;
+    express?: boolean;
+    minimum_order?: number;
+    description?: string;
+    origin_country?: { id: string; name: string };
+    origin_city?: { id: string; name: string };
+    size?: { h?: number; w?: number; l?: number };
+    media?: Array<{ 
+      index: number;
+      media_path?: string; 
+      media_thumb_path?: string 
+    }>;
+    cover?: string;
+    cover_thumb?: string;
+    benefits?: string[];
+    defects?: string[];
+    weight_range_type?: string;
+    size_range_type?: string;
+    bookmarked?: boolean;
+    receiving_ports_details?: Array<{
+      id: string;
+      name: string;
+      city_name: string | null;
+      ownership: string;
+    }>;
+    export_ports_details?: Array<{
+      id: string;
+      name: string;
+      city_name: string | null;
+      ownership: string;
+    }>;
+    // Legacy fields for backward compatibility
     image?: string;
     stone_type?: string;
     origin?: string;
-    form?: string;
-    surface?: string | { id: string; name: string };
     source_port?: string;
     color?: string | string[];
-    size?: string | { h?: number; w?: number; l?: number };
-    price: number;
     price_unit?: string;
     published_at?: string;
     is_featured?: boolean;
     is_express?: boolean;
-    description?: string;
-    weight?: number | string;
-    origin_country?: { id: string; name: string };
-    origin_city?: { id: string; name: string };
-    category?: { id: string; name: string };
-    colors?: string[];
-    media?: Array<{ media_thumb_path?: string; media_path?: string }>;
-    bookmarked?: boolean;
   };
   onBookmarkChange?: (isBookmarked: boolean) => void;
   isFromBookmarksPage?: boolean;
@@ -49,14 +86,28 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
     : typeof ad.color === "string"
     ? ad.color.split(/[,\s]+/).filter(Boolean)
     : [];
-  // Prefer first media image if available
-  const mediaArray = Array.isArray(ad.media) ? ad.media as Array<{ media_thumb_path?: string; media_path?: string }> : [];
+  
+  // Get image from cover_thumb, media array, or legacy image field
+  const mediaArray = Array.isArray(ad.media) ? ad.media : [];
   const mediaImage = mediaArray.length > 0
     ? mediaArray[0].media_thumb_path || mediaArray[0].media_path
     : null;
-  const imageSrc = mediaImage
-    ? (mediaImage.startsWith("http") ? mediaImage : `https://api.hajjardevs.ir/${mediaImage}`)
-    : ad.image;
+  const imageSrc = ad.cover_thumb || ad.cover || mediaImage || ad.image
+    ? (ad.cover_thumb || ad.cover || mediaImage || ad.image)?.startsWith("http") 
+      ? (ad.cover_thumb || ad.cover || mediaImage || ad.image)
+      : `https://api.hajjardevs.ir/${ad.cover_thumb || ad.cover || mediaImage || ad.image}`
+    : null;
+
+  // Format date from timestamp
+  const formatDate = (timestamp?: number) => {
+    if (!timestamp) return ad.published_at || '';
+    return new Date(timestamp).toLocaleDateString();
+  };
+
+  // Get price unit from sale_unit_type
+  const getPriceUnit = () => {
+    return ad.sale_unit_type || ad.price_unit || 'unit';
+  };
 
   const handleBookmarkToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -144,7 +195,7 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
                 : `${t("usd")} ${ad.price?.toLocaleString?.()}`}
             </span>
             <span className="text-xs text-muted-foreground">
-              /{ad.price_unit?.toLowerCase?.()}
+              /{getPriceUnit()?.toLowerCase?.()}
             </span>
           </div>
         </div>
@@ -157,7 +208,7 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
         {/* Icons and Info */}
         <div className="flex items-center gap-4 text-muted-foreground text-xs mt-1">
           <span className="flex items-center gap-1">
-            <Clock size={16} /> {ad.published_at}
+            <Clock size={16} /> {formatDate(ad.created_at)}
           </span>
           {ad.weight && (
             <span className="flex items-center gap-1">
@@ -204,7 +255,13 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
             {ad.surface && (
               <div>
                 <div>{t("surface")}</div>
-                <div className="font-bold">{typeof ad.surface === "object" ? ad.surface.name : ad.surface}</div>
+                <div className="font-bold">{ad.surface.name}</div>
+              </div>
+            )}
+            {ad.grade && (
+              <div>
+                <div>{t("grade")}</div>
+                <div className="font-bold">{ad.grade.toUpperCase()}</div>
               </div>
             )}
             {/* Show size as h × w × l if size is an object */}
@@ -221,6 +278,14 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
                 <div>{t("weight")}</div>
                 <div className="font-bold">
                   {ad.weight} {t("kg")}
+                </div>
+              </div>
+            )}
+            {ad.minimum_order && (
+              <div>
+                <div>{t("minOrder")}</div>
+                <div className="font-bold">
+                  {ad.minimum_order} {t("kg")}
                 </div>
               </div>
             )}

@@ -12,28 +12,64 @@ import Link from "next/link";
 // Define the Ad type matching the API
 export type Ad = {
   id: string;
+  created_at?: number;
+  updated_at?: number;
+  weight?: number;
+  sale_unit_type?: string;
+  price: number;
+  colors?: string[];
+  category?: { 
+    id: string; 
+    name: string; 
+    description?: string;
+    image?: string;
+    colors?: string[];
+  };
+  form?: string;
+  surface?: { id: string; name: string };
+  grade?: string;
+  is_chat_enabled?: boolean;
+  contact_info_enabled?: boolean;
+  express?: boolean;
+  minimum_order?: number;
+  description?: string;
+  origin_country?: { id: string; name: string };
+  origin_city?: { id: string; name: string };
+  size?: { h?: number; w?: number; l?: number };
+  media?: Array<{ 
+    index: number;
+    media_path?: string; 
+    media_thumb_path?: string 
+  }>;
+  cover?: string;
+  cover_thumb?: string;
+  benefits?: string[];
+  defects?: string[];
+  weight_range_type?: string;
+  size_range_type?: string;
+  bookmarked?: boolean;
+  receiving_ports_details?: Array<{
+    id: string;
+    name: string;
+    city_name: string | null;
+    ownership: string;
+  }>;
+  export_ports_details?: Array<{
+    id: string;
+    name: string;
+    city_name: string | null;
+    ownership: string;
+  }>;
+  // Legacy fields for backward compatibility
   image?: string;
   stone_type?: string;
   origin?: string;
-  form?: string;
-  surface?: string | { id: string; name: string };
   source_port?: string;
   color?: string | string[];
-  size?: string | { h?: number; w?: number; l?: number };
-  price: number;
   price_unit?: string;
   published_at?: string;
   is_featured?: boolean;
   is_express?: boolean;
-  description?: string;
-  weight?: number | string;
-  origin_country?: { id: string; name: string };
-  origin_city?: { id: string; name: string };
-  category?: { id: string; name: string };
-  colors?: string[];
-  media?: Array<{ media_thumb_path?: string; media_path?: string }>;
-  bookmarked?: boolean;
-  // ...add any other fields you use
 };
 
 const AdsList = () => {
@@ -46,7 +82,11 @@ const AdsList = () => {
     setLoading(true);
     setError(null);
     fetchAds({ limit: 10, page: 1, locale })
-      .then((res) => setAds(res.data as Ad[] || []))
+      .then((res) => {
+        // Handle new API response structure with data.list
+        const adsList = res.data?.list || res.data || [];
+        setAds(adsList as Ad[]);
+      })
       .catch((err) => setError(err.message || "Failed to load ads"))
       .finally(() => setLoading(false));
   }, [locale]);

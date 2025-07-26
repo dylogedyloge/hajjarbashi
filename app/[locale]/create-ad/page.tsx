@@ -33,7 +33,7 @@ import {
   fetchPorts,
   updateAd,
 } from "@/lib/advertisements";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +55,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { DragEndEvent } from "@dnd-kit/core";
 import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
+import isEqual from "lodash.isequal";
 
 type UploadedFile = { path: string; thumb_path: string };
 
@@ -204,6 +205,11 @@ export default function CreateAdPage() {
   >([]);
   const [selectedExportPorts, setSelectedExportPorts] = useState<string[]>([]);
 
+  // Track initial form state for dirty check
+  const initialFormState = useRef<any>(null);
+  // Add a ref to store the last loaded adData for use in the city effect
+  const lastLoadedAdData = useRef<any>(null);
+
   useEffect(() => {
     if (!adId) return;
     (async () => {
@@ -216,6 +222,11 @@ export default function CreateAdPage() {
         
         if (res?.success && res?.data) {
           const adData = res.data;
+          lastLoadedAdData.current = adData;
+          
+          console.log('Loading ad data:', adData);
+          console.log('Setting originCountryId to:', adData.origin_country?.id);
+          console.log('Setting originCityId to:', adData.origin_city?.id);
           
           // Set images
           if (adData.uploaded_files) {
@@ -240,17 +251,23 @@ export default function CreateAdPage() {
           }
           if (adData.weight) setWeight(adData.weight.toString());
           if (adData.minimum_order) setMinimumOrder(adData.minimum_order.toString());
-          if (adData.category_id) setCategoryId(adData.category_id);
+          // --- FIXED: Use nested object IDs if present ---
+          if (adData.category?.id) setCategoryId(adData.category.id);
+          if (adData.surface?.id) setSurfaceId(adData.surface.id);
+          if (adData.origin_country?.id) setOriginCountryId(adData.origin_country.id);
+          if (adData.origin_city?.id) setOriginCityId(adData.origin_city.id);
+          if (adData.receiving_ports_details)
+            setSelectedReceivingPorts(adData.receiving_ports_details.map((p: any) => p.id));
+          if (adData.export_ports_details)
+            setSelectedExportPorts(adData.export_ports_details.map((p: any) => p.id));
+          // --- END FIX ---
           if (adData.price) setPrice(adData.price.toString());
           if (adData.description) setDescription(adData.description);
           if (adData.colors) setSelectedColors(adData.colors);
           if (adData.benefits) setBenefits(adData.benefits.join(', '));
           if (adData.defects) setDefects(adData.defects.join(', '));
-          if (adData.surface_id) setSurfaceId(adData.surface_id);
-          if (adData.origin_country_id) setOriginCountryId(adData.origin_country_id);
-          if (adData.origin_city_id) setOriginCityId(adData.origin_city_id);
-          if (adData.receiving_ports) setSelectedReceivingPorts(adData.receiving_ports);
-          if (adData.export_ports) setSelectedExportPorts(adData.export_ports);
+          // Optionally update color options if category has colors
+          if (adData.category?.colors) setColorOptions(adData.category.colors);
           
           // Set checkboxes
           if (adData.is_chat_enabled !== undefined) setEnableChat(adData.is_chat_enabled);
@@ -276,19 +293,41 @@ export default function CreateAdPage() {
       )
       .finally(() => setCountryLoading(false));
   }, [locale]);
-  // Fetch cities when originCountryId changes
+  // Patch the city effect to add the current city if missing from the fetched list
   useEffect(() => {
-    setOriginCityId(""); // Reset city selection when country changes
     if (!originCountryId) {
       setCityOptions([]);
+      setOriginCityId("");
       return;
     }
     setCityLoading(true);
     setCityError(null);
     fetchCities(originCountryId, locale)
-      .then((data) => setCityOptions(data))
+      .then((data) => {
+        console.log('Fetched cities for country', originCountryId, data);
+        console.log('Current originCityId:', originCityId);
+        let patchedData = data;
+        if (
+          originCityId &&
+          !data.some((city: { id: string }) => city.id === originCityId) &&
+          lastLoadedAdData.current?.origin_city?.id === originCityId
+        ) {
+          patchedData = [
+            ...data,
+            {
+              id: lastLoadedAdData.current.origin_city.id,
+              name: lastLoadedAdData.current.origin_city.name,
+            },
+          ];
+        }
+        setCityOptions(patchedData);
+        if (!patchedData.some((city: { id: string }) => city.id === originCityId)) {
+          setOriginCityId("");
+        }
+      })
       .catch((err) => setCityError(err.message || "Failed to load cities"))
       .finally(() => setCityLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originCountryId, locale]);
 
   // Fetch surfaces on mount
@@ -316,7 +355,9 @@ export default function CreateAdPage() {
   useEffect(() => {
     const cat = categoryOptions.find((c) => c.id === categoryId);
     setColorOptions(cat?.colors || []);
-    setSelectedColors([]); // Reset selected colors when category changes
+    if (selectedColors.some((c) => !(cat?.colors || []).includes(c))) {
+      setSelectedColors([]);
+    }
   }, [categoryId, categoryOptions]);
 
   // Fetch ports on mount
@@ -397,6 +438,84 @@ export default function CreateAdPage() {
     }
   };
 
+  // Helper to get current form state
+  const getFormState = () => ({
+    imageUrls,
+    featured,
+    autoRenew,
+    expressReady,
+    enableChat,
+    contactInfo,
+    surfaceId,
+    originCountryId,
+    originCityId,
+    benefits,
+    defects,
+    saleUnitType,
+    formType,
+    grade,
+    sizeH,
+    sizeW,
+    sizeL,
+    weight,
+    minimumOrder,
+    categoryId,
+    price,
+    description,
+    selectedColors,
+    selectedReceivingPorts,
+    selectedExportPorts,
+  });
+
+  // Helper to check if form is empty
+  const isFormEmpty = () => {
+    const state = getFormState();
+    // Consider empty if all fields are empty/false/[]
+    return (
+      !state.imageUrls.length &&
+      !state.featured &&
+      !state.autoRenew &&
+      !state.expressReady &&
+      !state.enableChat &&
+      !state.contactInfo &&
+      !state.surfaceId &&
+      !state.originCountryId &&
+      !state.originCityId &&
+      !state.benefits &&
+      !state.defects &&
+      !state.saleUnitType &&
+      !state.formType &&
+      !state.grade &&
+      !state.sizeH &&
+      !state.sizeW &&
+      !state.sizeL &&
+      !state.weight &&
+      !state.minimumOrder &&
+      !state.categoryId &&
+      !state.price &&
+      !state.description &&
+      !state.selectedColors.length &&
+      !state.selectedReceivingPorts.length &&
+      !state.selectedExportPorts.length
+    );
+  };
+
+  // Set initial form state after loading ad data
+  useEffect(() => {
+    if (
+      (adId && imageUrls) ||
+      (!adId && !initialFormState.current)
+    ) {
+      initialFormState.current = getFormState();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adId, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts]);
+
+  // Check if form is dirty
+  const isDirty = initialFormState.current
+    ? !isEqual(getFormState(), initialFormState.current)
+    : false;
+
   // Unified submit handler for both actions
   const handleSubmit = async (statusValue: string) => {
     const updateAdPayload = {
@@ -454,6 +573,12 @@ export default function CreateAdPage() {
         toast.success(
           t("adUpdateSuccess", { defaultValue: "Ad updated successfully!" })
         );
+        // Show confirmation for draft
+        if (statusValue === "3") {
+          toast.success(t("draftSaved", { defaultValue: "Draft saved!" }));
+          // Update initial state to current after saving draft
+          initialFormState.current = getFormState();
+        }
       } else {
         toast.error(
           res?.message ||
@@ -595,7 +720,7 @@ export default function CreateAdPage() {
             className="w-full rounded-full py-2 text-base font-semibold border-2"
             onClick={() => handleSubmit("3")}
             type="button"
-            disabled={submitting}
+            disabled={submitting || isFormEmpty() || !isDirty}
           >
             {t("saveDraft")}
           </Button>

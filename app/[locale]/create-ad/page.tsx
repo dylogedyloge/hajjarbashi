@@ -57,6 +57,35 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
 import isEqual from "lodash.isequal";
 
+// Add localStorage utilities for form persistence
+const FORM_STORAGE_KEY = 'create-ad-form-data';
+
+const saveFormToStorage = (formData: any) => {
+  try {
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
+  } catch (error) {
+    console.warn('Failed to save form data to localStorage:', error);
+  }
+};
+
+const loadFormFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(FORM_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    console.warn('Failed to load form data from localStorage:', error);
+    return null;
+  }
+};
+
+const clearFormStorage = () => {
+  try {
+    localStorage.removeItem(FORM_STORAGE_KEY);
+  } catch (error) {
+    console.warn('Failed to clear form data from localStorage:', error);
+  }
+};
+
 type UploadedFile = { path: string; thumb_path: string };
 
 interface SortableImageProps {
@@ -209,9 +238,180 @@ export default function CreateAdPage() {
   const initialFormState = useRef<any>(null);
   // Add a ref to store the last loaded adData for use in the city effect
   const lastLoadedAdData = useRef<any>(null);
+  // Add a ref to track if we're loading from cache to prevent conflicts
+  const isLoadingFromCache = useRef(false);
+
+  // Load cached form data on mount (only if not editing an existing ad)
+  useEffect(() => {
+    if (!adId) {
+      const cachedData = loadFormFromStorage();
+      if (cachedData) {
+        isLoadingFromCache.current = true;
+        console.log('Loading cached form data:', cachedData);
+        
+        // Restore form state from cache
+        if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
+        if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
+        if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
+        if (cachedData.expressReady !== undefined) setExpressReady(cachedData.expressReady);
+        if (cachedData.enableChat !== undefined) setEnableChat(cachedData.enableChat);
+        if (cachedData.contactInfo !== undefined) setContactInfo(cachedData.contactInfo);
+        if (cachedData.surfaceId) setSurfaceId(cachedData.surfaceId);
+        if (cachedData.originCountryId) setOriginCountryId(cachedData.originCountryId);
+        if (cachedData.originCityId) setOriginCityId(cachedData.originCityId);
+        if (cachedData.benefits) setBenefits(cachedData.benefits);
+        if (cachedData.defects) setDefects(cachedData.defects);
+        if (cachedData.saleUnitType) setSaleUnitType(cachedData.saleUnitType);
+        if (cachedData.formType) setFormType(cachedData.formType);
+        if (cachedData.grade) setGrade(cachedData.grade);
+        if (cachedData.sizeH) setSizeH(cachedData.sizeH);
+        if (cachedData.sizeW) setSizeW(cachedData.sizeW);
+        if (cachedData.sizeL) setSizeL(cachedData.sizeL);
+        if (cachedData.weight) setWeight(cachedData.weight);
+        if (cachedData.minimumOrder) setMinimumOrder(cachedData.minimumOrder);
+        if (cachedData.categoryId) setCategoryId(cachedData.categoryId);
+        if (cachedData.price) setPrice(cachedData.price);
+        if (cachedData.description) setDescription(cachedData.description);
+        if (cachedData.selectedColors) setSelectedColors(cachedData.selectedColors);
+        if (cachedData.selectedReceivingPorts) setSelectedReceivingPorts(cachedData.selectedReceivingPorts);
+        if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
+        
+        isLoadingFromCache.current = false;
+      }
+    }
+  }, [adId]);
+
+  // Handle invalid adId - treat as new ad creation
+  const [isValidAdId, setIsValidAdId] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!adId) return;
+    if (!adId) {
+      setIsValidAdId(false);
+      return;
+    }
+
+    const validateAdId = async () => {
+      try {
+        const res = await getAdDetails({
+          id: adId,
+          locale,
+          token: token || undefined,
+        });
+        
+        if (res?.success && res?.data) {
+          setIsValidAdId(true);
+          // This is a valid ad, proceed with normal loading
+        } else {
+          setIsValidAdId(false);
+          // Invalid adId, treat as new ad creation
+          console.log('Invalid adId, treating as new ad creation');
+          
+          // Load cached data if available
+          const cachedData = loadFormFromStorage();
+          if (cachedData) {
+            isLoadingFromCache.current = true;
+            console.log('Loading cached form data for invalid adId:', cachedData);
+            
+            // Restore form state from cache
+            if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
+            if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
+            if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
+            if (cachedData.expressReady !== undefined) setExpressReady(cachedData.expressReady);
+            if (cachedData.enableChat !== undefined) setEnableChat(cachedData.enableChat);
+            if (cachedData.contactInfo !== undefined) setContactInfo(cachedData.contactInfo);
+            if (cachedData.surfaceId) setSurfaceId(cachedData.surfaceId);
+            if (cachedData.originCountryId) setOriginCountryId(cachedData.originCountryId);
+            if (cachedData.originCityId) setOriginCityId(cachedData.originCityId);
+            if (cachedData.benefits) setBenefits(cachedData.benefits);
+            if (cachedData.defects) setDefects(cachedData.defects);
+            if (cachedData.saleUnitType) setSaleUnitType(cachedData.saleUnitType);
+            if (cachedData.formType) setFormType(cachedData.formType);
+            if (cachedData.grade) setGrade(cachedData.grade);
+            if (cachedData.sizeH) setSizeH(cachedData.sizeH);
+            if (cachedData.sizeW) setSizeW(cachedData.sizeW);
+            if (cachedData.sizeL) setSizeL(cachedData.sizeL);
+            if (cachedData.weight) setWeight(cachedData.weight);
+            if (cachedData.minimumOrder) setMinimumOrder(cachedData.minimumOrder);
+            if (cachedData.categoryId) setCategoryId(cachedData.categoryId);
+            if (cachedData.price) setPrice(cachedData.price);
+            if (cachedData.description) setDescription(cachedData.description);
+            if (cachedData.selectedColors) setSelectedColors(cachedData.selectedColors);
+            if (cachedData.selectedReceivingPorts) setSelectedReceivingPorts(cachedData.selectedReceivingPorts);
+            if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
+            
+            isLoadingFromCache.current = false;
+          }
+        }
+      } catch (error) {
+        console.log('AdId validation failed, treating as new ad creation:', error);
+        setIsValidAdId(false);
+        
+        // Load cached data if available
+        const cachedData = loadFormFromStorage();
+        if (cachedData) {
+          isLoadingFromCache.current = true;
+          console.log('Loading cached form data for failed adId:', cachedData);
+          
+          // Restore form state from cache
+          if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
+          if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
+          if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
+          if (cachedData.expressReady !== undefined) setExpressReady(cachedData.expressReady);
+          if (cachedData.enableChat !== undefined) setEnableChat(cachedData.enableChat);
+          if (cachedData.contactInfo !== undefined) setContactInfo(cachedData.contactInfo);
+          if (cachedData.surfaceId) setSurfaceId(cachedData.surfaceId);
+          if (cachedData.originCountryId) setOriginCountryId(cachedData.originCountryId);
+          if (cachedData.originCityId) setOriginCityId(cachedData.originCityId);
+          if (cachedData.benefits) setBenefits(cachedData.benefits);
+          if (cachedData.defects) setDefects(cachedData.defects);
+          if (cachedData.saleUnitType) setSaleUnitType(cachedData.saleUnitType);
+          if (cachedData.formType) setFormType(cachedData.formType);
+          if (cachedData.grade) setGrade(cachedData.grade);
+          if (cachedData.sizeH) setSizeH(cachedData.sizeH);
+          if (cachedData.sizeW) setSizeW(cachedData.sizeW);
+          if (cachedData.sizeL) setSizeL(cachedData.sizeL);
+          if (cachedData.weight) setWeight(cachedData.weight);
+          if (cachedData.minimumOrder) setMinimumOrder(cachedData.minimumOrder);
+          if (cachedData.categoryId) setCategoryId(cachedData.categoryId);
+          if (cachedData.price) setPrice(cachedData.price);
+          if (cachedData.description) setDescription(cachedData.description);
+          if (cachedData.selectedColors) setSelectedColors(cachedData.selectedColors);
+          if (cachedData.selectedReceivingPorts) setSelectedReceivingPorts(cachedData.selectedReceivingPorts);
+          if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
+          
+          isLoadingFromCache.current = false;
+        }
+      }
+    };
+
+    validateAdId();
+  }, [adId, token, locale]);
+
+  // Save form data to localStorage whenever it changes (debounced)
+  useEffect(() => {
+    if (adId || isLoadingFromCache.current) return; // Don't save when editing existing ad or loading from cache
+    
+    const timeoutId = setTimeout(() => {
+      const formData = getFormState();
+      saveFormToStorage(formData);
+    }, 500); // Debounce saves to avoid excessive localStorage writes
+    
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo,
+    surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType,
+    formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId,
+    price, description, selectedColors, selectedReceivingPorts, selectedExportPorts
+  ]);
+
+  // Clear storage when form is successfully submitted
+  const clearFormCache = () => {
+    clearFormStorage();
+  };
+
+  useEffect(() => {
+    if (!adId || isValidAdId === false) return; // Don't load if no adId or if adId is invalid
     (async () => {
       try {
         const res = await getAdDetails({
@@ -280,7 +480,7 @@ export default function CreateAdPage() {
         console.error(err);
       }
     })();
-  }, [adId, token, locale]);
+  }, [adId, token, locale, isValidAdId]);
 
   // Fetch countries on mount
   useEffect(() => {
@@ -579,6 +779,8 @@ export default function CreateAdPage() {
           // Update initial state to current after saving draft
           initialFormState.current = getFormState();
         }
+        // Clear form cache on successful submission
+        clearFormCache();
       } else {
         toast.error(
           res?.message ||
@@ -594,6 +796,41 @@ export default function CreateAdPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Handle discard button click
+  const handleDiscard = () => {
+    // Clear all form data
+    setImageUrls([]);
+    setFeatured(true);
+    setAutoRenew(false);
+    setExpressReady(false);
+    setEnableChat(false);
+    setContactInfo(false);
+    setSurfaceId("");
+    setOriginCountryId("");
+    setOriginCityId("");
+    setBenefits("");
+    setDefects("");
+    setSaleUnitType("");
+    setFormType("");
+    setGrade("");
+    setSizeH("");
+    setSizeW("");
+    setSizeL("");
+    setWeight("");
+    setMinimumOrder("");
+    setCategoryId("");
+    setPrice("");
+    setDescription("");
+    setSelectedColors([]);
+    setSelectedReceivingPorts([]);
+    setSelectedExportPorts([]);
+    
+    // Clear form cache
+    clearFormCache();
+    
+    toast.success(t("formCleared", { defaultValue: "Form cleared!" }));
   };
 
   return (
@@ -727,6 +964,7 @@ export default function CreateAdPage() {
           <Button
             variant="destructive"
             className="w-full rounded-full py-2 text-base font-semibold"
+            onClick={handleDiscard}
           >
             {t("discard")}
           </Button>

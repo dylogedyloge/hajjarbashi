@@ -179,7 +179,7 @@ export async function fetchPorts(lang: string) {
   return data.data || [];
 }
 
-export async function fetchAds({ limit, page, locale, user_id }: { limit: number; page: number; locale: string; user_id?: string }) {
+export async function fetchAds({ limit, page, locale, user_id, token }: { limit: number; page: number; locale: string; user_id?: string; token?: string }) {
   const params = new URLSearchParams({
     limit: limit.toString(),
     page: page.toString(),
@@ -189,11 +189,20 @@ export async function fetchAds({ limit, page, locale, user_id }: { limit: number
     params.append('user_id', user_id);
   }
   
+  const headers: Record<string, string> = {
+    'x-lang': locale,
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  console.log('🔍 fetchAds headers:', headers);
+  console.log('🔍 fetchAds URL:', `${API_BASE_URL}/ads/explore?${params.toString()}`);
+  
   const response = await fetch(`${API_BASE_URL}/ads/explore?${params.toString()}`, {
     method: 'GET',
-    headers: {
-      'x-lang': locale,
-    },
+    headers,
   });
   if (!response.ok) {
     throw new Error('Failed to fetch ads');

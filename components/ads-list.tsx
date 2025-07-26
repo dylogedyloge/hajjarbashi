@@ -8,6 +8,7 @@ import { fetchAds } from "@/lib/advertisements";
 import MobileSearchAndFilter from "./sortSearchFilters/mobile/mobile-search-and-filter";
 import MobileCategoryFilters from "./sortSearchFilters/mobile/mobile-category-filters";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 
 // Define the Ad type matching the API
 export type Ad = {
@@ -74,6 +75,7 @@ export type Ad = {
 
 const AdsList = () => {
   const locale = useLocale();
+  const { token } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +83,7 @@ const AdsList = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetchAds({ limit: 10, page: 1, locale })
+    fetchAds({ limit: 10, page: 1, locale, token: token || undefined })
       .then((res) => {
         // Handle new API response structure with data.list
         const adsList = res.data?.list || res.data || [];
@@ -89,7 +91,7 @@ const AdsList = () => {
       })
       .catch((err) => setError(err.message || "Failed to load ads"))
       .finally(() => setLoading(false));
-  }, [locale]);
+  }, [locale, token]);
 
   if (loading) return <div className="text-center py-8">Loading ads...</div>;
   if (error) return <div className="text-center text-destructive py-8">{error}</div>;

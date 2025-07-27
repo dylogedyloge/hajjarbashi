@@ -89,7 +89,7 @@ export default async function Page(props: unknown) {
       {/* Breadcrumbs and Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="text-sm text-muted-foreground">
-          Home &gt; Products &gt; Stone Blocks
+          Home &gt; Products &gt; {ad.category?.name || "Products"}
         </div>
         <div className="flex items-center gap-3">
           {/* <div className="flex gap-2">
@@ -117,7 +117,7 @@ export default async function Page(props: unknown) {
             <AdImageGallery
               mainImageUrl={mainImageUrl}
               galleryImages={galleryImages}
-              alt={ad.category?.name || "Ad image"}
+              alt={ad.category?.name || ad.stone_type || "Product image"}
             />
             {/* Featured Badge */}
             {ad.is_featured && (
@@ -138,7 +138,7 @@ export default async function Page(props: unknown) {
               {/* Product Title and Actions */}
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-foreground">
-                  {ad.category?.name || ad.stone_type || "Negro Marquina Travertine Blocks"}
+                  {ad.category?.name || ad.stone_type || "Product"}
                 </h1>
                 <div className="flex gap-2">
                   <BookmarkButton 
@@ -154,10 +154,17 @@ export default async function Page(props: unknown) {
                 </div>
               </div>
 
+              {/* Description */}
+              {ad.description && (
+                <div className="text-sm text-muted-foreground">
+                  {ad.description}
+                </div>
+              )}
+
               {/* Price and Colors */}
               <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold text-foreground">
-                  ${ad.price?.toLocaleString?.()} <span className="text-lg text-muted-foreground">/{ad.sale_unit_type || "KG"}</span>
+                  ${ad.price?.toLocaleString?.()} <span className="text-lg text-muted-foreground">/{ad.sale_unit_type || "unit"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Colors:</span>
@@ -189,7 +196,7 @@ export default async function Page(props: unknown) {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Min Order:</span>
-                  <span className="font-semibold text-foreground">{ad.minimum_order?.toLocaleString?.()} {ad.sale_unit_type || "KG"}</span>
+                  <span className="font-semibold text-foreground">{ad.minimum_order?.toLocaleString?.()} {ad.sale_unit_type || "unit"}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Dims:</span>
@@ -199,7 +206,7 @@ export default async function Page(props: unknown) {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Weight:</span>
-                  <span className="font-semibold text-foreground">{ad.weight?.toLocaleString?.()} KG</span>
+                  <span className="font-semibold text-foreground">{ad.weight?.toLocaleString?.()} {ad.sale_unit_type || "KG"}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Origin:</span>
@@ -210,13 +217,47 @@ export default async function Page(props: unknown) {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Grade:</span>
-                  <span className="font-semibold text-foreground">{ad.grade || "A Grade"}</span>
+                  <span className="font-semibold text-foreground">{ad.grade?.toUpperCase() || "A Grade"}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Surface:</span>
-                  <span className="font-semibold text-foreground">{ad.surface?.name || "Bush-Hammered"}</span>
+                  <span className="font-semibold text-foreground">{ad.surface?.name || "Raw"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Form:</span>
+                  <span className="font-semibold text-foreground">{ad.form || "Block"}</span>
                 </div>
               </div>
+
+              {/* Benefits and Defects */}
+              {(ad.benefits?.length > 0 || ad.defects?.length > 0) && (
+                <div className="space-y-2">
+                  {ad.benefits?.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-1">Benefits:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {ad.benefits.map((benefit: string, index: number) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {benefit}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {ad.defects?.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-1">Defects:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {ad.defects.map((defect: string, index: number) => (
+                          <Badge key={index} variant="destructive" className="text-xs">
+                            {defect}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Supplier Section */}
               <div className="pt-2">
@@ -226,7 +267,7 @@ export default async function Page(props: unknown) {
                     <span className="text-white text-xs font-bold">R</span>
                   </div>
                   <span className="font-semibold text-foreground">
-                    {creatorProfile?.company_name || "XIAMEN REFINESTONE INDUSTRIAL CO"}
+                    {creatorProfile?.company_name || "Unknown Company"}
                   </span>
                   <div className="w-4 h-4 bg-orange-500 rounded-sm flex items-center justify-center">
                     <span className="text-white text-xs font-bold">V</span>
@@ -244,10 +285,10 @@ export default async function Page(props: unknown) {
               {/* Port Information */}
               <div className="flex justify-between items-center pt-1">
                 <span className="text-sm text-muted-foreground">
-                  Prot: {ad.origin_country?.name || "Iran"} - {ad.origin_city?.name || "Bandar-Abbas"} - Rajaii
+                  Port: {ad.origin_country?.name || "Unknown"} - {ad.origin_city?.name || "Unknown"} - {ad.export_ports_details?.[0]?.name || "Unknown"}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  Resive Port: <span className="text-primary underline">Show Details</span>
+                  Receive Port: <span className="text-primary underline">Show Details</span>
                 </span>
               </div>
 

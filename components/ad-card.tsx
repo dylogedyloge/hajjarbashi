@@ -5,8 +5,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useState } from "react";
 // import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { createBookmark, deleteBookmark } from "@/lib/advertisements";
-import { useAuth } from "@/lib/auth-context";
+// import { createBookmark, deleteBookmark } from "@/lib/advertisements";
+// import { useAuth } from "@/lib/auth-context";
 import { formatRelativeTime } from "@/lib/utils";
 import * as CountryFlags from "country-flag-icons/react/3x2";
 
@@ -79,9 +79,9 @@ interface AdCardProps {
 const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardProps) => {
   const t = useTranslations("AdCard");
   const locale = useLocale();
-  const { token, isAuthenticated } = useAuth();
-  const [isBookmarked, setIsBookmarked] = useState(ad.bookmarked || isFromBookmarksPage);
-  const [isBookmarking, setIsBookmarking] = useState(false);
+  // const { token, isAuthenticated } = useAuth();
+  // const [isBookmarked, setIsBookmarked] = useState(ad.bookmarked || isFromBookmarksPage);
+  // const [isBookmarking, setIsBookmarking] = useState(false);
   
   // Prefer ad.colors (array) over ad.color (string)
   // const colorArray = Array.isArray(ad.colors)
@@ -317,7 +317,16 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
     const countryName = ad.origin_country.name.toLowerCase();
     const isoCode = countryToISO[countryName];
     
-    if (!isoCode) return null;
+    if (!isoCode) {
+      // Fallback - show country initials
+      return (
+        <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+          <span className="text-white text-xs font-bold">
+            {ad.origin_country.name.substring(0, 2).toUpperCase()}
+          </span>
+        </div>
+      );
+    }
     
     const FlagComponent = (CountryFlags as any)[isoCode];
     return FlagComponent ? <FlagComponent className="w-4 h-4" /> : null;

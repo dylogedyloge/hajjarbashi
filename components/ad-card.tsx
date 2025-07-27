@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { Clock, Weight, Zap, Bookmark, Star} from "lucide-react";
+import {  Zap, Bookmark, Star} from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
-import { Button } from "./ui/button";
+// import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { createBookmark, deleteBookmark } from "@/lib/advertisements";
 import { useAuth } from "@/lib/auth-context";
@@ -398,20 +398,47 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
           {/* Overlay Icons */}
           <div className="absolute bottom-3 left-3 flex gap-2">
             {ad.express && (
-              <div className="bg-gray-100 rounded-lg p-1.5">
-                <Zap className="w-4 h-4 text-red-500" />
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="bg-gray-100 rounded-lg p-1.5 cursor-help">
+                      <Zap className="w-4 h-4 text-red-500" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Express</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
-                          {ad.bookmarked && (
-                <div className="bg-gray-100 rounded-lg p-1.5">
-                  <Bookmark className="w-4 h-4 text-blue-500" />
-                </div>
-              )}
-              {ad.is_featured && (
-                <div className="bg-yellow-100 rounded-lg p-1.5">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                </div>
-              )}
+            {ad.bookmarked && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="bg-gray-100 rounded-lg p-1.5 cursor-help">
+                      <Bookmark className="w-4 h-4 text-blue-500" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Bookmarked</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {ad.is_featured && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="bg-yellow-100 rounded-lg p-1.5 cursor-help">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Featured</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </div>
 
@@ -432,9 +459,36 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
             
             {/* Status Indicators */}
             <div className="flex -space-x-1">
-              <div className="w-4 h-4 bg-black rounded-full border border-white"></div>
-              <div className="w-4 h-4 bg-orange-500 rounded-full border border-white"></div>
-              <div className="w-4 h-4 bg-green-500 rounded-full border border-white"></div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-4 h-4 bg-black rounded-full border border-white cursor-help"></div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Black</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-4 h-4 bg-orange-500 rounded-full border border-white cursor-help"></div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Orange</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-4 h-4 bg-green-500 rounded-full border border-white cursor-help"></div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Green</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
 

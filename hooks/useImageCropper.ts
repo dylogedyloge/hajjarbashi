@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Crop } from 'react-image-crop';
-import { centerAspectCrop, cropImage, createObjectURL, revokeObjectURL } from '@/lib/image-utils';
+import { centerAspectCrop, cropImage, createObjectURL, revokeObjectURL } from '@/utils/image-utils';
 import { validateImageFile } from '@/lib/file-validation';
 
 interface UseImageCropperOptions {

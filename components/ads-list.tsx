@@ -9,6 +9,8 @@ import MobileSearchAndFilter from "./sortSearchFilters/mobile/mobile-search-and-
 import MobileCategoryFilters from "./sortSearchFilters/mobile/mobile-category-filters";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { LayoutGrid, List } from "lucide-react";
 
 // Define the Ad type matching the API
 export type Ad = {
@@ -79,6 +81,7 @@ const AdsList = () => {
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [layout, setLayout] = useState<'list' | 'grid'>('list');
 
   useEffect(() => {
     setLoading(true);
@@ -110,11 +113,39 @@ const AdsList = () => {
       <div className="hidden md:block">
         <DesktopSortAndCheckboxFilters />
       </div>
-      {ads.map((ad) => (
-        <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
-          <AdCard ad={ad} />
-        </Link>
-      ))}
+      
+      {/* Layout Toggle */}
+      <div className="flex justify-end mb-4">
+        <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+          <Button
+            variant={layout === 'list' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setLayout('list')}
+            className="h-8 px-3"
+          >
+            <List className="w-4 h-4" />
+            <span className="ml-2 text-xs">List</span>
+          </Button>
+          <Button
+            variant={layout === 'grid' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setLayout('grid')}
+            className="h-8 px-3"
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="ml-2 text-xs">Grid</span>
+          </Button>
+        </div>
+      </div>
+      
+      {/* Ads Container */}
+      <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'flex flex-col gap-8'}>
+        {ads.map((ad) => (
+          <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
+            <AdCard ad={ad} isGrid={layout === 'grid'} />
+          </Link>
+        ))}
+      </div>
     </div>
   );
 };

@@ -74,10 +74,12 @@ interface AdCardProps {
   };
   onBookmarkChange?: (isBookmarked: boolean) => void;
   isFromBookmarksPage?: boolean;
+  isGrid?: boolean;
 }
 
 const AdCard = ({ ad,
   //  onBookmarkChange, isFromBookmarksPage = false
+   isGrid = false
    }: AdCardProps) => {
   const t = useTranslations("AdCard");
   const locale = useLocale();
@@ -392,13 +394,13 @@ const AdCard = ({ ad,
 
       <div className="flex flex-col md:flex-row">
         {/* Left Section - Image */}
-        <div className="relative md:w-80 w-full aspect-square md:aspect-auto flex-shrink-0">
+        <div className="relative md:w-48 w-full aspect-square md:aspect-auto flex-shrink-0">
           {imageSrc && imageSrc !== "" ? (
             <Image
               src={imageSrc}
               alt={ad.stone_type || ad.category?.name || "Ad image"}
               fill
-              className="object-cover w-full h-full md:static md:w-80 md:h-64"
+              className="object-cover w-full h-full md:static md:w-48 md:h-36"
             />
           ) : (
             <div className="bg-muted w-full h-full flex items-center justify-center text-muted-foreground text-xs">
@@ -407,13 +409,13 @@ const AdCard = ({ ad,
           )}
           
           {/* Overlay Icons */}
-          <div className="absolute bottom-3 left-3 flex gap-2">
+          <div className="absolute bottom-2 left-2 flex gap-1">
             {ad.express && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="bg-gray-100 rounded-lg p-1.5 cursor-help">
-                      <Zap className="w-4 h-4 text-red-500" />
+                    <div className="bg-white rounded-md p-1 cursor-help shadow-sm">
+                      <Zap className="w-3 h-3 text-red-500" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -426,8 +428,8 @@ const AdCard = ({ ad,
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="bg-gray-100 rounded-lg p-1.5 cursor-help">
-                      <Bookmark className="w-4 h-4 text-blue-500" />
+                    <div className="bg-white rounded-md p-1 cursor-help shadow-sm">
+                      <Bookmark className="w-3 h-3 text-blue-500" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -440,8 +442,8 @@ const AdCard = ({ ad,
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="bg-yellow-100 rounded-lg p-1.5 cursor-help">
-                      <Star className="w-4 h-4 text-yellow-500" />
+                    <div className="bg-white rounded-md p-1 cursor-help shadow-sm">
+                      <Star className="w-3 h-3 text-yellow-500" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -454,9 +456,9 @@ const AdCard = ({ ad,
         </div>
 
         {/* Right Section - Content */}
-        <div className="flex-1 p-6 flex flex-col justify-between">
+        <div className="flex-1 p-4 flex flex-col justify-between">
           {/* Header Row */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               {getCountryFlag() || (
                 <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
@@ -464,7 +466,7 @@ const AdCard = ({ ad,
                 </div>
               )}
               <span className="text-sm text-muted-foreground font-medium">
-                {ad.origin_country?.name}
+               {ad.origin_country?.name}
               </span>
             </div>
             
@@ -473,7 +475,7 @@ const AdCard = ({ ad,
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="w-4 h-4 bg-black rounded-full border border-white cursor-help"></div>
+                    <div className="w-3 h-3 bg-black rounded-full border border-white cursor-help"></div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Black</p>
@@ -483,7 +485,7 @@ const AdCard = ({ ad,
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="w-4 h-4 bg-orange-500 rounded-full border border-white cursor-help"></div>
+                    <div className="w-3 h-3 bg-orange-500 rounded-full border border-white cursor-help"></div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Orange</p>
@@ -493,7 +495,7 @@ const AdCard = ({ ad,
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="w-4 h-4 bg-green-500 rounded-full border border-white cursor-help"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full border border-white cursor-help"></div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Green</p>
@@ -504,25 +506,22 @@ const AdCard = ({ ad,
           </div>
 
           {/* Product Title */}
-          <h3 className="text-xl font-bold text-foreground mb-2">
+          <h3 className={`font-bold text-foreground mb-2 ${isGrid ? 'text-base' : 'text-lg'}`}>
             {ad.stone_type || ad.category?.name || "Negro Marquina Travertine Blocks"}
           </h3>
 
-          {/* Description */}
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {ad.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore ..."}
-          </p>
+          {/* Description - Only show in list view */}
+          {!isGrid && (
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+              {ad.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore ..."}
+            </p>
+          )}
 
           {/* Specifications Tags */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-3">
             {ad.size && typeof ad.size === "object" && (
               <Badge variant="secondary" className="text-xs">
                 {ad.size.h ?? "-"}×{ad.size.w ?? "-"}×{ad.size.l ?? "-"} CM
-              </Badge>
-            )}
-            {ad.weight && (
-              <Badge variant="secondary" className="text-xs">
-                {ad.weight.toLocaleString()} KG
               </Badge>
             )}
             {ad.surface && (
@@ -535,12 +534,12 @@ const AdCard = ({ ad,
           {/* Price and Time */}
           <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-foreground">
+              <span className={`font-bold text-foreground ${isGrid ? 'text-sm' : 'text-xl'}`}>
                 {locale === "fa"
-                  ? `${ad.price?.toLocaleString?.()} ${t("usd")}`
-                  : `${t("usd")} ${ad.price?.toLocaleString?.()}`}
+                  ? `${ad.price?.toLocaleString?.()} $`
+                  : `$ ${ad.price?.toLocaleString?.()}`}
               </span>
-              <span className="text-sm text-muted-foreground">
+              <span className={`text-muted-foreground ${isGrid ? 'text-xs' : 'text-sm'}`}>
                 /{getPriceUnit()?.toLowerCase?.()}
               </span>
             </div>

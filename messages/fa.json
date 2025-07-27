@@ -10,7 +10,8 @@
       "searchPlaceholder": "جستجو...",
       "clear": "پاک کردن",
       "signInSignUp": "ورود",
-      "logout": "خروج"
+      "logout": "خروج",
+      "completeProfile": "تکمیل پروفایل"
     },
     "Footer": {
       "stockImage": "تصویر نمونه",
@@ -39,7 +40,33 @@
       "size": "سایز",
       "weight": "وزن",
       "kg": "کیلوگرم",
-      "sourcePort": "مبدا ارسال"
+      "sourcePort": "مبدا ارسال",
+      "exportPort": "مبدا صادرات",
+      "receivingPort": "مقصد تحویل",
+      "benefits": "مزایا",
+      "defects": "مشکلات",
+      "chatEnabled": "فعال‌سازی چت",
+      "contactInfo": "اطلاعات تماس",
+      "express": "فوری",
+      "notSpecified": "مشخص نشده",
+      "published": "انتشار یافته",
+      "draft": "پیش‌نویس",
+      "waiting": "درحال انتظار",
+      "rejected": "رد شده",
+      "deleted": "حذف شده",
+      "expired": "منقضی شده",
+      "temp": "موقت",
+      "unknown": "ناشناخته",
+      "price": "قیمت",
+      "colors": "رنگ‌ها",
+      "category": "دسته‌بندی",
+      "grade": "درجه",
+      "minOrder": "حداقل سفارش",
+      "saleUnitType": "نوع فروش واحد",
+      "originCountry": "کشور مبدا",
+      "originCity": "شهر مبدا",
+      "receivingPorts": "مبدا تحویل",
+      "exportPorts": "مبدا صادرات"
     },
 "DesktopFilters": {
       "form": "فرم",
@@ -421,6 +448,11 @@
         "description": "به‌روزرسانی شماره موبایل و آدرس ایمیل",
         "phoneNumber": "شماره موبایل",
         "emailAddress": "آدرس ایمیل"
+      },
+      "language": {
+        "updateSuccess": "زبان با موفقیت به‌ فارسی بروزرسانی شد",
+        "updateError": "به‌روزرسانی زبان ناموفق بود",
+        "authenticationRequired": "احراز هویت مورد نیاز است"
       },
       "password": {
         "title": "رمز عبور",

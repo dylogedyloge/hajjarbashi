@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
 import { initAdvertisement } from "@/lib/advertisements";
 import { useAuth } from "@/lib/auth-context";
+import { toast } from "sonner";
 
 interface CreateAdvertisementButtonProps {
   floating?: boolean;
@@ -25,14 +26,27 @@ const CreateAdvertisementButton = ({
     }
     try {
       const res = await initAdvertisement(locale, token);
+      console.log("API Response:", res); // Debug log to see the actual response
       if (res?.success && res?.data?.id) {
-        console.log("Advertisement ID:", res.data.id);
+        // console.log("Advertisement ID:", res.data.id);
         router.push(`/${locale}/create-ad?id=${res.data.id}`);
+      } else {
+        // Show error toast with the actual error message from the response
+        console.log("Error response:", res); // Debug log to see error response
+        const errorMessage = res?.message || "Failed to initialize advertisement";
+        console.log("Error message to show:", errorMessage); // Debug log
+        toast.error(res.message);
       }
-      // If not successful, do not navigate
     } catch (error) {
       console.error("Failed to initialize advertisement:", error);
-      // Do not navigate on error
+      // Show error toast with the actual error message and action button
+      const errorMessage = error instanceof Error ? error.message : "Failed to initialize advertisement";
+      toast.error(errorMessage, {
+        action: {
+          label: t("completeProfile") || "Complete Profile",
+          onClick: () => router.push(`/${locale}/profile/settings`),
+        },
+      });
     }
   };
   if (floating) {

@@ -41,6 +41,7 @@ const ChatBox = dynamic(() => import("./ChatBox"), { ssr: false });
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DialogTitle } from "@/components/ui/dialog";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
+import { updateLanguage } from "@/lib/profile";
 // import { useRef } from "react";
 
 const Header = () => {
@@ -50,7 +51,7 @@ const Header = () => {
   const params = useParams();
   const currentLocale = (params?.locale as string) || "en";
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, token } = useAuth();
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInitialUser, setChatInitialUser] = useState(null);
   const { isRTL } = useLocaleDirection();
@@ -85,8 +86,25 @@ const Header = () => {
 
   // Handle language change
   const handleLanguageChange = (newLanguage: string) => {
+    // First, immediately change the language on client side
     const locale = newLanguage.toLowerCase();
     intlRouter.replace(pathname, { locale });
+    
+    // Then, try to save the preference to the server (don't block the UI)
+    if (!token) {
+      // If no token, just change the language locally without showing error
+      return;
+    }
+
+    // Convert language code to API format (EN -> en, FA -> fa)
+    const apiLanguage = newLanguage.toLowerCase();
+    
+    // Call API to update language preference (fire and forget)
+    updateLanguage({ language: apiLanguage, token: token || undefined }).catch((error) => {
+      console.error("Failed to update language on server:", error);
+      // Don't show error toast to avoid disrupting the user experience
+      // The language change still worked locally
+    });
   };
 
   return (

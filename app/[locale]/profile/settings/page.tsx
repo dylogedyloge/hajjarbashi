@@ -27,7 +27,7 @@ import { useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { GB, IR } from "country-flag-icons/react/3x2";
-import { deleteAccount } from "@/lib/profile";
+import { deleteAccount, updateLanguage } from "@/lib/profile";
 import { upsertPhoneRequest, authService, upsertEmailRequest } from '@/lib/auth';
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
@@ -227,9 +227,27 @@ export default function SettingsPage() {
   }, [currentLocale]);
 
   // Handle language change
-  const handleLanguageChange = (newLanguage: string) => {
+  const handleLanguageChange = async (newLanguage: string) => {
+    // First, immediately change the language on client side
+    setLanguage(newLanguage);
     const locale = newLanguage.toLowerCase();
     intlRouter.replace(pathname, { locale });
+    
+    // Then, try to save the preference to the server (don't block the UI)
+    if (!token) {
+      // If no token, just change the language locally without showing error
+      return;
+    }
+
+    // Convert language code to API format (EN -> en, FA -> fa)
+    const apiLanguage = newLanguage.toLowerCase();
+    
+    // Call API to update language preference (fire and forget)
+    updateLanguage({ language: apiLanguage, token: token || undefined }).catch((error) => {
+      console.error("Failed to update language on server:", error);
+      // Don't show error toast to avoid disrupting the user experience
+      // The language change still worked locally
+    });
   };
 
   useEffect(() => {

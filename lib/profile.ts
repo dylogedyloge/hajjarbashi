@@ -248,4 +248,38 @@ export async function deleteAccount({ locale, token }: { locale: string; token: 
   const result = await response.json();
   console.log('✅ Delete account success:', result);
   return result;
+}
+
+export async function updateLanguage({ language, token }: { language: string; token?: string }) {
+  console.log('🌐 Updating user language');
+  console.log('📡 API URL:', `${API_BASE_URL}/users/language`);
+  console.log('🔑 Token:', token ? 'Present' : 'Missing');
+  console.log('🌐 Language:', language);
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/users/language`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ language }),
+  });
+  
+  console.log('📊 Response status:', response.status);
+  console.log('📊 Response ok:', response.ok);
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Failed to update language: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+  
+  const result = await response.json();
+  console.log('✅ Update language success:', result);
+  return result;
 } 

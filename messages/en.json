@@ -10,7 +10,8 @@
       "searchPlaceholder": "Search Anything..",
       "clear": "Clear",
       "signInSignUp": "Sign In",
-      "logout": "Logout"
+      "logout": "Logout",
+      "completeProfile": "Complete Profile"
     },
     "Footer": {
       "stockImage": "Stock Image",
@@ -39,7 +40,35 @@
       "size": "Size",
       "weight": "Weight",
       "kg": "KG",
-      "sourcePort": "Source Port"
+      "sourcePort": "Source Port",
+      "exportPort": "Export Port",
+      "receivingPort": "Receiving Port",
+      "benefits": "Benefits",
+      "defects": "Defects",
+      "chatEnabled": "Chat Enabled",
+      "contactInfo": "Contact Info",
+      "express": "Express",
+      "notSpecified": "Not specified",
+      "published": "Published",
+      "draft": "Draft",
+      "waiting": "Waiting",
+      "rejected": "Rejected",
+      "deleted": "Deleted",
+      "expired": "Expired",
+      "temp": "Temporary",
+      "unknown": "Unknown",
+      "price": "Price",
+      "colors": "Colors",
+      "category": "Category",
+      "grade": "Grade",
+      "minOrder": "Min Order",
+      "saleUnitType": "Sale Unit Type",
+      "originCountry": "Origin Country",
+      "originCity": "Origin City",
+    
+      "receivingPorts": "Receiving Ports",
+      "exportPorts": "Export Ports"
+    
     },
     "DesktopFilters": {
       "form": "Form",
@@ -419,6 +448,11 @@
         "description": "Update your phone number and email address",
         "phoneNumber": "Phone Number",
         "emailAddress": "Email Address"
+      },
+      "language": {
+        "updateSuccess": "Language updated successfully to English",
+        "updateError": "Failed to update language",
+        "authenticationRequired": "Authentication required"
       },
       "password": {
         "title": "Password",

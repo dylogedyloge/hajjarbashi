@@ -9,10 +9,16 @@ export async function initAdvertisement(locale: string, token: string) {
       "Authorization": `Bearer ${token}`,
     },
   });
+  
+  // Parse the response body once
+  const responseData = await response.json();
+  
   if (!response.ok) {
-    throw new Error(`Failed to initialize advertisement: ${response.statusText}`);
+    // Use the parsed response data for error message
+    throw new Error(responseData.message || `Failed to initialize advertisement: ${response.statusText}`);
   }
-  return response.json();
+  
+  return responseData;
 }
 
 export async function uploadAdMedia({

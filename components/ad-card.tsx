@@ -2,7 +2,7 @@ import Image from "next/image";
 import {  Zap, Bookmark, Star} from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useState } from "react";
+// import { useState } from "react";
 // import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 // import { createBookmark, deleteBookmark } from "@/lib/advertisements";
@@ -76,7 +76,9 @@ interface AdCardProps {
   isFromBookmarksPage?: boolean;
 }
 
-const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardProps) => {
+const AdCard = ({ ad,
+  //  onBookmarkChange, isFromBookmarksPage = false
+   }: AdCardProps) => {
   const t = useTranslations("AdCard");
   const locale = useLocale();
   // const { token, isAuthenticated } = useAuth();

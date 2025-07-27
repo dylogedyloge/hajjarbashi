@@ -190,7 +190,7 @@ const AdCard = ({ ad,
             />
           ) : (
             <div className="bg-muted w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-              No image
+              {t("noImage")}
             </div>
           )}
           
@@ -205,7 +205,7 @@ const AdCard = ({ ad,
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Express</p>
+                    <p>{t("express")}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -219,7 +219,7 @@ const AdCard = ({ ad,
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Bookmarked</p>
+                    <p>{t("bookmarked")}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -233,7 +233,7 @@ const AdCard = ({ ad,
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Featured</p>
+                    <p>{t("featured")}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -258,48 +258,53 @@ const AdCard = ({ ad,
             
             {/* Status Indicators */}
             <div className="flex -space-x-1">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-3 h-3 bg-black rounded-full border border-white cursor-help"></div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Black</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-3 h-3 bg-orange-500 rounded-full border border-white cursor-help"></div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Orange</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-3 h-3 bg-green-500 rounded-full border border-white cursor-help"></div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Green</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {(ad.colors || ad.category?.colors || []).map((color, index) => {
+                const colorMap: Record<string, { bg: string; name: string }> = {
+                  black: { bg: "bg-black", name: t("black") },
+                  white: { bg: "bg-white", name: t("white") },
+                  gray: { bg: "bg-gray-500", name: t("gray") },
+                  green: { bg: "bg-green-500", name: t("green") },
+                  blue: { bg: "bg-blue-500", name: t("blue") },
+                  red: { bg: "bg-red-500", name: t("red") },
+                  yellow: { bg: "bg-yellow-500", name: t("yellow") },
+                  orange: { bg: "bg-orange-500", name: t("orange") },
+                  purple: { bg: "bg-purple-500", name: t("purple") },
+                  pink: { bg: "bg-pink-500", name: t("pink") },
+                  brown: { bg: "bg-amber-700", name: t("brown") },
+                  beige: { bg: "bg-amber-200", name: t("beige") },
+                  cream: { bg: "bg-yellow-100", name: t("cream") },
+                  gold: { bg: "bg-yellow-400", name: t("gold") },
+                  silver: { bg: "bg-gray-400", name: t("silver") },
+                  bronze: { bg: "bg-orange-700", name: t("bronze") }
+                };
+                
+                const colorInfo = colorMap[color.toLowerCase()] || { bg: "bg-gray-400", name: color };
+                
+                return (
+                  <TooltipProvider key={index}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className={`w-3 h-3 ${colorInfo.bg} rounded-full border border-white cursor-help`}></div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{colorInfo.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              })}
             </div>
           </div>
 
           {/* Product Title */}
           <h3 className={`font-bold text-foreground mb-2 ${isGrid ? 'text-base' : 'text-lg'}`}>
-            {ad.stone_type || ad.category?.name || "Negro Marquina Travertine Blocks"}
+            {ad.stone_type || ad.category?.name || t("defaultProductName")}
           </h3>
 
           {/* Description - Only show in list view */}
           {!isGrid && (
             <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-              {ad.description || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore ..."}
+              {ad.description || t("defaultDescription")}
             </p>
           )}
 
@@ -307,7 +312,7 @@ const AdCard = ({ ad,
           <div className="flex flex-wrap gap-2 mb-3">
             {ad.size && typeof ad.size === "object" && (
               <Badge variant="secondary" className="text-xs">
-                {ad.size.h ?? "-"}×{ad.size.w ?? "-"}×{ad.size.l ?? "-"} CM
+                {ad.size.h ?? "-"}×{ad.size.w ?? "-"}×{ad.size.l ?? "-"} {t("cm")}
               </Badge>
             )}
             {ad.surface && (

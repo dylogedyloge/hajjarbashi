@@ -17,12 +17,6 @@ import { getCountryFlag } from "@/utils/country-utils";
 import ActionButtons from "@/components/ActionButtons";
 import BookmarkButton from "@/components/BookmarkButton";
 
-type Port = {
-  id: string;
-  name: string;
-  city_name?: string;
-};
-
 type Media = { media_thumb_path?: string; media_path?: string };
 
 export default async function Page(props: unknown) {
@@ -66,18 +60,7 @@ export default async function Page(props: unknown) {
   // Colors
   const colorArray = Array.isArray(ad.colors) ? ad.colors : [];
 
-  // Ports
-  const receivingPorts = Array.isArray(ad.receiving_ports_details)
-    ? ad.receiving_ports_details
-    : [];
-  const exportPorts = Array.isArray(ad.export_ports_details)
-    ? ad.export_ports_details
-    : [];
 
-  // Combine main image and gallery images, remove duplicates and falsy
-  const allImages = [mainImageUrl, ...galleryImages].filter(
-    (img, idx, arr) => img && arr.indexOf(img) === idx
-  );
 
   // Get country flag component
   const getCountryFlagComponent = () => {

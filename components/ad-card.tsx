@@ -84,11 +84,11 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
   const [isBookmarking, setIsBookmarking] = useState(false);
   
   // Prefer ad.colors (array) over ad.color (string)
-  const colorArray = Array.isArray(ad.colors)
-    ? ad.colors
-    : typeof ad.color === "string"
-    ? ad.color.split(/[,\s]+/).filter(Boolean)
-    : [];
+  // const colorArray = Array.isArray(ad.colors)
+  //   ? ad.colors
+  //   : typeof ad.color === "string"
+  //   ? ad.color.split(/[,\s]+/).filter(Boolean)
+  //   : [];
   
   // Get image from cover_thumb, media array, or legacy image field
   const mediaArray = Array.isArray(ad.media) ? ad.media : [];
@@ -323,48 +323,48 @@ const AdCard = ({ ad, onBookmarkChange, isFromBookmarksPage = false }: AdCardPro
     return FlagComponent ? <FlagComponent className="w-4 h-4" /> : null;
   };
 
-  const handleBookmarkToggle = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // const handleBookmarkToggle = async (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
     
-    if (!isAuthenticated || !token) {
-      // Handle unauthenticated user - could show login prompt
-      console.log("User must be authenticated to bookmark ads");
-      return;
-    }
+  //   if (!isAuthenticated || !token) {
+  //     // Handle unauthenticated user - could show login prompt
+  //     console.log("User must be authenticated to bookmark ads");
+  //     return;
+  //   }
 
-    if (isBookmarking) return; // Prevent multiple simultaneous requests
+  //   if (isBookmarking) return; // Prevent multiple simultaneous requests
 
-    setIsBookmarking(true);
+  //   setIsBookmarking(true);
     
-    try {
-      if (isBookmarked) {
-        // Remove bookmark
-        await deleteBookmark({
-          adId: ad.id,
-          locale,
-          token: token,
-        });
-        setIsBookmarked(false);
-        onBookmarkChange?.(false);
-      } else {
-        // Add bookmark
-        await createBookmark({
-          adId: ad.id,
-          locale,
-          token: token,
-        });
-        setIsBookmarked(true);
-        onBookmarkChange?.(true);
-      }
-    } catch (error) {
-      console.error('Bookmark operation failed:', error);
-      // Revert the UI state on error
-      setIsBookmarked(!isBookmarked);
-    } finally {
-      setIsBookmarking(false);
-    }
-  };
+  //   try {
+  //     if (isBookmarked) {
+  //       // Remove bookmark
+  //       await deleteBookmark({
+  //         adId: ad.id,
+  //         locale,
+  //         token: token,
+  //       });
+  //       setIsBookmarked(false);
+  //       onBookmarkChange?.(false);
+  //     } else {
+  //       // Add bookmark
+  //       await createBookmark({
+  //         adId: ad.id,
+  //         locale,
+  //         token: token,
+  //       });
+  //       setIsBookmarked(true);
+  //       onBookmarkChange?.(true);
+  //     }
+  //   } catch (error) {
+  //     console.error('Bookmark operation failed:', error);
+  //     // Revert the UI state on error
+  //     setIsBookmarked(!isBookmarked);
+  //   } finally {
+  //     setIsBookmarking(false);
+  //   }
+  // };
 
   return (
     <div className="relative bg-background rounded-xl shadow-sm border border-border overflow-hidden w-full">

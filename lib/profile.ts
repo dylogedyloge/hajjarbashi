@@ -248,7 +248,7 @@ export async function deleteAccount({ locale, token }: { locale: string; token: 
   const result = await response.json();
   console.log('✅ Delete account success:', result);
   return result;
-}
+} 
 
 export async function updateLanguage({ language, token }: { language: string; token?: string }) {
   console.log('🌐 Updating user language');

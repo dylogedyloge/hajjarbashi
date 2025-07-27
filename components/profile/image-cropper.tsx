@@ -5,7 +5,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import { Button } from '@/components/ui/button';
 import { Loader2, Upload, X } from 'lucide-react';
 import { Crop,  convertToPixelCrop } from 'react-image-crop';
-import { centerAspectCrop, cropImage, createObjectURL, revokeObjectURL } from '@/lib/image-utils';
+import { centerAspectCrop, cropImage, createObjectURL, revokeObjectURL } from '@/utils/image-utils';
 // import { validateImageFile } from '@/lib/file-validation';
 
 interface ImageCropperProps {

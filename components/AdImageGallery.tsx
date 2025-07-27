@@ -12,36 +12,44 @@ type Props = {
 export default function AdImageGallery({ mainImageUrl, galleryImages, alt }: Props) {
   const [selectedImage, setSelectedImage] = useState<string | null>(mainImageUrl);
 
+  // Combine main image with gallery images, ensuring no duplicates
+  const allImages = [mainImageUrl, ...galleryImages].filter((img, index, arr) => 
+    img && arr.indexOf(img) === index
+  ) as string[];
+
   return (
-    <div>
-      <div className="aspect-square bg-muted flex items-center justify-center relative w-full">
-        {selectedImage ? (
-          <Image src={selectedImage} alt={alt} fill className="object-cover" />
-        ) : (
-          <Skeleton className="w-full h-full" />
-        )}
-      </div>
-      {galleryImages.length > 0 && (
-        <div className="flex gap-2 p-4 border-t bg-muted overflow-x-auto">
-          {galleryImages.map((img, i) => {
+    <div className="flex gap-4 h-full min-h-[400px]">
+      {/* Vertical Thumbnails */}
+      {allImages.length > 1 && (
+        <div className="flex flex-col gap-2">
+          {allImages.map((img, i) => {
             const imgUrl = img.startsWith("http") ? img : `https://api.hajjardevs.ir/${img}`;
             return (
               <div
                 key={i}
-                className="relative w-24 h-24 flex-shrink-0 cursor-pointer"
+                className="relative w-20 h-20 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden"
                 onClick={() => setSelectedImage(imgUrl)}
               >
                 <Image
                   src={imgUrl}
                   alt={`Gallery image ${i + 1}`}
                   fill
-                  className={`object-cover rounded ${selectedImage === imgUrl ? "ring-2 ring-primary" : ""}`}
+                  className={`object-cover ${selectedImage === imgUrl ? "ring-2 ring-primary" : ""}`}
                 />
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Main Image */}
+      <div className="flex-1 bg-muted flex items-center justify-center relative rounded-lg overflow-hidden h-full">
+        {selectedImage ? (
+          <Image src={selectedImage} alt={alt} fill className="object-cover" />
+        ) : (
+          <Skeleton className="w-full h-full" />
+        )}
+      </div>
     </div>
   );
 } 

@@ -2,8 +2,8 @@ import { useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { profileService } from '@/lib/profile';
 import { validateImageFile } from '@/lib/file-validation';
-import { createObjectURL, revokeObjectURL } from '@/lib/image-utils';
-import { useDragAndDrop } from '@/lib/drag-drop-utils';
+import { createObjectURL, revokeObjectURL } from '@/utils/image-utils';
+import { useDragAndDrop } from '@/utils/drag-drop-utils';
 import { useImageCropper } from '@/hooks/useImageCropper';
 import { toast } from 'sonner';
 

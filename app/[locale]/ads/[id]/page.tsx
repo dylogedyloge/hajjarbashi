@@ -10,8 +10,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AdCreatorCard } from "@/components/AdCreatorCard";
 import { fetchUserProfile } from "@/lib/profile";
+import { Button } from "@/components/ui/button";
+import { Share2, AlertTriangle, Star } from "lucide-react";
+import { getCountryFlag } from "@/utils/country-utils";
+import ActionButtons from "@/components/ActionButtons";
+import BookmarkButton from "@/components/BookmarkButton";
 
 type Port = {
   id: string;
@@ -75,169 +79,196 @@ export default async function Page(props: unknown) {
     (img, idx, arr) => img && arr.indexOf(img) === idx
   );
 
+  // Get country flag component
+  const getCountryFlagComponent = () => {
+    return getCountryFlag(ad.origin_country?.name);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
-      <Card className="p-0 overflow-hidden">
-        {/* Main Image & Gallery */}
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/2 w-full">
-            <AdImageGallery
-              mainImageUrl={mainImageUrl}
-              galleryImages={allImages}
-              alt={ad.category?.name || "Ad image"}
-            />
-          </div>
-          <div className="md:w-1/2 w-full flex flex-col gap-4 p-6">
-            <div className="flex flex-wrap gap-2 mb-2">
-              {ad.is_express && <Badge variant="default">Express</Badge>}
-              {ad.is_chat_enabled && (
-                <Badge variant="outline">Chat Enabled</Badge>
-              )}
-              {ad.contact_info_enabled && (
-                <Badge variant="outline">Contact Info Enabled</Badge>
-              )}
-            </div>
-            <h2 className="text-2xl font-bold mb-2">
-              {ad.category?.name || "Ad"}
-            </h2>
-            <div className="text-lg font-semibold text-primary mb-2">
-              {ad.price?.toLocaleString?.()} {ad.price_unit || "USD"}
-            </div>
-            <div className="text-muted-foreground mb-2">{ad.description}</div>
-            <div className="flex flex-wrap gap-2 items-center mb-2">
-              {colorArray.length > 0 && (
-                <>
-                  <span className="text-xs text-muted-foreground">Colors:</span>
-                  <TooltipProvider>
-                    {colorArray.map((c: string, i: number) => (
-                      <Tooltip key={i}>
-                        <TooltipTrigger asChild>
-                          <span
-                            className="w-5 h-5 rounded-full border border-muted inline-block cursor-pointer"
-                            style={{ backgroundColor: c }}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent side="top">{c}</TooltipContent>
-                      </Tooltip>
-                    ))}
-                  </TooltipProvider>
-                </>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">Form:</span>{" "}
-                <span className="font-semibold">{ad.form}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Grade:</span>{" "}
-                <span className="font-semibold">{ad.grade}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Surface:</span>{" "}
-                <span className="font-semibold">
-                  {ad.surface?.name || ad.surface}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Category:</span>{" "}
-                <span className="font-semibold">{ad.category?.name}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Weight:</span>{" "}
-                <span className="font-semibold">{ad.weight}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Sale Unit:</span>{" "}
-                <span className="font-semibold">{ad.sale_unit_type}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Min Order:</span>{" "}
-                <span className="font-semibold">{ad.minimum_order}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Status:</span>{" "}
-                <span className="font-semibold">{ad.status}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Origin Country:</span>{" "}
-                <span className="font-semibold">{ad.origin_country?.name}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Origin City:</span>{" "}
-                <span className="font-semibold">{ad.origin_city?.name}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Size:</span>{" "}
-                <span className="font-semibold">
-                  {ad.size
-                    ? `${ad.size.h ?? "-"} × ${ad.size.w ?? "-"} × ${
-                        ad.size.l ?? "-"
-                      }`
-                    : "-"}
-                </span>
-              </div>
-            </div>
-            {/* Ports */}
-            <div className="mt-4">
-              {receivingPorts.length > 0 && (
-                <div className="mb-2">
-                  <span className="text-muted-foreground text-xs">
-                    Receiving Ports:
-                  </span>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {receivingPorts.map((port: Port) => (
-                      <Badge key={port.id} variant="secondary">
-                        {port.name}{" "}
-                        {port.city_name ? `(${port.city_name})` : ""}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {exportPorts.length > 0 && (
-                <div>
-                  <span className="text-muted-foreground text-xs">
-                    Export Ports:
-                  </span>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {exportPorts.map((port: Port) => (
-                      <Badge key={port.id} variant="secondary">
-                        {port.name}{" "}
-                        {port.city_name ? `(${port.city_name})` : ""}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+    <div className="max-w-6xl mx-auto py-8 px-4">
+      {/* Breadcrumbs and Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="text-sm text-muted-foreground">
+          Home &gt; Products &gt; Stone Blocks
+        </div>
+        <div className="flex items-center gap-3">
+          {/* <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+              <Bookmark className="w-4 h-4" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+              <Share2 className="w-4 h-4" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+              <AlertTriangle className="w-4 h-4" />
+            </Button>
+          </div> */}
+          <div className="text-sm text-muted-foreground">
+            Ads ID: {ad.id}
           </div>
         </div>
-      </Card>
-      {/* Creator Card (dynamic data) */}
-      <div className="flex justify-center mt-8">
-        <AdCreatorCard
-          avatarUrl={
-            creatorProfile?.avatar_thumb
-              ? creatorProfile.avatar_thumb.startsWith("http")
-                ? creatorProfile.avatar_thumb
-                : `https://api.hajjardevs.ir/${creatorProfile.avatar_thumb}`
-              : undefined
-          }
-          name={creatorProfile?.name || "-"}
-          company={creatorProfile?.company_name || "-"}
-          adId={ad.id || "-"}
-          adCreatorUserId={ad.creator_id}
-          isChatEnabled={!!ad.is_chat_enabled}
-          isContactInfoEnabled={!!ad.contact_info_enabled}
-          isExpressEnabled={!!ad.is_express}
-          contactInfo={
-            Array.isArray(creatorProfile?.contact_info)
-              ? creatorProfile.contact_info
-              : []
-          }
-        />
       </div>
+
+      {/* Combined Image Gallery and Product Details */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left Column - Image Gallery */}
+        <div className="lg:w-1/2">
+          <div className="relative h-full">
+            <AdImageGallery
+              mainImageUrl={mainImageUrl}
+              galleryImages={galleryImages}
+              alt={ad.category?.name || "Ad image"}
+            />
+            {/* Featured Badge */}
+            {ad.is_featured && (
+              <div className="absolute bottom-4 left-4">
+                <Badge className="bg-yellow-500 text-white border-0">
+                  <Star className="w-3 h-3 mr-1" />
+                  Featured
+                </Badge>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column - Product Details Card */}
+        <div className="lg:w-1/2">
+          <Card className="h-full min-h-[400px]">
+            <div className="p-6 space-y-4 h-full flex flex-col justify-between">
+              {/* Product Title and Actions */}
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-foreground">
+                  {ad.category?.name || ad.stone_type || "Negro Marquina Travertine Blocks"}
+                </h1>
+                <div className="flex gap-2">
+                  <BookmarkButton 
+                    adId={ad.id} 
+                    isBookmarked={ad.bookmarked || false} 
+                  />
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                    <AlertTriangle className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Price and Colors */}
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold text-foreground">
+                  ${ad.price?.toLocaleString?.()} <span className="text-lg text-muted-foreground">/{ad.sale_unit_type || "KG"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Colors:</span>
+                  <div className="flex -space-x-1">
+                    {colorArray.slice(0, 3).map((color: string, index: number) => (
+                      <TooltipProvider key={index}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div 
+                              className="w-4 h-4 rounded-full border border-background cursor-help"
+                              style={{ backgroundColor: color }}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{color}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Specifications Grid - Exact Layout from Design */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Size:</span>
+                  <span className="font-semibold text-foreground">{ad.size_range_type || "Medium"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Min Order:</span>
+                  <span className="font-semibold text-foreground">{ad.minimum_order?.toLocaleString?.()} {ad.sale_unit_type || "KG"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Dims:</span>
+                  <span className="font-semibold text-foreground">
+                    {ad.size ? `${ad.size.h ?? "-"}×${ad.size.w ?? "-"}×${ad.size.l ?? "-"} CM` : "-"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Weight:</span>
+                  <span className="font-semibold text-foreground">{ad.weight?.toLocaleString?.()} KG</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Origin:</span>
+                  <div className="flex items-center gap-1">
+                    {getCountryFlagComponent()}
+                    <span className="font-semibold text-foreground">{ad.origin_country?.name || "Unknown"}</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Grade:</span>
+                  <span className="font-semibold text-foreground">{ad.grade || "A Grade"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Surface:</span>
+                  <span className="font-semibold text-foreground">{ad.surface?.name || "Bush-Hammered"}</span>
+                </div>
+              </div>
+
+              {/* Supplier Section */}
+              <div className="pt-2">
+                <h3 className="text-muted-foreground mb-3">Supplier</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">R</span>
+                  </div>
+                  <span className="font-semibold text-foreground">
+                    {creatorProfile?.company_name || "XIAMEN REFINESTONE INDUSTRIAL CO"}
+                  </span>
+                  <div className="w-4 h-4 bg-orange-500 rounded-sm flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">V</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                    <span className="text-sm text-foreground">4.1</span>
+                  </div>
+                  <Button variant="link" className="text-sm p-0 h-auto">
+                    View All Ads
+                  </Button>
+                </div>
+              </div>
+
+              {/* Port Information */}
+              <div className="flex justify-between items-center pt-1">
+                <span className="text-sm text-muted-foreground">
+                  Prot: {ad.origin_country?.name || "Iran"} - {ad.origin_city?.name || "Bandar-Abbas"} - Rajaii
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  Resive Port: <span className="text-primary underline">Show Details</span>
+                </span>
+              </div>
+
+              {/* Action Buttons with Functionality */}
+              <ActionButtons
+                adId={ad.id}
+                adCreatorUserId={ad.creator_id}
+                creatorName={creatorProfile?.name || ""}
+                creatorAvatar={creatorProfile?.avatar_thumb || ""}
+                creatorCompany={creatorProfile?.company_name || ""}
+                contactInfo={Array.isArray(creatorProfile?.contact_info) ? creatorProfile.contact_info : []}
+                isChatEnabled={!!ad.is_chat_enabled}
+                isContactInfoEnabled={!!ad.contact_info_enabled}
+                isExpressEnabled={!!ad.is_express}
+              />
+            </div>
+          </Card>
+        </div>
+      </div>
+
+
     </div>
   );
 }

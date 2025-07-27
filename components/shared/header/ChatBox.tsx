@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl';
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import { useParams } from "next/navigation";
 import { getChatList, deleteChat as deleteChatApi, getMessages, uploadAttachment, blockUser, unblockUser } from "@/lib/chat";
-import socket from "@/lib/socket";
+import socket from "@/utils/socket";
 import { useReactMediaRecorder } from "react-media-recorder";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Ban, Undo2 } from "lucide-react";

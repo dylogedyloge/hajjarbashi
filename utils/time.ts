@@ -1,10 +1,3 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-
 /**
  * Formats a timestamp into a relative time string
  * @param timestamp - Unix timestamp in milliseconds
@@ -47,4 +40,4 @@ export function formatRelativeTime(timestamp?: number): string {
   
   // If more than a week, return exact date
   return date.toLocaleDateString();
-}
+} 

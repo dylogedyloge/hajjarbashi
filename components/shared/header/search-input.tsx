@@ -1,26 +1,19 @@
-import { Search, X } from "lucide-react";
+// import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
+import { Magnifier } from "@/components/icons";
 
 const SearchInput = () => {
   const t = useTranslations("Header");
   return (
-    <div className="flex items-center w-full max-w-xl bg-muted rounded-full border border-border px-4 py-2 h-10">
-      <Search className="text-muted-foreground" size={20} />
+    <div className="relative flex items-center w-full max-w-md">
+      <Magnifier className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
       <Input
         type="text"
-        placeholder={t("searchPlaceholder")}
-        className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm placeholder:text-muted-foreground"
+        placeholder="Type a command or search ..."
+        className="w-full pl-10 pr-4 py-2 bg-muted/50 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm placeholder:text-muted-foreground"
       />
-      <Button
-        variant="ghost"
-        size="icon"
-        className="rounded-full bg-muted hover:bg-accent transition-colors"
-        aria-label={t("clear")}
-      >
-        <X size={20} className="text-muted-foreground" />
-      </Button>
     </div>
   );
 };

@@ -4,13 +4,15 @@ import {
   // Bell,
   ChevronDown,
   Menu,
-  User,
+  // User as UserIcon,
   Wallet,
   FileText,
   Settings,
   HelpCircle,
   LogOut,
   MessageCircle,
+  Search,
+  Bookmark,
 } from "lucide-react";
 import { GB, IR } from "country-flag-icons/react/3x2";
 import SearchInput from "./search-input";
@@ -42,6 +44,8 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DialogTitle } from "@/components/ui/dialog";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import { updateLanguage } from "@/lib/profile";
+import { SquareBookmarkTop, ChatBubbleRectangle, User } from "@/components/icons";
+import AuthDialog from "./auth-dialog";
 // import { useRef } from "react";
 
 const Header = () => {
@@ -55,6 +59,7 @@ const Header = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInitialUser, setChatInitialUser] = useState(null);
   const { isRTL } = useLocaleDirection();
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
 
   // Helper function to validate URL
   const isValidUrl = (url: string | null): boolean => {
@@ -107,66 +112,54 @@ const Header = () => {
     });
   };
 
+  // Handle chat icon click
+  const handleChatClick = () => {
+    if (!isAuthenticated) {
+      // Open auth dialog for unauthenticated users
+      setAuthDialogOpen(true);
+      return;
+    }
+    // Regular chat functionality for authenticated users
+    setChatOpen((v) => !v);
+  };
+
+  // Handle create ad button click
+  const handleCreateAdClick = () => {
+    if (!isAuthenticated) {
+      // Open auth dialog for unauthenticated users
+      setAuthDialogOpen(true);
+      return;
+    }
+    // For authenticated users, the CreateAdvertisementButton component handles the logic
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full flex items-center justify-between px-4 md:px-8 py-4 bg-background border-b border">
-      {/* Desktop: Logo and Nav */}
-      <div className="hidden md:flex items-center gap-8">
+      {/* Left Section: Logo and Language Selector */}
+      <div className="flex items-center gap-6">
+        {/* Logo */}
         <Link className="text-lg text-foreground flex items-center" href="/">
           <Image
             src="/logo-2.svg"
-            alt="App Logo"
-            width={100}
-            height={100}
+            alt="Hajjarbashi"
+            width={120}
+            height={40}
             className="h-8 w-auto"
           />
         </Link>
-        {/* <div className="flex items-center gap-2 bg-muted rounded-full px-2 py-1"> */}
-          <Button 
-            variant={pathname.includes("/bookmarks") ? "default" : "outline"}
-            size="sm" 
-            className="rounded-full px-4 py-2 text-sm font-medium transition-colors"
-            onClick={() => intlRouter.push("/bookmarks")}
-          >
-            {t("bookmarks")}
-          </Button>
-        {/* </div> */}
-      </div>
-      {/* Mobile: Menu Icon */}
-      <div className="flex md:hidden items-center">
-        <Menu size={28} className="text-foreground" />
-      </div>
 
-      {/* Desktop: Search Bar */}
-      <div className="hidden md:flex flex-1 justify-center px-8">
-        <SearchInput />
-      </div>
-
-      {/* Desktop: Create Ad Button */}
-      {isAuthenticated && user && (
-        <div className="hidden md:flex">
-          <CreateAdvertisementButton />
-        </div>
-      )}
-
-      {/* Right Controls (always visible, but layout changes) */}
-      <div className="flex items-center gap-4 mx-0 md:mx-6">
-        <div className="flex items-center gap-1   text-sm cursor-pointer select-none text-foreground">
-          {t("metric")}
-          <ChevronDown size={16} className="text-foreground" />
-        </div>
+        {/* Language Selector */}
         <Select value={language} onValueChange={handleLanguageChange}>
-          <SelectTrigger className="border-none bg-transparent">
+          <SelectTrigger className="border-none bg-transparent p-0 h-auto">
             <SelectValue>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 cursor-pointer">
                 {language === "EN" ? (
-                  <>
-                    <GB className="w-4 h-4" />
-                  </>
+                  <GB className="w-4 h-4" />
                 ) : (
-                  <>
-                    <IR className="w-4 h-4" />
-                  </>
+                  <IR className="w-4 h-4" />
                 )}
+                <span className="text-sm font-medium">{language}</span>
+                {/* <ChevronDown size={14} className="text-muted-foreground" /> */}
               </div>
             </SelectValue>
           </SelectTrigger>
@@ -185,30 +178,53 @@ const Header = () => {
             </SelectItem>
           </SelectContent>
         </Select>
-        <ThemeToggler />
-        {isAuthenticated && user && user.id && (
-          <>
-            <MessageCircle
-              size={22}
-              className="cursor-pointer"
-              onClick={() => setChatOpen((v) => !v)}
+      </div>
+
+      {/* Center Section: Category and Search */}
+      <div className="flex-1 flex items-center justify-center gap-8">
+        {/* Category Navigation */}
+        <div className="flex items-center gap-2 cursor-pointer select-none">
+          <span className="text-sm font-medium text-foreground">Category</span>
+          <ChevronDown size={16} className="text-muted-foreground" />
+          {/* Active indicator line */}
+          <div className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500"></div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex-1 max-w-md">
+          <SearchInput />
+        </div>
+      </div>
+
+      {/* Right Section: Action Icons and Create Ad Button */}
+      <div className="flex items-center gap-4">
+        {/* Action Icons */}
+        <div className="flex items-center gap-3">
+          {/* Bookmark Icon */}
+          <div className="w-10 h-10 bg-muted/50 rounded-lg flex items-center justify-center cursor-pointer hover:bg-muted transition-colors">
+            <SquareBookmarkTop 
+              className={`w-5 h-5 ${pathname.includes("/bookmarks") ? "text-primary" : "text-foreground"}`}
+              onClick={() => intlRouter.push("/bookmarks")}
             />
-            {/* <Bell
-              size={20}
-              className="cursor-pointer"
-              onClick={() => intlRouter.push(`/profile/${user.id}/inbox`)}
-            /> */}
-          </>
-        )}
-        {/* Desktop: Sign In/Up Button or User Profile */}
-        <div className="hidden md:block">
+          </div>
+
+          {/* Chat Icon with Notification */}
+          <div className="relative w-10 h-10 bg-muted/50 rounded-lg flex items-center justify-center cursor-pointer hover:bg-muted transition-colors">
+            <ChatBubbleRectangle 
+              className="w-5 h-5 text-foreground"
+              onClick={handleChatClick}
+            />
+            {/* Notification dot - only show for authenticated users */}
+            {isAuthenticated && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+            )}
+          </div>
+
+          {/* User Profile Icon */}
           {isAuthenticated && user ? (
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex items-center gap-2 p-2 hover:bg-accent rounded-full"
-                >
+                <div className="w-10 h-10 bg-muted/50 rounded-lg flex items-center justify-center cursor-pointer hover:bg-muted transition-colors">
                   {isValidUrl(user.avatar_thumb) ? (
                     <Image
                       src={user.avatar_thumb!}
@@ -217,7 +233,6 @@ const Header = () => {
                       height={32}
                       className="w-8 h-8 rounded-full"
                       onError={(e) => {
-                        // Fallback to initials if image fails to load
                         const target = e.target as HTMLImageElement;
                         target.style.display = "none";
                         const parent = target.parentElement;
@@ -242,16 +257,7 @@ const Header = () => {
                       ? user.name.charAt(0).toUpperCase()
                       : user.email.charAt(0).toUpperCase()}
                   </div>
-                  <div className="hidden lg:block text-left">
-                    <div className="text-sm font-medium">
-                      {user.name || user.email}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {user.email}
-                    </div>
-                  </div>
-                  <ChevronDown size={16} className="text-muted-foreground" />
-                </Button>
+                </div>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" align="end">
                 <div className="space-y-1">
@@ -262,7 +268,9 @@ const Header = () => {
                       intlRouter.push("/profile/overview");
                     }}
                   >
-                    <User size={16} />
+                    {/* <UserIcon size={16} /> */}
+                    <User  />
+                    
                     Profile
                   </Button>
                   <Button
@@ -308,6 +316,17 @@ const Header = () => {
                   <div className="border-t border-border my-1" />
                   <Button
                     variant="ghost"
+                    className="w-full justify-start gap-2 h-9"
+                    onClick={() => {
+                      // Theme toggler functionality
+                    }}
+                  >
+                    <ThemeToggler />
+                    Theme
+                  </Button>
+                  <div className="border-t border-border my-1" />
+                  <Button
+                    variant="ghost"
                     className="w-full justify-start gap-2 h-9 text-destructive hover:text-destructive"
                     onClick={logout}
                   >
@@ -318,11 +337,26 @@ const Header = () => {
               </PopoverContent>
             </Popover>
           ) : (
-            <SignInSignUpButton />
+            <div 
+              className="w-10 h-10 bg-muted/50 rounded-lg flex items-center justify-center cursor-pointer hover:bg-muted transition-colors"
+              onClick={() => setAuthDialogOpen(true)}
+            >
+              <User className="w-5 h-5 text-foreground" />
+            </div>
           )}
         </div>
+
+        {/* Create Ad Button - Always visible */}
+        <div onClick={handleCreateAdClick}>
+          <CreateAdvertisementButton />
+        </div>
       </div>
-      {/* Simple floating ChatBox placeholder */}
+
+      {/* Mobile Menu Icon (hidden on desktop) */}
+      <div className="flex md:hidden items-center">
+        <Menu size={28} className="text-foreground" />
+      </div>
+
       {/* ChatBox in a Sheet (slide-in from right-bottom) */}
       <Sheet open={chatOpen} onOpenChange={setChatOpen}>
         <SheetContent side={isRTL ? "left" : "right"} fitContent={true} className="!bottom-0 !top-auto max-w-md w-full p-0 border-none shadow-none bg-transparent">
@@ -331,8 +365,13 @@ const Header = () => {
           {chatOpen && <ChatBox onClose={() => setChatOpen(false)} initialSelectedUser={chatInitialUser} />}
         </SheetContent>
       </Sheet>
+
+      {/* Auth Dialog */}
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </header>
   );
 };
 
 export default Header;
+
+

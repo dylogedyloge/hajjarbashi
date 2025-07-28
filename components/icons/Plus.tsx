@@ -1,0 +1,23 @@
+import React from 'react';
+
+interface PlusProps extends React.SVGProps<SVGSVGElement> {}
+
+const Plus: React.FC<PlusProps> = (props) => {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M8 0.833252C8.46024 0.833252 8.83325 1.20626 8.83325 1.66659V6.99992H14.1666C14.6268 6.99992 14.9999 7.37293 14.9999 7.83325C14.9999 8.29358 14.6268 8.66659 14.1666 8.66659H8.83325V13.9999C8.83325 14.4602 8.46024 14.8333 8 14.8333C7.53976 14.8333 7.16675 14.4602 7.16675 13.9999V8.66659H1.83341C1.37317 8.66659 1.00016 8.29358 1.00016 7.83325C1.00016 7.37293 1.37317 6.99992 1.83341 6.99992H7.16675V1.66659C7.16675 1.20626 7.53976 0.833252 8 0.833252Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export default Plus; 

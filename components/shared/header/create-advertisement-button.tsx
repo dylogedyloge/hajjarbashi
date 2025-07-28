@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
 import { initAdvertisement } from "@/lib/advertisements";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
+import { Plus } from "@/components/icons";
 
 interface CreateAdvertisementButtonProps {
   floating?: boolean;
@@ -19,11 +19,14 @@ const CreateAdvertisementButton = ({
   // Extract locale from pathname (e.g., /en/..., /fa/...)
   const locale = pathname.split("/")[1] || "en";
   const { token, isAuthenticated } = useAuth();
+  
   const handleClick = async () => {
+    // For unauthenticated users, the header component will handle showing the auth dialog
+    // This component only handles authenticated users
     if (!isAuthenticated || !token) {
-      router.push(`/${locale}/create-ad`);
       return;
     }
+    
     try {
       const res = await initAdvertisement(locale, token);
       console.log("API Response:", res); // Debug log to see the actual response
@@ -49,6 +52,7 @@ const CreateAdvertisementButton = ({
       });
     }
   };
+  
   if (floating) {
     return (
       <Button
@@ -62,15 +66,17 @@ const CreateAdvertisementButton = ({
       </Button>
     );
   }
+  
   return (
     <Button
       variant="default"
-      size="lg"
-      className="rounded-full px-8 flex items-center gap-2"
+      size="default"
+      className="bg-gray-700 hover:bg-gray-800 text-white rounded-lg px-4 py-2 flex items-center gap-2 font-medium"
       aria-label={t("createAd")}
       onClick={handleClick}
     >
-      <Plus size={18} /> {t("createAd")}
+      <Plus className="w-5 h-5 text-white" />
+      {t("createAd")}
     </Button>
   );
 };

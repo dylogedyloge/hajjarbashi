@@ -87,13 +87,25 @@ export type AdsFilters = {
   export_ports?: string[];
   origin_country_ids?: string[];
   grade?: string;
+  express?: boolean;
+  promoted?: boolean;
 };
 
 interface AdsListProps {
   filters?: AdsFilters;
+  onExpressFilterChange?: (express: boolean) => void;
+  onFeaturedFilterChange?: (featured: boolean) => void;
+  expressFilter?: boolean;
+  featuredFilter?: boolean;
 }
 
-const AdsList = ({ filters = {} }: AdsListProps) => {
+const AdsList = ({ 
+  filters = {}, 
+  onExpressFilterChange,
+  onFeaturedFilterChange,
+  expressFilter = false,
+  featuredFilter = false
+}: AdsListProps) => {
   const locale = useLocale();
   const { token } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
@@ -164,6 +176,10 @@ const AdsList = ({ filters = {} }: AdsListProps) => {
         <DesktopSortAndCheckboxFilters 
           viewMode={layout} 
           onViewModeChange={setLayout}
+          onExpressFilterChange={onExpressFilterChange}
+          onFeaturedFilterChange={onFeaturedFilterChange}
+          expressFilter={expressFilter}
+          featuredFilter={featuredFilter}
         />
       </div>
       

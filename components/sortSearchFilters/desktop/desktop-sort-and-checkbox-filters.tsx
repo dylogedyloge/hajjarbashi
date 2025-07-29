@@ -15,16 +15,22 @@ import { cn } from "@/utils/cn";
 interface DesktopSortAndCheckboxFiltersProps {
   viewMode?: "grid" | "list";
   onViewModeChange?: (mode: "grid" | "list") => void;
+  onExpressFilterChange?: (express: boolean) => void;
+  onFeaturedFilterChange?: (featured: boolean) => void;
+  expressFilter?: boolean;
+  featuredFilter?: boolean;
 }
 
 const DesktopSortAndCheckboxFilters = ({ 
   viewMode = "grid", 
-  onViewModeChange 
+  onViewModeChange,
+  onExpressFilterChange,
+  onFeaturedFilterChange,
+  expressFilter = false,
+  featuredFilter = false
 }: DesktopSortAndCheckboxFiltersProps) => {
   const t = useTranslations("DesktopSortAndCheckboxFilters");
   const [selectedSort, setSelectedSort] = useState<string>("latest");
-  const [expressDelivery, setExpressDelivery] = useState<boolean>(false);
-  const [featuredOnly, setFeaturedOnly] = useState<boolean>(false);
 
   return (
     <div className="w-full flex flex-row items-center gap-6 py-2 px-2">
@@ -47,29 +53,29 @@ const DesktopSortAndCheckboxFilters = ({
       {/* Filter Buttons Section */}
       <div className="flex items-center gap-2">
         <Button
-          variant={expressDelivery ? "default" : "outline"}
+          variant={expressFilter ? "default" : "outline"}
           size="sm"
           className={cn(
             "h-8",
-            expressDelivery 
+            expressFilter 
               ? "bg-orange-500 text-white border-orange-500 hover:bg-orange-600" 
               : "border-muted text-foreground"
           )}
-          onClick={() => setExpressDelivery(!expressDelivery)}
+          onClick={() => onExpressFilterChange?.(!expressFilter)}
         >
           <Zap className="w-4 h-4 mr-1" />
           {t("expressDelivery")}
         </Button>
         <Button
-          variant={featuredOnly ? "default" : "outline"}
+          variant={featuredFilter ? "default" : "outline"}
           size="sm"
           className={cn(
             "h-8",
-            featuredOnly 
+            featuredFilter 
               ? "bg-orange-500 text-white border-orange-500 hover:bg-orange-600" 
               : "border-muted text-foreground"
           )}
-          onClick={() => setFeaturedOnly(!featuredOnly)}
+          onClick={() => onFeaturedFilterChange?.(!featuredFilter)}
         >
           <Star className="w-4 h-4 mr-1" />
           {t("featuredOnly")}

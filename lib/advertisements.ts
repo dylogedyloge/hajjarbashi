@@ -201,7 +201,9 @@ export async function fetchAds({
   receiving_ports, 
   export_ports, 
   origin_country_ids, 
-  grade
+  grade,
+  express,
+  promoted
 }: { 
   limit: number; 
   page: number; 
@@ -219,6 +221,8 @@ export async function fetchAds({
   export_ports?: string[]; 
   origin_country_ids?: string[]; 
   grade?: string;
+  express?: boolean;
+  promoted?: boolean;
 }) {
   const params = new URLSearchParams({
     limit: limit.toString(),
@@ -287,6 +291,16 @@ export async function fetchAds({
   if (grade) {
     params.append('grade', grade);
     console.log('⭐ Grade being sent to API:', grade);
+  }
+  
+  if (express) {
+    params.append('express', 'true');
+    console.log('⚡ Express filter being sent to API: true');
+  }
+  
+  if (promoted) {
+    params.append('promoted', 'true');
+    console.log('⭐ Promoted filter being sent to API: true');
   }
   
   const headers: Record<string, string> = {

@@ -66,6 +66,7 @@ import { updateLanguage } from "@/lib/profile";
 import { SquareBookmarkTop, ChatBubbleRectangle, User } from "@/components/icons";
 import AuthDialog from "./auth-dialog";
 import { cn } from "@/utils/cn";
+import { useSearch } from "@/lib/search-context";
 // import { useRef } from "react";
 
 const Header = () => {
@@ -80,6 +81,7 @@ const Header = () => {
   const [chatInitialUser, setChatInitialUser] = useState(null);
   const { isRTL } = useLocaleDirection();
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const searchContext = useSearch();
 
   // Helper function to validate URL
   const isValidUrl = (url: string | null): boolean => {
@@ -151,6 +153,11 @@ const Header = () => {
       return;
     }
     // For authenticated users, the CreateAdvertisementButton component handles the logic
+  };
+
+  const handleSearchChange = (search: string) => {
+    console.log('🔍 Search term changed:', search);
+    searchContext.onSearchChange(search);
   };
 
   return (
@@ -338,7 +345,7 @@ const Header = () => {
 
         {/* Search Bar */}
         <div className="flex-1 max-w-md">
-          <SearchInput />
+          <SearchInput onSearchChange={handleSearchChange} />
         </div>
       </div>
 

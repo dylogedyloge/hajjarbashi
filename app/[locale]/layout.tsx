@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
+import { SearchProvider } from "@/lib/search-context";
 import { getMessages } from "next-intl/server";
 
 const poppins = localFont({
@@ -64,11 +65,13 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <AuthProvider>
-              <Header />
-              {children}
-              <Footer />
-              <MobileBottomNav />
-              <Toaster />
+              <SearchProvider>
+                <Header />
+                {children}
+                <Footer />
+                <MobileBottomNav />
+                <Toaster />
+              </SearchProvider>
             </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

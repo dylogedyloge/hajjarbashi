@@ -203,7 +203,8 @@ export async function fetchAds({
   origin_country_ids, 
   grade,
   express,
-  promoted
+  promoted,
+  search_description
 }: { 
   limit: number; 
   page: number; 
@@ -223,6 +224,7 @@ export async function fetchAds({
   grade?: string;
   express?: boolean;
   promoted?: boolean;
+  search_description?: string;
 }) {
   const params = new URLSearchParams({
     limit: limit.toString(),
@@ -301,6 +303,11 @@ export async function fetchAds({
   if (promoted) {
     params.append('promoted', 'true');
     console.log('⭐ Promoted filter being sent to API: true');
+  }
+  
+  if (search_description && search_description.trim()) {
+    params.append('search_description', search_description.trim());
+    console.log('🔍 Search description being sent to API:', search_description);
   }
   
   const headers: Record<string, string> = {

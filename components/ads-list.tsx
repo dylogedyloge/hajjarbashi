@@ -89,6 +89,7 @@ export type AdsFilters = {
   grade?: string;
   express?: boolean;
   promoted?: boolean;
+  search_description?: string;
 };
 
 interface AdsListProps {

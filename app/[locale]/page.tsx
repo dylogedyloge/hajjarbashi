@@ -1,13 +1,15 @@
 "use client";
-import { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import AdsList from "@/components/ads-list";
 import DesktopCategoryFilters from "@/components/sortSearchFilters/desktop/desktop-category-filters";
 import { AdsFilters } from "@/components/ads-list";
+import { SearchProvider, useSearch } from "@/lib/search-context";
 
 export default function Home() {
   const [filters, setFilters] = useState<AdsFilters>({});
   const [expressFilter, setExpressFilter] = useState<boolean>(false);
   const [featuredFilter, setFeaturedFilter] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const handleFiltersChange = (newFilters: AdsFilters) => {
     console.log('🔄 Updating filters:', newFilters);
@@ -33,6 +35,52 @@ export default function Home() {
       promoted: featured
     }));
   };
+
+  const handleSearchChange = useCallback((search: string) => {
+    console.log('🔍 Search term changed:', search);
+    setSearchTerm(search);
+    // Update filters with search parameter
+    setFilters(prev => ({
+      ...prev,
+      search_description: search.trim() || undefined
+    }));
+  }, []);
+
+  return (
+    <HomeContent 
+      filters={filters}
+      handleFiltersChange={handleFiltersChange}
+      handleExpressFilterChange={handleExpressFilterChange}
+      handleFeaturedFilterChange={handleFeaturedFilterChange}
+      expressFilter={expressFilter}
+      featuredFilter={featuredFilter}
+      handleSearchChange={handleSearchChange}
+    />
+  );
+}
+
+// Separate component to use the search context
+function HomeContent({ 
+  filters,
+  handleFiltersChange,
+  handleExpressFilterChange,
+  handleFeaturedFilterChange,
+  expressFilter,
+  featuredFilter,
+  handleSearchChange
+}: {
+  filters: AdsFilters;
+  handleFiltersChange: (filters: AdsFilters) => void;
+  handleExpressFilterChange: (express: boolean) => void;
+  handleFeaturedFilterChange: (featured: boolean) => void;
+  expressFilter: boolean;
+  featuredFilter: boolean;
+  handleSearchChange: (search: string) => void;
+}) {
+  const { setSearchHandler } = useSearch();
+
+  // Register the search handler with the global context
+  setSearchHandler(handleSearchChange);
 
   return (
     <div className="flex flex-col md:flex-row md:items-start md:gap-8 w-full max-w-7xl mx-auto px-2 md:px-8 py-10">

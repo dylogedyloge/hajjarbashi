@@ -221,6 +221,8 @@
       "port2": "بندر ۲",
       "port3": "بندر ۳",
       "bandarAbbas": "بندرعباس",
+      "receivingPort": "بندر دریافت",
+      "exportPort": "بندر صادرات",
       "receivePort": "بندر دریافت",
       "selectOriginStone": "انتخاب سنگ مبدا",
       "origin1": "مبدا ۱",
@@ -235,6 +237,7 @@
       "gradeA": "درجه A",
       "gradeB": "درجه B",
       "gradeC": "درجه C",
+      "clearColors": "پاک کردن رنگ‌ها",
       "back": "بازگشت"
     },
     "MobileBottomNav": {

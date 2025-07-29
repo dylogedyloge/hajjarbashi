@@ -185,7 +185,41 @@ export async function fetchPorts(lang: string) {
   return data.data || [];
 }
 
-export async function fetchAds({ limit, page, locale, user_id, token }: { limit: number; page: number; locale: string; user_id?: string; token?: string }) {
+export async function fetchAds({ 
+  limit, 
+  page, 
+  locale, 
+  user_id, 
+  token,
+  min_price, 
+  max_price, 
+  form, 
+  category_ids, 
+  colors, 
+  surface_ids, 
+  size_range_type, 
+  receiving_ports, 
+  export_ports, 
+  origin_country_ids, 
+  grade
+}: { 
+  limit: number; 
+  page: number; 
+  locale: string; 
+  user_id?: string; 
+  token?: string;
+  min_price?: number; 
+  max_price?: number; 
+  form?: string; 
+  category_ids?: string[]; 
+  colors?: string[]; 
+  surface_ids?: string[]; 
+  size_range_type?: string; 
+  receiving_ports?: string[]; 
+  export_ports?: string[]; 
+  origin_country_ids?: string[]; 
+  grade?: string;
+}) {
   const params = new URLSearchParams({
     limit: limit.toString(),
     page: page.toString(),
@@ -193,6 +227,66 @@ export async function fetchAds({ limit, page, locale, user_id, token }: { limit:
   
   if (user_id) {
     params.append('user_id', user_id);
+  }
+  
+  // Add filter parameters
+  if (min_price !== undefined) {
+    params.append('min_price', min_price.toString());
+  }
+  
+  if (max_price !== undefined) {
+    params.append('max_price', max_price.toString());
+  }
+  
+  if (form) {
+    params.append('form', form);
+    console.log('📦 Form being sent to API:', form);
+  }
+  
+  if (category_ids && category_ids.length > 0) {
+    params.append('category_ids', category_ids.join(','));
+    console.log('🎨 Category IDs being sent to API:', category_ids);
+    console.log('🎨 Category IDs parameter value:', category_ids.join(','));
+  }
+  
+  if (colors && colors.length > 0) {
+    params.append('colors', colors.join(','));
+    console.log('🎨 Colors being sent to API:', colors);
+    console.log('🎨 Colors parameter value:', colors.join(','));
+  }
+  
+  if (surface_ids && surface_ids.length > 0) {
+    params.append('surface_ids', surface_ids.join(','));
+    console.log('🏗️ Surface IDs being sent to API:', surface_ids);
+    console.log('🏗️ Surface IDs parameter value:', surface_ids.join(','));
+  }
+  
+  if (size_range_type) {
+    params.append('size_range_type', size_range_type);
+    console.log('📏 Size range type being sent to API:', size_range_type);
+  }
+  
+  if (receiving_ports && receiving_ports.length > 0) {
+    params.append('receiving_ports', receiving_ports.join(','));
+    console.log('🚢 Receiving Ports being sent to API:', receiving_ports);
+    console.log('🚢 Receiving Ports parameter value:', receiving_ports.join(','));
+  }
+  
+  if (export_ports && export_ports.length > 0) {
+    params.append('export_ports', export_ports.join(','));
+    console.log('🚢 Export Ports being sent to API:', export_ports);
+    console.log('🚢 Export Ports parameter value:', export_ports.join(','));
+  }
+  
+  if (origin_country_ids && origin_country_ids.length > 0) {
+    params.append('origin_country_ids', origin_country_ids.join(','));
+    console.log('🌎 Origin Country IDs being sent to API:', origin_country_ids);
+    console.log('🌎 Origin Country IDs parameter value:', origin_country_ids.join(','));
+  }
+  
+  if (grade) {
+    params.append('grade', grade);
+    console.log('⭐ Grade being sent to API:', grade);
   }
   
   const headers: Record<string, string> = {

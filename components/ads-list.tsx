@@ -9,6 +9,7 @@ import MobileSearchAndFilter from "./sortSearchFilters/mobile/mobile-search-and-
 import MobileCategoryFilters from "./sortSearchFilters/mobile/mobile-category-filters";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { Search, Filter } from "lucide-react";
 
 // Define the Ad type matching the API
 export type Ad = {
@@ -73,7 +74,26 @@ export type Ad = {
   is_express?: boolean;
 };
 
-const AdsList = () => {
+// Define filter types
+export type AdsFilters = {
+  min_price?: number;
+  max_price?: number;
+  form?: string;
+  category_ids?: string[];
+  colors?: string[];
+  surface_ids?: string[];
+  size_range_type?: string;
+  receiving_ports?: string[];
+  export_ports?: string[];
+  origin_country_ids?: string[];
+  grade?: string;
+};
+
+interface AdsListProps {
+  filters?: AdsFilters;
+}
+
+const AdsList = ({ filters = {} }: AdsListProps) => {
   const locale = useLocale();
   const { token } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
@@ -84,18 +104,50 @@ const AdsList = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetchAds({ limit: 10, page: 1, locale, token: token || undefined })
+    
+    console.log('📋 AdsList received filters:', filters);
+    console.log('🎨 Color filters:', filters.colors);
+    console.log('📦 Form filters:', filters.form);
+    console.log('📏 Size filters:', filters.size_range_type);
+    console.log('🏷️ Category filters:', filters.category_ids);
+    console.log('🏗️ Surface filters:', filters.surface_ids);
+    console.log('⭐ Grade filters:', filters.grade);
+    console.log('🚢 Receiving Ports filters:', filters.receiving_ports);
+    console.log('🚢 Export Ports filters:', filters.export_ports);
+    console.log('🌎 Origin Country filters:', filters.origin_country_ids);
+    
+    fetchAds({ 
+      limit: 10, 
+      page: 1, 
+      locale, 
+      token: token || undefined,
+      ...filters
+    })
       .then((res) => {
+        console.log('📊 API Response:', res);
+        console.log('📊 API Response data:', res.data);
+        console.log('📊 API Response list:', res.data?.list);
         // Handle new API response structure with data.list
         const adsList = res.data?.list || res.data || [];
+        console.log('📋 Ads list:', adsList);
+        console.log('📋 Number of ads found:', adsList.length);
         setAds(adsList as Ad[]);
       })
-      .catch((err) => setError(err.message || "Failed to load ads"))
+      .catch((err) => {
+        console.error('❌ Error fetching ads:', err);
+        console.error('❌ Error details:', err.message);
+        setError(err.message || "Failed to load ads");
+      })
       .finally(() => setLoading(false));
-  }, [locale, token]);
+  }, [locale, token, filters]);
 
   if (loading) return <div className="text-center py-8">Loading ads...</div>;
   if (error) return <div className="text-center text-destructive py-8">{error}</div>;
+
+  // Check if there are any active filters
+  const hasActiveFilters = Object.keys(filters).length > 0;
+  
+
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto px-8">
@@ -115,14 +167,44 @@ const AdsList = () => {
         />
       </div>
       
+
       {/* Ads Container */}
-      <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'flex flex-col gap-8'}>
-        {ads.map((ad) => (
-          <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
-            <AdCard ad={ad} isGrid={layout === 'grid'} />
-          </Link>
-        ))}
-      </div>
+      {ads.length > 0 ? (
+        <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'flex flex-col gap-8'}>
+          {ads.map((ad) => (
+            <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
+              <AdCard ad={ad} isGrid={layout === 'grid'} />
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+            {hasActiveFilters ? (
+              <Filter className="w-8 h-8 text-muted-foreground" />
+            ) : (
+              <Search className="w-8 h-8 text-muted-foreground" />
+            )}
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            {hasActiveFilters ? "No matching ads found" : "No ads available"}
+          </h3>
+          <p className="text-muted-foreground max-w-md">
+            {hasActiveFilters 
+              ? "Try adjusting your filters or search criteria to find more results."
+              : "Check back later for new advertisements."
+            }
+          </p>
+          {hasActiveFilters && (
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 text-sm text-primary hover:text-primary/80 underline"
+            >
+              Clear all filters
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

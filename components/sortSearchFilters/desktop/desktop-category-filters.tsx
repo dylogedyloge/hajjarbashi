@@ -4,12 +4,13 @@ import { Gem, Box, Square, Grid3X3, Check, ArrowLeft,  DollarSign } from "lucide
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 
 const DesktopCategoryFilters = () => {
   const t = useTranslations("DesktopCategoryFilters");
-  const [activeTab, setActiveTab] = useState<"ads" | "request">("ads");
+  // const [activeTab, setActiveTab] = useState<"ads" | "request">("ads");
   const [selectedFormStone, setSelectedFormStone] = useState<string>("all");
   const [selectedTypeStone, setSelectedTypeStone] = useState<string>("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
@@ -78,10 +79,14 @@ const DesktopCategoryFilters = () => {
     return price >= 1000 ? `$${(price / 1000).toFixed(0)}K` : `$${price}`;
   };
 
+  const handlePriceRangeChange = (value: number[]) => {
+    setPriceRange([value[0], value[1]]);
+  };
+
   return (
     <aside className="w-[350px] bg-background rounded-xl p-4 flex flex-col gap-6 border border-border max-h-[95vh] overflow-y-auto">
       {/* Toggle Tabs */}
-      <div className="flex bg-muted rounded-lg p-1">
+      {/* <div className="flex bg-muted rounded-lg p-1">
         <Button
           variant={activeTab === "ads" ? "default" : "ghost"}
           size="sm"
@@ -108,7 +113,7 @@ const DesktopCategoryFilters = () => {
         >
           {t("request")}
         </Button>
-      </div>
+      </div> */}
 
       {/* Select Form Stone */}
       <div className="space-y-3">
@@ -123,7 +128,7 @@ const DesktopCategoryFilters = () => {
                 className={cn(
                   "h-20 flex flex-col gap-2 p-3",
                   selectedFormStone === option.id 
-                    ? "bg-orange-50 border-orange-200 text-orange-600" 
+                    ? "border-orange-200 text-orange-100" 
                     : "border-muted"
                 )}
                 onClick={() => setSelectedFormStone(option.id)}
@@ -217,20 +222,15 @@ const DesktopCategoryFilters = () => {
           </div>
           
           {/* Price Range Slider */}
-          <div className="relative">
-            <div className="h-2 bg-muted rounded-full">
-              <div 
-                className="h-2 bg-orange-500 rounded-full absolute"
-                style={{ 
-                  left: `${((priceRange[0] - 0) / (50000 - 0)) * 100}%`,
-                  right: `${100 - ((priceRange[1] - 0) / (50000 - 0)) * 100}%`
-                }}
-              />
-            </div>
-            <div className="flex justify-between mt-2">
-              <div className="w-4 h-4 bg-orange-500 rounded-full border-2 border-white cursor-pointer" />
-              <div className="w-4 h-4 bg-orange-500 rounded-full border-2 border-white cursor-pointer" />
-            </div>
+          <div className="px-2">
+            <Slider
+              value={priceRange}
+              onValueChange={handlePriceRangeChange}
+              min={0}
+              max={50000}
+              step={100}
+              className="w-full"
+            />
           </div>
           
           {/* Current Range Display */}
@@ -256,7 +256,7 @@ const DesktopCategoryFilters = () => {
               className={cn(
                 "text-xs",
                 selectedSurfaces.includes(surface) 
-                  ? "bg-orange-50 border-orange-200 text-orange-600" 
+                  ? "bg-orange-800  text-orange-100" 
                   : "border-muted"
               )}
               onClick={() => handleSurfaceToggle(surface)}

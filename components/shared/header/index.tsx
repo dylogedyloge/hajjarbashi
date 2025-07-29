@@ -1,8 +1,9 @@
 "use client";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   // Bell,
-  ChevronDown,
+  // ChevronDown,
   Menu,
   // User as UserIcon,
   Wallet,
@@ -10,14 +11,23 @@ import {
   Settings,
   HelpCircle,
   LogOut,
-  MessageCircle,
-  Search,
-  Bookmark,
+  // MessageCircle,
+  // Search,
+  // Bookmark,
+  Gem,
+  Box,
+  // Square,
+  // Grid3X3,
+  MapPin,
+  Truck,
+  // Package,
+  // Building,
+  // Factory,
 } from "lucide-react";
 import { GB, IR } from "country-flag-icons/react/3x2";
 import SearchInput from "./search-input";
 import CreateAdvertisementButton from "./create-advertisement-button";
-import SignInSignUpButton from "./sign-in-sign-up-button";
+// import SignInSignUpButton from "./sign-in-sign-up-button";
 import ThemeToggler from "./theme-toggler";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
@@ -34,6 +44,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  // navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -46,6 +65,7 @@ import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import { updateLanguage } from "@/lib/profile";
 import { SquareBookmarkTop, ChatBubbleRectangle, User } from "@/components/icons";
 import AuthDialog from "./auth-dialog";
+import { cn } from "@/utils/cn";
 // import { useRef } from "react";
 
 const Header = () => {
@@ -183,12 +203,138 @@ const Header = () => {
       {/* Center Section: Category and Search */}
       <div className="flex-1 flex items-center justify-center gap-8">
         {/* Category Navigation */}
-        <div className="flex items-center gap-2 cursor-pointer select-none">
-          <span className="text-sm font-medium text-foreground">Category</span>
-          <ChevronDown size={16} className="text-muted-foreground" />
-          {/* Active indicator line */}
-          <div className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500"></div>
-        </div>
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>{t("navigation.categories")}</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-[.75fr_1fr] lg:w-[600px]">
+                  <li className="row-span-3">
+                    <NavigationMenuLink asChild>
+                      <a
+                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                        href="/"
+                      >
+                        <Gem className="h-6 w-6" />
+                        <div className="mb-2 mt-4 text-lg font-medium">
+                          {t("navigation.stoneCategories")}
+                        </div>
+                        <p className="text-sm leading-tight text-muted-foreground">
+                          {t("navigation.stoneCategoriesDescription")}
+                        </p>
+                      </a>
+                    </NavigationMenuLink>
+                  </li>
+                  <ListItem href="/category/marble" title={t("navigation.marble")}>
+                    {t("navigation.marbleDescription")}
+                  </ListItem>
+                  <ListItem href="/category/granite" title={t("navigation.granite")}>
+                    {t("navigation.graniteDescription")}
+                  </ListItem>
+                  <ListItem href="/category/onyx" title={t("navigation.onyx")}>
+                    {t("navigation.onyxDescription")}
+                  </ListItem>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>{t("navigation.form")}</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-[.75fr_1fr] lg:w-[600px]">
+                  <li className="row-span-3">
+                    <NavigationMenuLink asChild>
+                      <a
+                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                        href="/"
+                      >
+                        <Box className="h-6 w-6" />
+                        <div className="mb-2 mt-4 text-lg font-medium">
+                          {t("navigation.stoneForms")}
+                        </div>
+                        <p className="text-sm leading-tight text-muted-foreground">
+                          {t("navigation.stoneFormsDescription")}
+                        </p>
+                      </a>
+                    </NavigationMenuLink>
+                  </li>
+                  <ListItem href="/form/blocks" title={t("navigation.blocks")}>
+                    {t("navigation.blocksDescription")}
+                  </ListItem>
+                  <ListItem href="/form/slabs" title={t("navigation.slabs")}>
+                    {t("navigation.slabsDescription")}
+                  </ListItem>
+                  <ListItem href="/form/tiles" title={t("navigation.tiles")}>
+                    {t("navigation.tilesDescription")}
+                  </ListItem>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>{t("navigation.location")}</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-[.75fr_1fr] lg:w-[600px]">
+                  <li className="row-span-3">
+                    <NavigationMenuLink asChild>
+                      <a
+                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                        href="/"
+                      >
+                        <MapPin className="h-6 w-6" />
+                        <div className="mb-2 mt-4 text-lg font-medium">
+                          {t("navigation.locations")}
+                        </div>
+                        <p className="text-sm leading-tight text-muted-foreground">
+                          {t("navigation.locationsDescription")}
+                        </p>
+                      </a>
+                    </NavigationMenuLink>
+                  </li>
+                  <ListItem href="/location/iran" title={t("navigation.iran")}>
+                    {t("navigation.iranDescription")}
+                  </ListItem>
+                  <ListItem href="/location/turkey" title={t("navigation.turkey")}>
+                    {t("navigation.turkeyDescription")}
+                  </ListItem>
+                  <ListItem href="/location/china" title={t("navigation.china")}>
+                    {t("navigation.chinaDescription")}
+                  </ListItem>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>{t("navigation.services")}</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-[.75fr_1fr] lg:w-[600px]">
+                  <li className="row-span-3">
+                    <NavigationMenuLink asChild>
+                      <a
+                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                        href="/"
+                      >
+                        <Truck className="h-6 w-6" />
+                        <div className="mb-2 mt-4 text-lg font-medium">
+                          {t("navigation.services")}
+                        </div>
+                        <p className="text-sm leading-tight text-muted-foreground">
+                          {t("navigation.servicesDescription")}
+                        </p>
+                      </a>
+                    </NavigationMenuLink>
+                  </li>
+                  <ListItem href="/services/transport" title={t("navigation.transport")}>
+                    {t("navigation.transportDescription")}
+                  </ListItem>
+                  <ListItem href="/services/processing" title={t("navigation.processing")}>
+                    {t("navigation.processingDescription")}
+                  </ListItem>
+                  <ListItem href="/services/installation" title={t("navigation.installation")}>
+                    {t("navigation.installationDescription")}
+                  </ListItem>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
 
         {/* Search Bar */}
         <div className="flex-1 max-w-md">
@@ -371,6 +517,32 @@ const Header = () => {
     </header>
   );
 };
+
+const ListItem = React.forwardRef<
+  React.ComponentRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  )
+})
+ListItem.displayName = "ListItem"
 
 export default Header;
 

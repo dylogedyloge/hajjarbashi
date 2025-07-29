@@ -105,9 +105,9 @@ const AdsList = () => {
         <MobileCategoryFilters />
       </div>
       {/* Desktop: Filters and Sort */}
-      <div className="hidden md:block">
+      {/* <div className="hidden md:block">
         <DesktopFilters />
-      </div>
+      </div> */}
       <div className="hidden md:block">
         <DesktopSortAndCheckboxFilters 
           viewMode={layout} 

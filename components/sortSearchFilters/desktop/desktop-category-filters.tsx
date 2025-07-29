@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Check, ArrowLeft, DollarSign } from "lucide-react";
+import {  ArrowLeft, DollarSign } from "lucide-react";
 import { Stone, Block, Slab, Tile } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

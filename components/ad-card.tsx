@@ -117,16 +117,6 @@ const AdCard = ({ ad,
 
   return (
     <div className="relative bg-background rounded-xl shadow-sm border border-border overflow-hidden w-full">
-      {/* Bookmark Button */}
-      {/* <Button
-        onClick={handleBookmarkToggle}
-        className="absolute top-3 right-3 z-10 transition-colors shadow-sm"
-        aria-label={isBookmarked ? "Remove from bookmarks" : "Add to bookmarks"}
-        variant={isBookmarked ? "default" : "outline"}
-        size="sm"
-      >
-        <Bookmark className="w-4 h-4" />
-      </Button> */}
 
       <div className="flex flex-col md:flex-row">
         {/* Left Section - Image */}
@@ -156,8 +146,8 @@ const AdCard = ({ ad,
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="bg-white rounded-md p-1 cursor-help shadow-sm">
-                      <Zap className="w-3 h-3 text-red-500" />
+                    <div className="bg-background rounded-sm p-1 cursor-help shadow-sm">
+                      <Zap className="w-4 h-4 text-red-500" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -170,8 +160,8 @@ const AdCard = ({ ad,
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="bg-white rounded-md p-1 cursor-help shadow-sm">
-                      <Bookmark className="w-3 h-3 text-blue-500" />
+                    <div className="bg-background rounded-sm p-1 cursor-help shadow-sm">
+                      <Bookmark className="w-4 h-4 text-blue-500" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>

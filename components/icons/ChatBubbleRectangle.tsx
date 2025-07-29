@@ -1,8 +1,6 @@
 import React from 'react';
 
-interface ChatBubbleRectangleProps extends React.SVGProps<SVGSVGElement> {}
-
-const ChatBubbleRectangle: React.FC<ChatBubbleRectangleProps> = (props) => {
+const ChatBubbleRectangle: React.FC<React.SVGProps<SVGSVGElement>> = (props) => {
   return (
     <svg
       width="24"

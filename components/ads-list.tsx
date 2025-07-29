@@ -1,6 +1,6 @@
 "use client";
 import AdCard from "./ad-card";
-import DesktopFilters from "./sortSearchFilters/desktop/desktop-filters";
+// import DesktopFilters from "./sortSearchFilters/desktop/desktop-filters";
 import DesktopSortAndCheckboxFilters from "./sortSearchFilters/desktop/desktop-sort-and-checkbox-filters";
 import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";

@@ -1,8 +1,6 @@
 import React from 'react';
 
-interface UserProps extends React.SVGProps<SVGSVGElement> {}
-
-const User: React.FC<UserProps> = (props) => {
+const User: React.FC<React.SVGProps<SVGSVGElement>> = (props) => {
   return (
     <svg
       width="24"

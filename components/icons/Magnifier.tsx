@@ -1,8 +1,6 @@
 import React from 'react';
 
-interface MagnifierProps extends React.SVGProps<SVGSVGElement> {}
-
-const Magnifier: React.FC<MagnifierProps> = (props) => {
+const Magnifier: React.FC<React.SVGProps<SVGSVGElement>> = (props) => {
   return (
     <svg
       width="16"

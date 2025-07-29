@@ -466,18 +466,8 @@ const Header = () => {
                     <HelpCircle size={16} />
                     Support
                   </Button>
-                  <div className="border-t border-border my-1" />
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9"
-                    onClick={() => {
-                      // Theme toggler functionality
-                    }}
-                  >
                     <ThemeToggler />
-                    Theme
-                  </Button>
-                  <div className="border-t border-border my-1" />
+                    <span className="text-sm font-medium">{t("theme")}</span>
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 h-9 text-destructive hover:text-destructive"

@@ -47,7 +47,7 @@ const CreateAdvertisementButton = ({
       toast.error(errorMessage, {
         action: {
           label: t("completeProfile") || "Complete Profile",
-          onClick: () => router.push(`/${locale}/profile/settings`),
+          onClick: () => router.push(`/${locale}/profile/overview`),
         },
       });
     }

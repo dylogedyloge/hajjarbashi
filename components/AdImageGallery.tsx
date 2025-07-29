@@ -11,11 +11,20 @@ type Props = {
 
 export default function AdImageGallery({ mainImageUrl, galleryImages, alt }: Props) {
   const [selectedImage, setSelectedImage] = useState<string | null>(mainImageUrl);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   // Combine main image with gallery images, ensuring no duplicates
   const allImages = [mainImageUrl, ...galleryImages].filter((img, index, arr) => 
     img && arr.indexOf(img) === index
   ) as string[];
+
+  const handleImageError = (imageUrl: string) => {
+    setImageErrors(prev => new Set(prev).add(imageUrl));
+  };
+
+  const isImageValid = (imageUrl: string) => {
+    return !imageErrors.has(imageUrl);
+  };
 
   return (
     <div className="flex gap-4 h-full min-h-[400px]">
@@ -30,12 +39,24 @@ export default function AdImageGallery({ mainImageUrl, galleryImages, alt }: Pro
                 className="relative w-20 h-20 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden"
                 onClick={() => setSelectedImage(imgUrl)}
               >
-                <Image
-                  src={imgUrl}
-                  alt={`Gallery image ${i + 1}`}
-                  fill
-                  className={`object-cover ${selectedImage === imgUrl ? "ring-2 ring-primary" : ""}`}
-                />
+                {isImageValid(imgUrl) ? (
+                  <Image
+                    src={imgUrl}
+                    alt={`Gallery image ${i + 1}`}
+                    fill
+                    className={`object-cover ${selectedImage === imgUrl ? "ring-2 ring-primary" : ""}`}
+                    onError={() => handleImageError(imgUrl)}
+                    unoptimized
+                  />
+                ) : (
+                  <Image
+                    src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins"
+                    alt="Placeholder"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                )}
               </div>
             );
           })}
@@ -44,10 +65,23 @@ export default function AdImageGallery({ mainImageUrl, galleryImages, alt }: Pro
 
       {/* Main Image */}
       <div className="flex-1 bg-muted flex items-center justify-center relative rounded-lg overflow-hidden h-full">
-        {selectedImage ? (
-          <Image src={selectedImage} alt={alt} fill className="object-cover" />
+        {selectedImage && isImageValid(selectedImage) ? (
+          <Image 
+            src={selectedImage} 
+            alt={alt} 
+            fill 
+            className="object-cover"
+            onError={() => handleImageError(selectedImage)}
+            unoptimized
+          />
         ) : (
-          <Skeleton className="w-full h-full" />
+          <Image
+            src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins"
+            alt="Placeholder"
+            fill
+            className="object-cover"
+            unoptimized
+          />
         )}
       </div>
     </div>

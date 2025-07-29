@@ -23,9 +23,9 @@ const ThemeToggler = () => {
       className="rounded-full"
     >
       {resolvedTheme === "dark" ? (
-        <Sun className="size-5" />
+        <Sun className="size-4" />
       ) : (
-        <Moon className="size-5" />
+        <Moon className="size-4" />
       )}
     </Button>
   );

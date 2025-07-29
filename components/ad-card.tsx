@@ -1,14 +1,12 @@
+"use client";
 import Image from "next/image";
-import {  Zap, Bookmark, Star} from "lucide-react";
+import { Zap, Bookmark, Star} from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-// import { useState } from "react";
-// import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-// import { createBookmark, deleteBookmark } from "@/lib/advertisements";
-// import { useAuth } from "@/lib/auth-context";
 import { formatRelativeTime } from "@/utils/time";
 import { getCountryFlag } from "@/utils/country-utils";
+import { useState } from "react";
 
 interface AdCardProps {
   ad: {
@@ -83,16 +81,7 @@ const AdCard = ({ ad,
    }: AdCardProps) => {
   const t = useTranslations("AdCard");
   const locale = useLocale();
-  // const { token, isAuthenticated } = useAuth();
-  // const [isBookmarked, setIsBookmarked] = useState(ad.bookmarked || isFromBookmarksPage);
-  // const [isBookmarking, setIsBookmarking] = useState(false);
-  
-  // Prefer ad.colors (array) over ad.color (string)
-  // const colorArray = Array.isArray(ad.colors)
-  //   ? ad.colors
-  //   : typeof ad.color === "string"
-  //   ? ad.color.split(/[,\s]+/).filter(Boolean)
-  //   : [];
+  const [imageError, setImageError] = useState(false);
   
   // Get image from cover_thumb, media array, or legacy image field
   const mediaArray = Array.isArray(ad.media) ? ad.media : [];
@@ -122,48 +111,9 @@ const AdCard = ({ ad,
     return getCountryFlag(ad.origin_country?.name);
   };
 
-  // const handleBookmarkToggle = async (e: React.MouseEvent) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-    
-  //   if (!isAuthenticated || !token) {
-  //     // Handle unauthenticated user - could show login prompt
-  //     console.log("User must be authenticated to bookmark ads");
-  //     return;
-  //   }
-
-  //   if (isBookmarking) return; // Prevent multiple simultaneous requests
-
-  //   setIsBookmarking(true);
-    
-  //   try {
-  //     if (isBookmarked) {
-  //       // Remove bookmark
-  //       await deleteBookmark({
-  //         adId: ad.id,
-  //         locale,
-  //         token: token,
-  //       });
-  //       setIsBookmarked(false);
-  //       onBookmarkChange?.(false);
-  //     } else {
-  //       // Add bookmark
-  //       await createBookmark({
-  //         adId: ad.id,
-  //         locale,
-  //         token: token,
-  //       });
-  //       setIsBookmarked(true);
-  //       onBookmarkChange?.(true);
-  //     }
-  //   } catch (error) {
-  //     console.error('Bookmark operation failed:', error);
-  //     // Revert the UI state on error
-  //     setIsBookmarked(!isBookmarked);
-  //   } finally {
-  //     setIsBookmarking(false);
-  //   }
-  // };
+  const handleImageError = () => {
+    setImageError(true);
+  };
 
   return (
     <div className="relative bg-background rounded-xl shadow-sm border border-border overflow-hidden w-full">
@@ -181,17 +131,23 @@ const AdCard = ({ ad,
       <div className="flex flex-col md:flex-row">
         {/* Left Section - Image */}
         <div className="relative md:w-48 w-full aspect-square md:aspect-auto flex-shrink-0">
-          {imageSrc && imageSrc !== "" ? (
+          {imageSrc && imageSrc !== "" && !imageError ? (
             <Image
               src={imageSrc}
               alt={ad.stone_type || ad.category?.name || "Ad image"}
               fill
               className="object-cover w-full h-full md:static md:w-48 md:h-36"
+              onError={handleImageError}
+              unoptimized // Add this to bypass Next.js image optimization for external URLs
             />
           ) : (
-            <div className="bg-muted w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-              {t("noImage")}
-            </div>
+            <Image
+              src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins"
+              alt="Placeholder"
+              fill
+              className="object-cover w-full h-full md:static md:w-48 md:h-36"
+              unoptimized
+            />
           )}
           
           {/* Overlay Icons */}

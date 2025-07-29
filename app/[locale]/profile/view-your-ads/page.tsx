@@ -318,6 +318,15 @@ export default function ViewYourAdsPage() {
                             fill
                             className="object-cover"
                             sizes="(max-width: 1280px) 100vw, 50vw"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<img src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins" alt="Placeholder" class="w-full h-full object-cover" />';
+                              }
+                            }}
+                            unoptimized
                           />
                         </div>
                       )}

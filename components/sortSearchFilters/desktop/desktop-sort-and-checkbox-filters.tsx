@@ -53,13 +53,14 @@ const DesktopSortAndCheckboxFilters = ({
       {/* Filter Buttons Section */}
       <div className="flex items-center gap-2">
         <Button
-          variant={expressFilter ? "default" : "outline"}
+          // variant={expressFilter ? "default" : "outline"}
+          variant="outline"
           size="sm"
           className={cn(
             "h-8",
             expressFilter 
-              ? "bg-orange-500 text-white border-orange-500 hover:bg-orange-600" 
-              : "border-muted text-foreground"
+              ? "bg-orange-800  text-orange-100" 
+              : "border-muted"
           )}
           onClick={() => onExpressFilterChange?.(!expressFilter)}
         >
@@ -72,8 +73,8 @@ const DesktopSortAndCheckboxFilters = ({
           className={cn(
             "h-8",
             featuredFilter 
-              ? "bg-orange-500 text-white border-orange-500 hover:bg-orange-600" 
-              : "border-muted text-foreground"
+              ? "bg-orange-800  text-orange-100" 
+              : "border-muted"
           )}
           onClick={() => onFeaturedFilterChange?.(!featuredFilter)}
         >

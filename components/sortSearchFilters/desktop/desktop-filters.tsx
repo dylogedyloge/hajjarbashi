@@ -12,7 +12,7 @@ const filterFields = [
   { label: "color", options: ["option1", "option2"] },
   { label: "origin", options: ["option1", "option2"] },
   { label: "surface", options: ["option1", "option2"] },
-  { label: "size", options: ["option1", "option2"] },
+  { label: , options: ["option1", "option2"] },
   { label: "price", options: ["option1", "option2"] },
   { label: "deliveryDestination", options: ["option1", "option2"] },
   { label: "shipmentFrom", options: ["option1", "option2"] },

@@ -1,15 +1,14 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import AdsList from "@/components/ads-list";
 import DesktopCategoryFilters from "@/components/sortSearchFilters/desktop/desktop-category-filters";
 import { AdsFilters } from "@/components/ads-list";
-import { SearchProvider, useSearch } from "@/lib/search-context";
+import { useSearch } from "@/lib/search-context";
 
 export default function Home() {
   const [filters, setFilters] = useState<AdsFilters>({});
   const [expressFilter, setExpressFilter] = useState<boolean>(false);
   const [featuredFilter, setFeaturedFilter] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const handleFiltersChange = (newFilters: AdsFilters) => {
     console.log('🔄 Updating filters:', newFilters);
@@ -38,7 +37,6 @@ export default function Home() {
 
   const handleSearchChange = useCallback((search: string) => {
     console.log('🔍 Search term changed:', search);
-    setSearchTerm(search);
     // Update filters with search parameter
     setFilters(prev => ({
       ...prev,

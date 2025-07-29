@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Gem, Box, Square, Grid3X3, Check, ArrowLeft,  DollarSign } from "lucide-react";
+import { Check, ArrowLeft, DollarSign } from "lucide-react";
+import { Stone, Block, Slab, Tile } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -119,10 +120,10 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
   }, []);
 
   const formStoneOptions = [
-    { id: "all", label: t("allStone"), icon: Gem },
-    { id: "block", label: t("blocks"), icon: Box },
-    { id: "slab", label: t("slabs"), icon: Square },
-    { id: "tile", label: t("tiles"), icon: Grid3X3 },
+    { id: "all", label: t("allStone"), icon: Stone },
+    { id: "block", label: t("blocks"), icon: Block },
+    { id: "slab", label: t("slabs"), icon: Slab },
+    { id: "tile", label: t("tiles"), icon: Tile },
   ];
 
   const colorOptions = [
@@ -266,12 +267,12 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                 return (
                   <Button
                     key={option.id}
-                    variant={selectedFormStone === option.id ? "default" : "outline"}
+                    variant="outline"
                     className={cn(
                       "h-20 flex flex-col gap-2 p-3",
                       selectedFormStone === option.id 
-                        ? "border-orange-200 text-orange-100" 
-                        : "border-muted"
+                        ? "border-orange-400 text-foreground" 
+                        : ""
                     )}
                     onClick={() => setSelectedFormStone(option.id)}
                   >
@@ -303,7 +304,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   <div
                     key={category.id}
                     className={cn(
-                      "relative cursor-pointer rounded-lg border-2 transition-all",
+                      "relative cursor-pointer rounded-lg border-1 transition-all",
                       selectedCategories.includes(category.id) 
                         ? "border-orange-500" 
                         : "border-muted hover:border-orange-200"
@@ -322,11 +323,11 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                     <div className="p-1 text-center">
                       <span className="text-xs font-medium text-foreground">{category.name}</span>
                     </div>
-                    {selectedCategories.includes(category.id) && (
+                    {/* {selectedCategories.includes(category.id) && (
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
                         <Check className="w-2.5 h-2.5 text-white" />
                       </div>
-                    )}
+                    )} */}
                   </div>
                 ))}
               </div>
@@ -341,27 +342,27 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                 <div
                   key={color.id}
                   className={cn(
-                    "relative cursor-pointer rounded-lg border-2 transition-all p-2",
+                    "relative cursor-pointer rounded-sm border-1 transition-all p-1",
                     selectedColors.includes(color.id) 
-                      ? "border-orange-500 ring-2 ring-orange-200 bg-orange-50" 
+                      ? "border-orange-500" 
                       : "border-white hover:border-orange-200"
                   )}
                   onClick={() => handleColorToggle(color.id)}
                 >
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center ">
                     <div
-                      className="w-10 h-10 rounded-sm border border-gray-200"
+                      className="w-10 h-10 rounded-sm border"
                       style={{ backgroundColor: color.color }}
                     />
-                    <span className="text-xs font-medium text-foreground text-center">
+                    {/* <span className="text-xs font-medium text-foreground text-center">
                       {color.name}
-                    </span>
+                    </span> */}
                   </div>
-                  {selectedColors.includes(color.id) && (
+                  {/* {selectedColors.includes(color.id) && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
                       <Check className="w-2.5 h-2.5 text-white" />
                     </div>
-                  )}
+                  )} */}
                 </div>
               ))}
             </div>

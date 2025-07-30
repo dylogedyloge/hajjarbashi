@@ -1,19 +1,22 @@
+variables:
+  GIT_STRATEGY: clone
+
 stages:
   - build
   - deploy
 
 build:
   stage: build
-  image: node:20
+  tags:
+    - shell 
   script:
-    - npm install
-    - npm run build
-    - docker build -t hajjar-site .
+    - docker compose build
 
 deploy:
   stage: deploy
-  image: docker:latest
+  tags:
+    - shell
   script:
-    - docker stop hajjar-site || true
-    - docker rm hajjar-site || true
-    - docker run -d --name hajjar-site -p 3000:3000 hajjar-site
+    - echo "📦 Starting Docker Compose...."
+    - docker compose down || true
+    - docker compose up -d

@@ -128,6 +128,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
         setMinPrice(0);
         setMaxPrice(50000);
         setPriceRange([0, 50000]);
+        console.log('🔍 Error fetching price range:', e);
       } finally {
         setLoadingPrice(false);
       }
@@ -198,9 +199,9 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
     return price >= 1000 ? `$${(price / 1000).toFixed(0)}K` : `$${price}`;
   };
 
-  const handlePriceRangeChange = (value: number[]) => {
-    setPriceRange([value[0], value[1]]);
-  };
+  // const handlePriceRangeChange = (value: number[]) => {
+  //   setPriceRange([value[0], value[1]]);
+  // };
 
   const handleApplyFilters = () => {
     const filters: AdsFilters = {};

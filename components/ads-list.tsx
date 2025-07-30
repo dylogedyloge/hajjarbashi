@@ -163,7 +163,7 @@ const AdsList = ({
 
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto px-8">
+    <div className="flex flex-col gap-8 w-full px-4">
       {/* Mobile: Search and Badge Filters */}
       <div className="md:hidden flex flex-col gap-2">
         <MobileSearchAndFilter />

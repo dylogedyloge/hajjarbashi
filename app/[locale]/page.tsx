@@ -81,13 +81,14 @@ function HomeContent({
   setSearchHandler(handleSearchChange);
 
   return (
-    <div className="flex flex-col md:flex-row md:items-start md:gap-8 w-full max-w-7xl mx-auto px-2 md:px-8 py-10">
+    <div 
+    className="flex flex-col md:flex-row md:items-start w-full px-2 md:px-8 py-10">
       {/* Desktop: Category Sidebar */}
       <div className="hidden md:block shrink-0">
         <DesktopCategoryFilters onFiltersChange={handleFiltersChange} />
       </div>
       {/* Main Content: Ads List */}
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <AdsList 
           filters={filters} 
           onExpressFilterChange={handleExpressFilterChange}

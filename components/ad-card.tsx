@@ -111,16 +111,16 @@ const AdCard = ({ ad,
     return getCountryFlag(ad.origin_country?.name);
   };
 
-  const handleImageError = () => {
+  const handleImageError = () => { 
     setImageError(true);
   };
 
   return (
-    <div className="relative bg-background rounded-xl shadow-sm border border-border overflow-hidden w-full">
+    <div className="relative bg-background rounded-xl shadow-sm border border-border overflow-hidden w-full min-h-36">
 
       <div className="flex flex-col md:flex-row">
         {/* Left Section - Image */}
-        <div className="relative md:w-48 w-full aspect-square md:aspect-auto flex-shrink-0">
+        <div className="relative md:w-48 w-full h-full min-h-50 flex-shrink-0">
           {imageSrc && imageSrc !== "" && !imageError ? (
             <Image
               src={imageSrc}
@@ -243,16 +243,14 @@ const AdCard = ({ ad,
           </div>
 
           {/* Product Title */}
-          <h3 className={`font-bold text-foreground mb-2 ${isGrid ? 'text-base' : 'text-lg'}`}>
+          <h3 className="font-bold text-foreground mb-2 text-lg">
             {ad.stone_type || ad.category?.name || t("defaultProductName")}
           </h3>
 
-          {/* Description - Only show in list view */}
-          {!isGrid && (
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-              {ad.description || t("defaultDescription")}
-            </p>
-          )}
+          {/* Description - Always show, clamp lines based on view */}
+          <p className={`text-sm text-muted-foreground mb-4 ${isGrid ? 'line-clamp-2' : 'line-clamp-4'}`}>
+            {ad.description || t("defaultDescription")}
+          </p>
 
           {/* Specifications Tags */}
           <div className="flex flex-wrap gap-2 mb-3">
@@ -271,12 +269,12 @@ const AdCard = ({ ad,
           {/* Price and Time */}
           <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-1">
-              <span className={`font-bold text-foreground ${isGrid ? 'text-sm' : 'text-xl'}`}>
+              <span className="font-bold text-foreground text-xl">
                 {locale === "fa"
                   ? `${ad.price?.toLocaleString?.()} $`
                   : `$ ${ad.price?.toLocaleString?.()}`}
               </span>
-              <span className={`text-muted-foreground ${isGrid ? 'text-xs' : 'text-sm'}`}>
+              <span className="text-muted-foreground text-sm">
                 /{getPriceUnit()?.toLowerCase?.()}
               </span>
             </div>

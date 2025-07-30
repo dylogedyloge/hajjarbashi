@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ArrowDownUp, Zap, Star, Grid3X3, List } from "lucide-react";
+import { ArrowDownUp, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,6 +11,11 @@ import {
 } from "@/components/ui/select";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
+import Grid from "@/components/icons/Grid";
+import List from "@/components/icons/List";
+import Star from "@/components/icons/Gemini";
+
+
 
 interface DesktopSortAndCheckboxFiltersProps {
   viewMode?: "grid" | "list";
@@ -98,7 +103,7 @@ const DesktopSortAndCheckboxFilters = ({
             )}
             onClick={() => onViewModeChange?.("grid")}
           >
-            <Grid3X3 className="w-4 h-4" />
+            <Grid className="w-4 h-4" />
           </Button>
           <Button
             variant="outline"

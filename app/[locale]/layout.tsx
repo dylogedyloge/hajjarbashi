@@ -14,7 +14,7 @@ import { SearchProvider } from "@/lib/search-context";
 import { getMessages } from "next-intl/server";
 
 const poppins = localFont({
-  src: "../../public/fonts/Poppins-Medium.ttf",
+  src: "../../public/fonts/Lexend-Regular.ttf",
   display: "swap",
   variable: "--font-poppins",
   preload: true,

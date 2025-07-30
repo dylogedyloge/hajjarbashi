@@ -71,10 +71,10 @@ const DesktopSortAndCheckboxFilters = ({
           variant="outline"
           size="sm"
           className={cn(
-            "h-8 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white active:bg-orange-600 active:text-white transition-colors",
-            expressFilter 
-              ? "bg-orange-600 text-white border-orange-600" 
-              : "bg-white"
+            "bg-orange-300 text-red-900 hover:bg-orange-400 h-8 transition-colors",
+            expressFilter
+              ? "border-orange-500 bg-orange-400 text-red-900"
+              : "border-muted"
           )}
           onClick={() => onExpressFilterChange?.(!expressFilter)}
         >
@@ -82,13 +82,13 @@ const DesktopSortAndCheckboxFilters = ({
           {t("expressDelivery")}
         </Button>
         <Button
-          variant={featuredFilter ? "default" : "outline"}
+          variant= "outline"
           size="sm"
           className={cn(
-           "h-8 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white active:bg-orange-600 active:text-white transition-colors",
+           "h-8 transition-colors",
             featuredFilter 
-              ? "bg-orange-600 text-white border-orange-600" 
-              : "bg-white"
+                            ? "border-orange-500"
+              : "border-muted"
           )}
           onClick={() => onFeaturedFilterChange?.(!featuredFilter)}
         >

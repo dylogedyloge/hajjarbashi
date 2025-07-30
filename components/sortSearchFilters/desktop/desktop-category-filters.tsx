@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import { AdsFilters } from "@/components/ads-list";
-import { fetchCategories, fetchSurfaces, fetchPorts, fetchCountries } from "@/lib/advertisements";
+import { fetchCategories, fetchSurfaces, fetchPorts, fetchCountries, fetchAds } from "@/lib/advertisements";
 
 interface DesktopCategoryFiltersProps {
   onFiltersChange?: (filters: AdsFilters) => void;
@@ -47,7 +47,10 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
   const [selectedFormStone, setSelectedFormStone] = useState<string>("all");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([12000, 18000]);
+  const [minPrice, setMinPrice] = useState<number | null>(null);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
+  const [loadingPrice, setLoadingPrice] = useState(true);
   const [selectedSurfaces, setSelectedSurfaces] = useState<string[]>([]);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedReceivingPorts, setSelectedReceivingPorts] = useState<string[]>([]);
@@ -111,6 +114,25 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
         setLoadingCountries(false);
       }
     };
+
+    async function fetchPriceRange() {
+      setLoadingPrice(true);
+      try {
+        const res = await fetchAds({ limit: 1, page: 1, locale: "en" }); // TODO: use current locale if available
+        const min = res.data?.min_price ?? 0;
+        const max = res.data?.max_price ?? 50000;
+        setMinPrice(min);
+        setMaxPrice(max);
+        setPriceRange([min, max]);
+      } catch (e) {
+        setMinPrice(0);
+        setMaxPrice(50000);
+        setPriceRange([0, 50000]);
+      } finally {
+        setLoadingPrice(false);
+      }
+    }
+    fetchPriceRange();
 
     loadCategories();
     loadSurfaces();
@@ -271,8 +293,8 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                       className={cn(
                         "h-20 flex flex-col gap-2 p-3",
                         selectedFormStone === option.id 
-                          ? "border-orange-400 text-foreground" 
-                          : ""
+                          ? "border-orange-500" 
+                          : "border-muted"
                       )}
                       onClick={() => setSelectedFormStone(option.id)}
                     >
@@ -330,7 +352,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
             </div>
 
             {/* Color Selection */}
-            <div className="space-y-3">
+            <div className="space-y-3 mb-4">
               <h3 className="font-bold text-foreground text-sm">{t("color")}</h3>
               <div className="grid grid-cols-4 gap-2">
                 {colorOptions.map((color) => (
@@ -376,47 +398,52 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
             <div className="space-y-3">
               <h3 className="font-bold text-foreground text-sm">{t("price")}</h3>
               <div className="space-y-3">
-                {/* Price Inputs */}
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      placeholder={t("min")}
-                      className="pl-8"
-                      value={priceRange[0]}
-                      onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
-                    />
-                  </div>
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-                      {t("to")}
-                    </span>
-                    <DollarSign className="absolute left-12 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      placeholder={t("max")}
-                      className="pl-16"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 0])}
-                    />
-                  </div>
-                </div>
-                
-                {/* Price Range Slider */}
-                <div className="px-2">
-                  <Slider
-                    value={priceRange}
-                    onValueChange={handlePriceRangeChange}
-                    min={0}
-                    max={50000}
-                    step={100}
-                    className="w-full"
-                  />
-                </div>
-                
-                {/* Current Range Display */}
-                <div className="text-sm text-muted-foreground text-center">
-                  {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                </div>
+                {loadingPrice ? (
+                  <div>Loading price range...</div>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Input
+                          placeholder={t("min")}
+                          className="pl-8"
+                          value={priceRange[0]}
+                          min={minPrice ?? 0}
+                          max={maxPrice ?? 50000}
+                          onChange={e => setPriceRange([parseInt(e.target.value) || minPrice!, priceRange[1]])}
+                        />
+                      </div>
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
+                          {t("to")}
+                        </span>
+                        <DollarSign className="absolute left-12 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Input
+                          placeholder={t("max")}
+                          className="pl-16"
+                          value={priceRange[1]}
+                          min={minPrice ?? 0}
+                          max={maxPrice ?? 50000}
+                          onChange={e => setPriceRange([priceRange[0], parseInt(e.target.value) || maxPrice!])}
+                        />
+                      </div>
+                    </div>
+                    <div className="px-2">
+                      <Slider
+                        value={priceRange}
+                        onValueChange={value => setPriceRange([value[0], value[1]])}
+                        min={minPrice ?? 0}
+                        max={maxPrice ?? 50000}
+                        step={100}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="text-sm text-muted-foreground text-center">
+                      {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -439,12 +466,12 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   surfaces.map((surface) => (
                     <Button
                       key={surface.id}
-                      variant={selectedSurfaces.includes(surface.id) ? "default" : "outline"}
+                      variant="outline"
                       size="sm"
                       className={cn(
                         "text-xs",
                         selectedSurfaces.includes(surface.id) 
-                          ? "bg-orange-800  text-orange-100" 
+                          ? "border-orange-500" 
                           : "border-muted"
                       )}
                       onClick={() => handleSurfaceToggle(surface.id)}
@@ -463,12 +490,12 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                 {["small", "medium", "big"].map((size) => (
                   <Button
                     key={size}
-                    variant={selectedSize === size ? "default" : "outline"}
+                    variant="outline"
                     size="sm"
                     className={cn(
                       "flex-1",
                       selectedSize === size 
-                        ? "bg-orange-800  text-orange-100" 
+                        ? "border-orange-500" 
                         : "border-muted"
                     )}
                     onClick={() => handleSizeToggle(size)}
@@ -495,12 +522,12 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   {ports.map((port) => (
                     <Button
                       key={port.id}
-                      variant={selectedReceivingPorts.includes(port.id) ? "default" : "outline"}
+                      variant="outline"
                       size="sm"
                       className={cn(
                         "text-xs",
                         selectedReceivingPorts.includes(port.id) 
-                          ? "bg-orange-800 text-orange-100" 
+                          ? "border-orange-500" 
                           : "border-muted"
                       )}
                       onClick={() => {
@@ -534,12 +561,12 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   {ports.map((port) => (
                     <Button
                       key={port.id}
-                      variant={selectedExportPorts.includes(port.id) ? "default" : "outline"}
+                      variant="outline"
                       size="sm"
                       className={cn(
                         "text-xs",
                         selectedExportPorts.includes(port.id) 
-                          ? "bg-orange-800 text-orange-100" 
+                          ? "border-orange-500" 
                           : "border-muted"
                       )}
                       onClick={() => {
@@ -573,12 +600,12 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   {countries.map((country) => (
                     <Button
                       key={country.id}
-                      variant={selectedOriginCountries.includes(country.id) ? "default" : "outline"}
+                      variant="outline"
                       size="sm"
                       className={cn(
                         "text-xs",
                         selectedOriginCountries.includes(country.id) 
-                          ? "bg-orange-800 text-orange-100" 
+                          ? "border-orange-500" 
                           : "border-muted"
                       )}
                       onClick={() => {
@@ -597,18 +624,18 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
             </div>
 
             {/* Grade Section */}
-            <div className="space-y-3">
+            <div className="space-y-3 mb-10">
               <h3 className="font-bold text-foreground text-sm">{t("grade")}</h3>
               <div className="flex gap-2">
                 {["a", "b", "c"].map((grade) => (
                   <Button
                     key={grade}
-                    variant={selectedGrade === grade ? "default" : "outline"}
+                    variant="outline"
                     size="sm"
                     className={cn(
                       "flex-1",
                       selectedGrade === grade 
-                        ? "bg-orange-800 text-orange-100" 
+                        ? "border-orange-500" 
                         : "border-muted"
                     )}
                     onClick={() => handleGradeToggle(grade)}
@@ -622,7 +649,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
         )}
 
         {/* Fade Out Effect - Bottom Gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </div>
 
       {/* Bottom Actions */}

@@ -19,49 +19,24 @@ import BookmarkButton from "@/components/BookmarkButton";
 
 type Media = { media_thumb_path?: string; media_path?: string };
 
-export default async function Page(props: unknown) {
-  const { params, searchParams } = props as {
-    params: Promise<{ id: string; locale: string }>;
-    searchParams?: { [key: string]: string | string[] | undefined };
-  };
-  const resolvedParams = await params;
-  const locale = Array.isArray(searchParams?.lang)
-    ? searchParams.lang[0]
-    : searchParams?.lang || "en";
-  let ad = null;
-  let creatorProfile = null;
-  try {
-    const res = await fetchAdById({ id: resolvedParams.id, locale });
-    ad = res?.data || null;
-    if (ad?.creator_id) {
-      creatorProfile = await fetchUserProfile(ad.creator_id, locale);
-    }
-  } catch {
-    ad = null;
-    creatorProfile = null;
-  }
-  if (!ad) return notFound();
+// Client component for translations
+// "use client";
+import { useTranslations } from "next-intl";
 
-  // Main image: first media or cover
-  const mediaArray = Array.isArray(ad.media) ? ad.media : [];
-  const mainImage =
-    mediaArray.length > 0
-      ? mediaArray[0].media_thumb_path || mediaArray[0].media_path
-      : ad.cover_thumb || ad.cover || "";
-  const mainImageUrl = mainImage
-    ? mainImage.startsWith("http")
-      ? mainImage
-      : `https://api.hajjardevs.ir/${mainImage}`
-    : null;
-  const galleryImages = mediaArray
-    .slice(1)
-    .map((m: Media) => m.media_thumb_path || m.media_path)
-    .filter(Boolean);
-
-  // Colors
-  const colorArray = Array.isArray(ad.colors) ? ad.colors : [];
-
-
+function AdDetailContent({ 
+  ad, 
+  creatorProfile, 
+  mainImageUrl, 
+  galleryImages, 
+  colorArray 
+}: {
+  ad: any;
+  creatorProfile: any;
+  mainImageUrl: string | null;
+  galleryImages: string[];
+  colorArray: string[];
+}) {
+  const t = useTranslations("AdDetailPage");
 
   // Get country flag component
   const getCountryFlagComponent = () => {
@@ -73,22 +48,11 @@ export default async function Page(props: unknown) {
       {/* Breadcrumbs and Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="text-sm text-muted-foreground">
-          Home &gt; Products &gt; {ad.category?.name || "Products"}
+          {t("home")} &gt; {t("products")} &gt; {ad.category?.name || t("products")}
         </div>
         <div className="flex items-center gap-3">
-          {/* <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <Bookmark className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <Share2 className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <AlertTriangle className="w-4 h-4" />
-            </Button>
-          </div> */}
           <div className="text-sm text-muted-foreground">
-            Ads ID: {ad.id}
+            {t("adsId")}: {ad.id}
           </div>
         </div>
       </div>
@@ -108,7 +72,7 @@ export default async function Page(props: unknown) {
               <div className="absolute bottom-4 left-4">
                 <Badge className="bg-yellow-500 text-white border-0">
                   <Star className="w-3 h-3 mr-1" />
-                  Featured
+                  {t("featured")}
                 </Badge>
               </div>
             )}
@@ -148,10 +112,10 @@ export default async function Page(props: unknown) {
               {/* Price and Colors */}
               <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold text-foreground">
-                  ${ad.price?.toLocaleString?.()} <span className="text-lg text-muted-foreground">/{ad.sale_unit_type || "unit"}</span>
+                  ${ad.price?.toLocaleString?.()} <span className="text-lg text-muted-foreground">/{ad.sale_unit_type || t("unit")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Colors:</span>
+                  <span className="text-sm text-muted-foreground">{t("colors")}:</span>
                   <div className="flex -space-x-1">
                     {colorArray.slice(0, 3).map((color: string, index: number) => (
                       <TooltipProvider key={index}>
@@ -175,41 +139,41 @@ export default async function Page(props: unknown) {
               {/* Specifications Grid - Exact Layout from Design */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Size:</span>
+                  <span className="text-muted-foreground">{t("size")}:</span>
                   <span className="font-semibold text-foreground">{ad.size_range_type || "Medium"}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Min Order:</span>
-                  <span className="font-semibold text-foreground">{ad.minimum_order?.toLocaleString?.()} {ad.sale_unit_type || "unit"}</span>
+                  <span className="text-muted-foreground">{t("minOrder")}:</span>
+                  <span className="font-semibold text-foreground">{ad.minimum_order?.toLocaleString?.()} {ad.sale_unit_type || t("unit")}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Dims:</span>
+                  <span className="text-muted-foreground">{t("dims")}:</span>
                   <span className="font-semibold text-foreground">
-                    {ad.size ? `${ad.size.h ?? "-"}×${ad.size.w ?? "-"}×${ad.size.l ?? "-"} CM` : "-"}
+                    {ad.size ? `${ad.size.h ?? "-"}×${ad.size.w ?? "-"}×${ad.size.l ?? "-"} ${t("cm")}` : "-"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Weight:</span>
-                  <span className="font-semibold text-foreground">{ad.weight?.toLocaleString?.()} {ad.sale_unit_type || "KG"}</span>
+                  <span className="text-muted-foreground">{t("weight")}:</span>
+                  <span className="font-semibold text-foreground">{ad.weight?.toLocaleString?.()} {ad.sale_unit_type || t("kg")}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Origin:</span>
+                  <span className="text-muted-foreground">{t("origin")}:</span>
                   <div className="flex items-center gap-1">
                     {getCountryFlagComponent()}
-                    <span className="font-semibold text-foreground">{ad.origin_country?.name || "Unknown"}</span>
+                    <span className="font-semibold text-foreground">{ad.origin_country?.name || t("unknown")}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Grade:</span>
-                  <span className="font-semibold text-foreground">{ad.grade?.toUpperCase() || "A Grade"}</span>
+                  <span className="text-muted-foreground">{t("grade")}:</span>
+                  <span className="font-semibold text-foreground">{ad.grade?.toUpperCase() || t("aGrade")}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Surface:</span>
-                  <span className="font-semibold text-foreground">{ad.surface?.name || "Raw"}</span>
+                  <span className="text-muted-foreground">{t("surface")}:</span>
+                  <span className="font-semibold text-foreground">{ad.surface?.name || t("raw")}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Form:</span>
-                  <span className="font-semibold text-foreground">{ad.form || "Block"}</span>
+                  <span className="text-muted-foreground">{t("form")}:</span>
+                  <span className="font-semibold text-foreground">{ad.form || t("block")}</span>
                 </div>
               </div>
 
@@ -218,7 +182,7 @@ export default async function Page(props: unknown) {
                 <div className="space-y-2">
                   {ad.benefits?.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-semibold text-foreground mb-1">Benefits:</h4>
+                      <h4 className="text-sm font-semibold text-foreground mb-1">{t("benefits")}:</h4>
                       <div className="flex flex-wrap gap-1">
                         {ad.benefits.map((benefit: string, index: number) => (
                           <Badge key={index} variant="secondary" className="text-xs">
@@ -230,7 +194,7 @@ export default async function Page(props: unknown) {
                   )}
                   {ad.defects?.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-semibold text-foreground mb-1">Defects:</h4>
+                      <h4 className="text-sm font-semibold text-foreground mb-1">{t("defects")}:</h4>
                       <div className="flex flex-wrap gap-1">
                         {ad.defects.map((defect: string, index: number) => (
                           <Badge key={index} variant="destructive" className="text-xs">
@@ -245,13 +209,13 @@ export default async function Page(props: unknown) {
 
               {/* Supplier Section */}
               <div className="pt-2">
-                <h3 className="text-muted-foreground mb-3">Supplier</h3>
+                <h3 className="text-muted-foreground mb-3">{t("supplier")}</h3>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">R</span>
                   </div>
                   <span className="font-semibold text-foreground">
-                    {creatorProfile?.company_name || "Unknown Company"}
+                    {creatorProfile?.company_name || t("unknownCompany")}
                   </span>
                   <div className="w-4 h-4 bg-orange-500 rounded-sm flex items-center justify-center">
                     <span className="text-white text-xs font-bold">V</span>
@@ -261,7 +225,7 @@ export default async function Page(props: unknown) {
                     <span className="text-sm text-foreground">4.1</span>
                   </div>
                   <Button variant="link" className="text-sm p-0 h-auto">
-                    View All Ads
+                    {t("viewAllAds")}
                   </Button>
                 </div>
               </div>
@@ -269,10 +233,10 @@ export default async function Page(props: unknown) {
               {/* Port Information */}
               <div className="flex justify-between items-center pt-1">
                 <span className="text-sm text-muted-foreground">
-                  Port: {ad.origin_country?.name || "Unknown"} - {ad.origin_city?.name || "Unknown"} - {ad.export_ports_details?.[0]?.name || "Unknown"}
+                  {t("port")}: {ad.origin_country?.name || t("unknown")} - {ad.origin_city?.name || t("unknown")} - {ad.export_ports_details?.[0]?.name || t("unknown")}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  Receive Port: <span className="text-primary underline">Show Details</span>
+                  {t("receivePort")}: <span className="text-primary underline">{t("showDetails")}</span>
                 </span>
               </div>
 
@@ -292,8 +256,60 @@ export default async function Page(props: unknown) {
           </Card>
         </div>
       </div>
-
-
     </div>
+  );
+}
+
+export default async function Page(props: unknown) {
+  const { params, searchParams } = props as {
+    params: Promise<{ id: string; locale: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  };
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const locale = Array.isArray(resolvedSearchParams?.lang)
+    ? resolvedSearchParams.lang[0]
+    : resolvedSearchParams?.lang || "en";
+  let ad = null;
+  let creatorProfile = null;
+  try {
+    const res = await fetchAdById({ id: resolvedParams.id, locale });
+    ad = res?.data || null;
+    if (ad?.creator_id) {
+      creatorProfile = await fetchUserProfile(ad.creator_id, locale);
+    }
+  } catch {
+    ad = null;
+    creatorProfile = null;
+  }
+  if (!ad) return notFound();
+
+  // Main image: first media or cover
+  const mediaArray = Array.isArray(ad.media) ? ad.media : [];
+  const mainImage =
+    mediaArray.length > 0
+      ? mediaArray[0].media_thumb_path || mediaArray[0].media_path
+      : ad.cover_thumb || ad.cover || "";
+  const mainImageUrl = mainImage
+    ? mainImage.startsWith("http")
+      ? mainImage
+      : `https://api.hajjardevs.ir/${mainImage}`
+    : null;
+  const galleryImages = mediaArray
+    .slice(1)
+    .map((m: Media) => m.media_thumb_path || m.media_path)
+    .filter(Boolean);
+
+  // Colors
+  const colorArray = Array.isArray(ad.colors) ? ad.colors : [];
+
+  return (
+    <AdDetailContent
+      ad={ad}
+      creatorProfile={creatorProfile}
+      mainImageUrl={mainImageUrl}
+      galleryImages={galleryImages}
+      colorArray={colorArray}
+    />
   );
 }

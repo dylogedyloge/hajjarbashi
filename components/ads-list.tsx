@@ -113,7 +113,7 @@ const AdsList = ({
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [layout, setLayout] = useState<'list' | 'grid'>('list');
+  const [layout, setLayout] = useState<'list' | 'grid'>('grid');
   const [sort, setSort] = useState<string>("latest");
 
   const handleSortChange = (newSort: string) => {

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ArrowDownUp, Zap } from "lucide-react";
+import { ArrowDownUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -14,6 +14,7 @@ import { cn } from "@/utils/cn";
 import Grid from "@/components/icons/Grid";
 import List from "@/components/icons/List";
 import Star from "@/components/icons/Gemini";
+import Zap from "@/components/icons/LightningBolt2";
 
 
 

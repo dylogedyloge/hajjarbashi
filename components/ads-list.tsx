@@ -90,6 +90,7 @@ export type AdsFilters = {
   express?: boolean;
   promoted?: boolean;
   search_description?: string;
+  sort?: string;
 };
 
 interface AdsListProps {
@@ -113,6 +114,11 @@ const AdsList = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [layout, setLayout] = useState<'list' | 'grid'>('list');
+  const [sort, setSort] = useState<string>("latest");
+
+  const handleSortChange = (newSort: string) => {
+    setSort(newSort);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -134,6 +140,7 @@ const AdsList = ({
       page: 1, 
       locale, 
       token: token || undefined,
+      sort,
       ...filters
     })
       .then((res) => {
@@ -152,7 +159,7 @@ const AdsList = ({
         setError(err.message || "Failed to load ads");
       })
       .finally(() => setLoading(false));
-  }, [locale, token, filters]);
+  }, [locale, token, filters, sort]);
 
   if (loading) return <div className="text-center py-8">Loading ads...</div>;
   if (error) return <div className="text-center text-destructive py-8">{error}</div>;
@@ -179,8 +186,10 @@ const AdsList = ({
           onViewModeChange={setLayout}
           onExpressFilterChange={onExpressFilterChange}
           onFeaturedFilterChange={onFeaturedFilterChange}
+          onSortChange={handleSortChange}
           expressFilter={expressFilter}
           featuredFilter={featuredFilter}
+          selectedSort={sort}
         />
       </div>
       

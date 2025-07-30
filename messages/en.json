@@ -146,6 +146,7 @@
     "DesktopSortAndCheckboxFilters":{
       "sortBy": "Sort By",
       "latest": "Latest",
+      "oldest": "Oldest",
       "priceLowToHigh": "Price: Low to High",
       "priceHighToLow": "Price: High to Low",
       "expressDelivery": "Express Delivery",

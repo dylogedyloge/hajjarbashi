@@ -144,6 +144,7 @@
     "DesktopSortAndCheckboxFilters":{
       "sortBy": "مرتب‌سازی",
       "latest": "جدیدترین",
+      "oldest": "قدیمی‌ترین",
       "priceLowToHigh": "قیمت: کم به زیاد",
       "priceHighToLow": "قیمت: زیاد به کم",
       "expressDelivery": "ارسال فوری",

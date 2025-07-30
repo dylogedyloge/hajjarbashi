@@ -22,8 +22,10 @@ interface DesktopSortAndCheckboxFiltersProps {
   onViewModeChange?: (mode: "grid" | "list") => void;
   onExpressFilterChange?: (express: boolean) => void;
   onFeaturedFilterChange?: (featured: boolean) => void;
+  onSortChange?: (sort: string) => void;
   expressFilter?: boolean;
   featuredFilter?: boolean;
+  selectedSort?: string;
 }
 
 const DesktopSortAndCheckboxFilters = ({ 
@@ -31,11 +33,18 @@ const DesktopSortAndCheckboxFilters = ({
   onViewModeChange,
   onExpressFilterChange,
   onFeaturedFilterChange,
+  onSortChange,
   expressFilter = false,
-  featuredFilter = false
+  featuredFilter = false,
+  selectedSort = "latest"
 }: DesktopSortAndCheckboxFiltersProps) => {
   const t = useTranslations("DesktopSortAndCheckboxFilters");
-  const [selectedSort, setSelectedSort] = useState<string>("latest");
+  const [sortValue, setSortValue] = useState<string>(selectedSort);
+
+  const handleSortChange = (value: string) => {
+    setSortValue(value);
+    onSortChange?.(value);
+  };
 
   return (
     <div className="w-full flex flex-row items-center gap-6 py-2 px-2">
@@ -43,14 +52,15 @@ const DesktopSortAndCheckboxFilters = ({
       <div className="flex items-center gap-2">
         <ArrowDownUp className="size-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">{t("sortBy")}</span>
-        <Select value={selectedSort} onValueChange={setSelectedSort}>
+        <Select value={sortValue} onValueChange={handleSortChange}>
           <SelectTrigger className="w-32 h-8 border-muted">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="latest">{t("latest")}</SelectItem>
-            <SelectItem value="price-low">{t("priceLowToHigh")}</SelectItem>
-            <SelectItem value="price-high">{t("priceHighToLow")}</SelectItem>
+            <SelectItem value="oldest">{t("oldest")}</SelectItem>
+            <SelectItem value="cheapest">{t("priceLowToHigh")}</SelectItem>
+            <SelectItem value="most_expensive">{t("priceHighToLow")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -58,14 +68,13 @@ const DesktopSortAndCheckboxFilters = ({
       {/* Filter Buttons Section */}
       <div className="flex items-center gap-2">
         <Button
-          // variant={expressFilter ? "default" : "outline"}
           variant="outline"
           size="sm"
           className={cn(
-            "h-8",
+            "h-8 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white active:bg-orange-600 active:text-white transition-colors",
             expressFilter 
-              ? "bg-orange-800  text-orange-100" 
-              : "border-muted"
+              ? "bg-orange-600 text-white border-orange-600" 
+              : "bg-white"
           )}
           onClick={() => onExpressFilterChange?.(!expressFilter)}
         >
@@ -76,10 +85,10 @@ const DesktopSortAndCheckboxFilters = ({
           variant={featuredFilter ? "default" : "outline"}
           size="sm"
           className={cn(
-            "h-8",
+           "h-8 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white active:bg-orange-600 active:text-white transition-colors",
             featuredFilter 
-              ? "bg-orange-800  text-orange-100" 
-              : "border-muted"
+              ? "bg-orange-600 text-white border-orange-600" 
+              : "bg-white"
           )}
           onClick={() => onFeaturedFilterChange?.(!featuredFilter)}
         >

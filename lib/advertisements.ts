@@ -204,7 +204,8 @@ export async function fetchAds({
   grade,
   express,
   promoted,
-  search_description
+  search_description,
+  sort = "latest"
 }: { 
   limit: number; 
   page: number; 
@@ -225,10 +226,12 @@ export async function fetchAds({
   express?: boolean;
   promoted?: boolean;
   search_description?: string;
+  sort?: string;
 }) {
   const params = new URLSearchParams({
     limit: limit.toString(),
     page: page.toString(),
+    sort: sort,
   });
   
   if (user_id) {
@@ -309,6 +312,8 @@ export async function fetchAds({
     params.append('search_description', search_description.trim());
     console.log('🔍 Search description being sent to API:', search_description);
   }
+  
+  console.log('🔄 Sort parameter being sent to API:', sort);
   
   const headers: Record<string, string> = {
     'x-lang': locale,

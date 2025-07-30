@@ -21,16 +21,17 @@ type Media = { media_thumb_path?: string; media_path?: string };
 
 export default async function Page(props: unknown) {
   const { params, searchParams } = props as {
-    params: { [key: string]: string };
+    params: Promise<{ id: string; locale: string }>;
     searchParams?: { [key: string]: string | string[] | undefined };
   };
+  const resolvedParams = await params;
   const locale = Array.isArray(searchParams?.lang)
     ? searchParams.lang[0]
     : searchParams?.lang || "en";
   let ad = null;
   let creatorProfile = null;
   try {
-    const res = await fetchAdById({ id: params.id, locale });
+    const res = await fetchAdById({ id: resolvedParams.id, locale });
     ad = res?.data || null;
     if (ad?.creator_id) {
       creatorProfile = await fetchUserProfile(ad.creator_id, locale);

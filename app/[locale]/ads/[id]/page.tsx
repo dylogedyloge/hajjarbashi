@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { fetchUserProfile } from "@/lib/profile";
 import { Button } from "@/components/ui/button";
-import { Zap } from "@/components/icons";
+import  Zap  from "@/components/icons/Gemini";
 import  Star from "@/components/icons/LightningBolt2";
 import {  CheckCircle, AlertTriangle, Share2 } from "lucide-react";
 import { getCountryFlag } from "@/utils/country-utils";

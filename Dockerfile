@@ -1,4 +1,4 @@
-# Build
+# Build1
 FROM node:22-alpine AS builder
 
 WORKDIR /app
@@ -20,6 +20,6 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 
-EXPOSE 300۰
+EXPOSE 3000
 
-CMD ["node", "dist/main"]
+CMD ["npm", "start"]

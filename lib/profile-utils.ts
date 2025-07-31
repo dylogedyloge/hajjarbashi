@@ -44,7 +44,7 @@ export function getUserInitials(user: { name?: string | null; email?: string | n
   return "U";
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir/';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '${process.env.NEXT_PUBLIC_API_BASE_URL}/';
 
 /**
  * Constructs full avatar URLs from relative paths

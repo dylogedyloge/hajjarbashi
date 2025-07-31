@@ -674,6 +674,9 @@
       "slab": "اسلب",
       "tile": "کاشی",
       "unknown": "نامشخص",
-      "unknownCompany": "شرکت نامشخص"
+      "unknownCompany": "شرکت نامشخص",
+      "otherSellers": "تامین کنندگان دیگر",
+      "pros": "مزایا",
+      "cons": "معایب"
     }
   }

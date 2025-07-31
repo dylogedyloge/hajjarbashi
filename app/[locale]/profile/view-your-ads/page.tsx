@@ -312,7 +312,7 @@ export default function ViewYourAdsPage() {
                           <Image 
                             src={getMainImage(ad)!.startsWith('http') 
                               ? getMainImage(ad)! 
-                              : `https://api.hajjardevs.ir/${getMainImage(ad)!}`
+                              : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${getMainImage(ad)!}`
                             }
                             alt={ad.title || 'Advertisement'}
                             fill

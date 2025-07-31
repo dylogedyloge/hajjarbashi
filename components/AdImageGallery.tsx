@@ -32,7 +32,7 @@ export default function AdImageGallery({ mainImageUrl, galleryImages, alt }: Pro
       {allImages.length > 1 && (
         <div className="flex flex-col gap-2">
           {allImages.map((img, i) => {
-            const imgUrl = img.startsWith("http") ? img : `https://api.hajjardevs.ir/${img}`;
+            const imgUrl = img.startsWith("http") ? img : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${img}`;
             return (
               <div
                 key={i}

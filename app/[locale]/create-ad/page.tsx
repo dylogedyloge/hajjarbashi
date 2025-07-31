@@ -39,15 +39,15 @@ import {
   updateAd,
 } from "@/lib/advertisements";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 // import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
-import {
+// import {
   // DndContext,
   // closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
+//   PointerSensor,
+//   useSensor,
+//   useSensors,
+// } from "@dnd-kit/core";
 import {
   arrayMove,
   // SortableContext,

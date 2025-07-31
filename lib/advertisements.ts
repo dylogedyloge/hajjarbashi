@@ -336,11 +336,12 @@ export async function fetchAds({
   return response.json();
 }
 
-export async function fetchAdById({ id, locale }: { id: string; locale: string }) {
+export async function fetchAdById({ id, locale, token }: { id: string; locale: string; token?: string }) {
   const response = await fetch(`${API_BASE_URL}/ads/watch/${id}`, {
     method: 'GET',
     headers: {
       'x-lang': locale,
+      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
     },
   });
   if (!response.ok) {

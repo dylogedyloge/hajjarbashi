@@ -11,6 +11,11 @@ export { default as Block } from './Block';
 export { default as Slab } from './Slab';
 export { default as Tile } from './Tile';
 
+// SVG versions of stone form icons
+export { default as BlocksSvg } from './BlocksSvg';
+export { default as SlabsSvg } from './SlabsSvg';
+export { default as TilesSvg } from './TilesSvg';
+
 // Additional icons can be added here as needed
 export { default as ArrowLeft1 } from './arrow-left-1.svg';
 export { default as ArrowLeft2 } from './arrow-left-2.svg';

@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Load auth state from localStorage on mount
+  // Load auth state from localStorage and cookies on mount
   useEffect(() => {
     const savedToken = localStorage.getItem('auth_token');
     const savedUser = localStorage.getItem('user_data');
@@ -61,11 +61,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setToken(savedToken);
         setUser(userData);
         setIsAuthenticated(true);
+        
+        // Ensure token is also in cookies for server components
+        document.cookie = `auth_token=${savedToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
       } catch (error) {
         console.error('Error parsing saved user data:', error);
         // Clear invalid data
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
+        document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       }
     }
   }, []);
@@ -78,6 +82,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Save to localStorage
     localStorage.setItem('auth_token', authToken);
     localStorage.setItem('user_data', JSON.stringify(userData));
+    
+    // Save to cookies for server components
+    document.cookie = `auth_token=${authToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
   };
 
   const logout = () => {
@@ -88,6 +95,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Clear from localStorage
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
+    
+    // Clear from cookies
+    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   };
 
   const value: AuthContextType = {

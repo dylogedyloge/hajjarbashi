@@ -17,8 +17,8 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https',
-        hostname: 'api.hajjardevs.irfiles',
+        protocol: 'http',
+        hostname: '192.168.10.106',
         pathname: '/**',
       },
     ],

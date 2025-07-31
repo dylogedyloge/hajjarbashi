@@ -22,6 +22,10 @@ import { Info, X, UploadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { toast } from "sonner";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   uploadAdMedia,
   deleteAdMedia,
@@ -31,14 +35,12 @@ import {
   fetchSurfaces,
   fetchCategories,
   fetchPorts,
+  initAdvertisement,
   updateAd,
 } from "@/lib/advertisements";
 import { useState, useEffect, useRef } from "react";
-import { toast } from "sonner";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-// dnd-kit imports
+import { useRouter } from "next/navigation";
+import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
 import {
   DndContext,
   closestCenter,
@@ -54,7 +56,13 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { DragEndEvent } from "@dnd-kit/core";
-import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
+import Stepper from "@/components/Stepper";
+import StepFormAndCategoryOfStone from "@/components/steps/StepFormAndCategoryOfStone";
+import StepImages from "@/components/steps/StepImages";
+import StepBasicInfo from "@/components/steps/StepBasicInfo";
+import StepPhysicalSpecs from "@/components/steps/StepPhysicalSpecs";
+import StepOriginPorts from "@/components/steps/StepOriginPorts";
+import StepOptions from "@/components/steps/StepOptions";
 import isEqual from "lodash.isequal";
 
 // Add localStorage utilities for form persistence
@@ -88,86 +96,20 @@ const clearFormStorage = () => {
 
 type UploadedFile = { path: string; thumb_path: string };
 
-interface SortableImageProps {
-  id: string;
-  idx: number;
-  img: { url: string; mediaPath: string };
-  isCover: boolean;
-  onDelete: (mediaPath: string) => void;
-  t: ReturnType<typeof useTranslations>;
-}
-
-function SortableImage({
-  id,
-  idx,
-  img,
-  isCover,
-  onDelete,
-  t,
-}: SortableImageProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.7 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: isDragging ? 10 : undefined,
-      }}
-      className={`relative group ${
-        isCover ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2" : ""
-      }`}
-      {...attributes}
-      {...listeners}
-    >
-      <div
-        className={`relative w-full h-0 ${
-          isCover
-            ? "pt-[100%] min-w-[180px] min-h-[180px]"
-            : "pt-[100%] min-w-[90px] min-h-[90px]"
-        } overflow-hidden rounded`}
-      >
-        <Image
-          src={img.url}
-          alt={`Uploaded ${idx + 1}`}
-          fill
-          className="object-cover rounded"
-        />
-        {isCover && (
-          <Badge className="absolute bottom-2 left-2 bg-primary text-white shadow-md text-xs px-2 py-1 rounded-full z-20">
-            {t("coverImage", { defaultValue: "Cover Image" })}
-          </Badge>
-        )}
-        <button
-          type="button"
-          className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity group-hover:opacity-100 z-30"
-          onClick={() => onDelete(img.mediaPath)}
-          aria-label={t("deleteImage")}
-        >
-          <X size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function CreateAdPage() {
   const t = useTranslations("CreateAd");
   const searchParams = useSearchParams();
   const adId = searchParams.get("id");
   const locale = searchParams.get("lang") || "en";
   const { token } = useAuth();
+  const router = useRouter();
+  
+  // Multi-step form state
+  const [currentStep, setCurrentStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [selectedForm, setSelectedForm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<
@@ -182,7 +124,6 @@ export default function CreateAdPage() {
   const [contactInfo, setContactInfo] = useState(false);
 
   // Add state for all form fields
-
   const [surfaceId, setSurfaceId] = useState<string>("");
   const [originCountryId, setOriginCountryId] = useState<string>("");
   const [originCityId, setOriginCityId] = useState<string>("");
@@ -241,6 +182,46 @@ export default function CreateAdPage() {
   // Add a ref to track if we're loading from cache to prevent conflicts
   const isLoadingFromCache = useRef(false);
 
+  // Define steps for the multi-step form
+  const steps = [
+    { id: 1, title: t("formOfStone"), description: t("selectStoneForm") },
+    { id: 2, title: t("images"), description: t("uploadImages") },
+    { id: 3, title: t("basicInfo"), description: t("basicDetails") },
+    { id: 4, title: t("physicalSpecs"), description: t("specifications") },
+    { id: 5, title: t("originPorts"), description: t("originAndPorts") },
+    { id: 6, title: t("options"), description: t("adOptions") },
+  ];
+
+  // Step navigation functions
+  const handleStepClick = (step: number) => {
+    if (completedSteps.includes(step) || step < currentStep) {
+      setCurrentStep(step);
+      // If clicking on a step that's before the current step, remove all completed steps after it
+      if (step < currentStep) {
+        setCompletedSteps(completedSteps.filter(completedStep => completedStep <= step));
+      }
+    }
+  };
+
+  const handleNextStep = () => {
+    if (currentStep < steps.length) {
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps([...completedSteps, currentStep]);
+      }
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      // Remove current step from completed steps when going back
+      setCompletedSteps(completedSteps.filter(step => step !== currentStep));
+    }
+  };
+
   // Load cached form data on mount (only if not editing an existing ad)
   useEffect(() => {
     if (!adId) {
@@ -250,6 +231,8 @@ export default function CreateAdPage() {
         console.log('Loading cached form data:', cachedData);
         
         // Restore form state from cache
+        if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
+        if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
         if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
         if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
         if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
@@ -313,6 +296,8 @@ export default function CreateAdPage() {
             console.log('Loading cached form data for invalid adId:', cachedData);
             
             // Restore form state from cache
+            if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
+            if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
             if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
             if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
             if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
@@ -353,6 +338,8 @@ export default function CreateAdPage() {
           console.log('Loading cached form data for failed adId:', cachedData);
           
           // Restore form state from cache
+          if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
+          if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
           if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
           if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
           if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
@@ -399,7 +386,7 @@ export default function CreateAdPage() {
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo,
+    selectedForm, selectedCategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo,
     surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType,
     formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId,
     price, description, selectedColors, selectedReceivingPorts, selectedExportPorts
@@ -640,6 +627,8 @@ export default function CreateAdPage() {
 
   // Helper to get current form state
   const getFormState = () => ({
+    selectedForm,
+    selectedCategory,
     imageUrls,
     featured,
     autoRenew,
@@ -672,6 +661,8 @@ export default function CreateAdPage() {
     const state = getFormState();
     // Consider empty if all fields are empty/false/[]
     return (
+      !state.selectedForm &&
+      !state.selectedCategory &&
       !state.imageUrls.length &&
       !state.featured &&
       !state.autoRenew &&
@@ -709,7 +700,7 @@ export default function CreateAdPage() {
       initialFormState.current = getFormState();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adId, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts]);
+  }, [adId, selectedForm, selectedCategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts]);
 
   // Check if form is dirty
   const isDirty = initialFormState.current
@@ -801,6 +792,8 @@ export default function CreateAdPage() {
   // Handle discard button click
   const handleDiscard = () => {
     // Clear all form data
+    setSelectedForm("");
+    setSelectedCategory("");
     setImageUrls([]);
     setFeatured(true);
     setAutoRenew(false);
@@ -834,552 +827,163 @@ export default function CreateAdPage() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto py-12">
-      {/* Left Panel */}
-      <Card className="w-full md:w-80 flex-shrink-0 p-6 flex flex-col gap-6 h-fit mb-8 md:mb-0">
-        <div>
-          <div className="text-muted-foreground text-sm">
-            {t("advertisementCost")}
-          </div>
-          <div className="text-2xl font-bold mt-1 mb-4">
-            {t("usd", { value: 24 })} 24
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          {/* Map checkboxes to API fields */}
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={featured}
-              onCheckedChange={(checked) =>
-                typeof checked === "boolean" && setFeatured(checked)
-              }
-            />
-            <span className="text-sm">{t("featured")}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span>{t("infoAbout", { item: t("featured") })}</span>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={autoRenew}
-              onCheckedChange={(checked) =>
-                typeof checked === "boolean" && setAutoRenew(checked)
-              }
-            />
-            <span className="text-sm">{t("autoRenew")}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span>{t("infoAbout", { item: t("autoRenew") })}</span>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={expressReady}
-              onCheckedChange={(checked) =>
-                typeof checked === "boolean" && setExpressReady(checked)
-              }
-            />
-            <span className="text-sm">{t("expressReady")}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span>{t("infoAbout", { item: t("expressReady") })}</span>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={enableChat}
-              onCheckedChange={(checked) =>
-                typeof checked === "boolean" && setEnableChat(checked)
-              }
-            />
-            <span className="text-sm">{t("enableChat")}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span>{t("infoAbout", { item: t("enableChat") })}</span>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={contactInfo}
-              onCheckedChange={(checked) =>
-                typeof checked === "boolean" && setContactInfo(checked)
-              }
-            />
-            <span className="text-sm">{t("contactInfo")}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span>{t("infoAbout", { item: t("contactInfo") })}</span>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 mt-4">
-          <Button
-            className="bg-foreground text-background w-full rounded-full py-2 text-base font-semibold"
-            onClick={() => handleSubmit("0")}
-            type="button"
-            disabled={submitting}
-          >
-            {submitting ? t("updating") : t("payAndPublish")}
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full rounded-full py-2 text-base font-semibold border-2"
-            onClick={() => handleSubmit("3")}
-            type="button"
-            disabled={submitting || isFormEmpty() || !isDirty}
-          >
-            {t("saveDraft")}
-          </Button>
-          <Button
-            variant="destructive"
-            className="w-full rounded-full py-2 text-base font-semibold"
-            onClick={handleDiscard}
-          >
-            {t("discard")}
-          </Button>
-        </div>
+    <div className="flex gap-8 max-w-7xl mx-auto py-12">
+      {/* Stepper Panel */}
+      <Card className="w-80 flex-shrink-0 p-6 h-fit">
+        <Stepper
+          steps={steps}
+          currentStep={currentStep}
+          onStepClick={handleStepClick}
+          completedSteps={completedSteps}
+        />
       </Card>
+      
       {/* Main Form Panel */}
-      <div className="flex-1 flex flex-col gap-8">
-        {/* Product Images Section */}
-        <Card className="p-8 flex flex-col gap-4">
-          <h2 className="text-xl font-bold mb-2">{t("productImage")}</h2>
-          <div className="border border-dashed border-muted rounded-lg p-6 flex flex-col items-center justify-center text-center mb-2 min-h-[120px]">
-            {/* ...image upload grid (same as before)... */}
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={imageUrls.map((img) => img.mediaPath)}
-                strategy={rectSortingStrategy}
-              >
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2 justify-center">
-                  {Array.from({ length: 6 }, (_, idx) => {
-                    const img = imageUrls[idx] || null;
-                    const isCover = idx === 0;
-                    const showUpload =
-                      imageUrls.length < 6 && imageUrls.length === idx;
-                    if (img) {
-                      return (
-                        <SortableImage
-                          key={img.mediaPath}
-                          id={img.mediaPath}
-                          idx={idx}
-                          img={img}
-                          isCover={isCover}
-                          onDelete={handleDeleteImage}
-                          t={t}
-                        />
-                      );
-                    }
-                    return (
-                      <div
-                        key={`skeleton-${idx}`}
-                        className={`${
-                          isCover
-                            ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2"
-                            : ""
-                        } relative ${
-                          showUpload
-                            ? "border-2 border-dotted rounded-sm border-primary"
-                            : ""
-                        }`}
-                      >
-                        <Skeleton
-                          className={`w-full h-0 ${
-                            isCover
-                              ? "pt-[100%] min-w-[180px] min-h-[180px]"
-                              : "pt-[100%] min-w-[90px] min-h-[90px]"
-                          } rounded`}
-                        />
-                        {showUpload && (
-                          <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
-                            <UploadIcon className="w-3 h-3 md:w-5 md:h-5 text-primary mb-1" />
-                            <span className="text-xs text-primary font-medium select-none">
-                              {t("clickHere")}
-                            </span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleFileChange}
-                              disabled={uploading || imageUrls.length >= 6}
-                            />
-                          </label>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </SortableContext>
-            </DndContext>
-            <span className="text-muted-foreground text-sm">
-              <span className="text-xs text-muted-foreground">
-                {t("supportedFormats")}
-              </span>
-            </span>
-            {uploading && (
-              <div className="text-xs text-blue-500 mt-2">{t("uploading")}</div>
-            )}
-            {uploadError && (
-              <div className="text-xs text-red-500 mt-2">{uploadError}</div>
-            )}
-            {imageUrls.length >= 6 && (
-              <div className="text-xs text-orange-500 mt-2">
-                {t("maxImages", { count: 6 })}
-              </div>
-            )}
-          </div>
-        </Card>
-        {/* Main Form Section */}
+      <div className="flex-1">
         <Card className="p-8 flex flex-col gap-8">
-          <form
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-            onSubmit={(e) => {
-              e.preventDefault();
-            }}
-          >
-            {/* Product Details Section */}
-            <div className="col-span-1 md:col-span-2">
-              <h2 className="text-lg font-semibold mb-4">
-                {t("productDetails")}
-              </h2>
-            </div>
-            {/* Category */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("categoryLabel")}</Label>
-              <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={
-                      categoryLoading ? t("loading") : t("selectCategory")
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {categoryOptions.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {categoryError && (
-                <span className="text-xs text-destructive">
-                  {categoryError}
-                </span>
+          {/* Step 1: Form and Category of Stone */}
+          {currentStep === 1 && (
+            <StepFormAndCategoryOfStone
+              selectedForm={selectedForm}
+              setSelectedForm={setSelectedForm}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              t={t}
+              locale={locale}
+            />
+          )}
+          
+          {/* Step 2: Images */}
+          {currentStep === 2 && (
+            <StepImages
+              imageUrls={imageUrls}
+              uploading={uploading}
+              uploadError={uploadError}
+              onFileChange={handleFileChange}
+              onDeleteImage={handleDeleteImage}
+              onDragEnd={handleDragEnd}
+              t={t}
+            />
+          )}
+          
+          {/* Step 3: Basic Info */}
+          {currentStep === 3 && (
+            <StepBasicInfo
+              categoryId={categoryId}
+              setCategoryId={setCategoryId}
+              categoryOptions={categoryOptions}
+              categoryLoading={categoryLoading}
+              categoryError={categoryError}
+              selectedColors={selectedColors}
+              setSelectedColors={setSelectedColors}
+              colorOptions={colorOptions}
+              description={description}
+              setDescription={setDescription}
+              benefits={benefits}
+              setBenefits={setBenefits}
+              defects={defects}
+              setDefects={setDefects}
+              t={t}
+            />
+          )}
+          
+          {/* Step 4: Physical Specs */}
+          {currentStep === 4 && (
+            <StepPhysicalSpecs
+              formType={formType}
+              setFormType={setFormType}
+              grade={grade}
+              setGrade={setGrade}
+              sizeH={sizeH}
+              setSizeH={setSizeH}
+              sizeW={sizeW}
+              setSizeW={setSizeW}
+              sizeL={sizeL}
+              setSizeL={setSizeL}
+              weight={weight}
+              setWeight={setWeight}
+              minimumOrder={minimumOrder}
+              setMinimumOrder={setMinimumOrder}
+              saleUnitType={saleUnitType}
+              setSaleUnitType={setSaleUnitType}
+              price={price}
+              setPrice={setPrice}
+              t={t}
+            />
+          )}
+          
+          {/* Step 5: Origin & Ports */}
+          {currentStep === 5 && (
+            <StepOriginPorts
+              originCountryId={originCountryId}
+              setOriginCountryId={setOriginCountryId}
+              originCityId={originCityId}
+              setOriginCityId={setOriginCityId}
+              surfaceId={surfaceId}
+              setSurfaceId={setSurfaceId}
+              selectedReceivingPorts={selectedReceivingPorts}
+              setSelectedReceivingPorts={setSelectedReceivingPorts}
+              selectedExportPorts={selectedExportPorts}
+              setSelectedExportPorts={setSelectedExportPorts}
+              countryOptions={countryOptions}
+              cityOptions={cityOptions}
+              countryLoading={countryLoading}
+              cityLoading={cityLoading}
+              countryError={countryError}
+              cityError={cityError}
+              surfaceOptions={surfaceOptions}
+              surfaceLoading={surfaceLoading}
+              surfaceError={surfaceError}
+              portOptions={portOptions}
+              portLoading={portLoading}
+              portError={portError}
+              t={t}
+            />
+          )}
+          
+          {/* Step 6: Options */}
+          {currentStep === 6 && (
+            <StepOptions
+              featured={featured}
+              setFeatured={setFeatured}
+              autoRenew={autoRenew}
+              setAutoRenew={setAutoRenew}
+              expressReady={expressReady}
+              setExpressReady={setExpressReady}
+              enableChat={enableChat}
+              setEnableChat={setEnableChat}
+              contactInfo={contactInfo}
+              setContactInfo={setContactInfo}
+              onSubmit={handleSubmit}
+              onDiscard={handleDiscard}
+              submitting={submitting}
+              isFormEmpty={isFormEmpty}
+              isDirty={!isEqual(getFormState(), initialFormState.current)}
+              t={t}
+            />
+          )}
+          
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-6">
+            <Button
+              variant="outline"
+              onClick={handlePrevStep}
+              disabled={currentStep === 1}
+            >
+              {t("previous")}
+            </Button>
+            <div className="flex gap-2">
+              {currentStep < steps.length ? (
+                <Button onClick={handleNextStep}>
+                  {t("next")}
+                </Button>
+              ) : (
+                <Button onClick={() => handleSubmit("draft")}>
+                  {t("saveAsDraft")}
+                </Button>
               )}
             </div>
-            {/* Colors */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("colorsLabel")}</Label>
-              <DropdownMultiSelect
-                options={colorOptions.map((c) => ({ label: c, value: c }))}
-                value={selectedColors}
-                onChange={setSelectedColors}
-                placeholder={
-                  !categoryId
-                    ? t("selectCategory")
-                    : colorOptions.length
-                    ? t("selectColors")
-                    : t("noColorsAvailable")
-                }
-                disabled={!colorOptions.length}
-              />
-            </div>
-            {/* Description */}
-            <div className="flex flex-col gap-1 md:col-span-2">
-              <Label>{t("descriptionLabel")}</Label>
-              <Textarea
-                placeholder={t("descriptionPlaceholder")}
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-            {/* Benefits */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("benefitsLabel")}</Label>
-              <Input
-                placeholder={t("benefitsExample")}
-                value={benefits}
-                onChange={(e) => setBenefits(e.target.value)}
-              />
-            </div>
-            {/* Defects */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("defectsLabel")}</Label>
-              <Input
-                placeholder={t("defectsExample")}
-                value={defects}
-                onChange={(e) => setDefects(e.target.value)}
-              />
-            </div>
-            {/* Physical Specifications Section */}
-            <div className="col-span-1 md:col-span-2 mt-6">
-              <h2 className="text-lg font-semibold mb-4">
-                {t("physicalSpecifications")}
-              </h2>
-            </div>
-            {/* Form */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("formLabel")}</Label>
-              <Select value={formType} onValueChange={setFormType}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("selectForm")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="slab">Slab</SelectItem>
-                  <SelectItem value="block">Block</SelectItem>
-                  <SelectItem value="tile">Tile</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Grade */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("gradeLabel")}</Label>
-              <Select value={grade} onValueChange={setGrade}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("selectGrade")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="a">A</SelectItem>
-                  <SelectItem value="b">B</SelectItem>
-                  <SelectItem value="c">C</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Size (h, w, l) */}
-            <div className="flex flex-col gap-1 md:col-span-2">
-              <Label>{t("sizeLabel")}</Label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder={t("heightPlaceholder")}
-                  type="number"
-                  min={0}
-                  value={sizeH}
-                  onChange={(e) => setSizeH(e.target.value)}
-                />
-                <Input
-                  placeholder={t("widthPlaceholder")}
-                  type="number"
-                  min={0}
-                  value={sizeW}
-                  onChange={(e) => setSizeW(e.target.value)}
-                />
-                <Input
-                  placeholder={t("lengthPlaceholder")}
-                  type="number"
-                  min={0}
-                  value={sizeL}
-                  onChange={(e) => setSizeL(e.target.value)}
-                />
-              </div>
-            </div>
-            {/* Weight */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("weightLabel")}</Label>
-              <Input
-                placeholder={t("weightPlaceholder")}
-                type="number"
-                min={0}
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-              />
-            </div>
-            {/* Minimum Order */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("minimumOrderLabel")}</Label>
-              <Input
-                placeholder={t("minimumOrderPlaceholder")}
-                type="number"
-                min={0}
-                value={minimumOrder}
-                onChange={(e) => setMinimumOrder(e.target.value)}
-              />
-            </div>
-            {/* Sale Unit Type */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("saleUnitTypeLabel")}</Label>
-              <Select value={saleUnitType} onValueChange={setSaleUnitType}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("selectUnitType")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="weight">Weight</SelectItem>
-                  <SelectItem value="volume">Volume</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Price */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("priceLabel")}</Label>
-              <Input
-                placeholder={t("pricePlaceholder")}
-                type="number"
-                min={0}
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
-            </div>
-            {/* Origin & Ports Section */}
-            <div className="col-span-1 md:col-span-2 mt-6">
-              <h2 className="text-lg font-semibold mb-4">
-                {t("originAndPorts")}
-              </h2>
-            </div>
-            {/* Origin Country ID */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("originCountryLabel")}</Label>
-              <Select
-                value={originCountryId}
-                onValueChange={setOriginCountryId}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={
-                      countryLoading ? t("loading") : t("selectCountry")
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {countryOptions.map((country) => (
-                    <SelectItem key={country.id} value={country.id}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {countryError && (
-                <span className="text-xs text-destructive">{countryError}</span>
-              )}
-            </div>
-            {/* Origin City ID */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("originCityLabel")}</Label>
-              <Select
-                value={originCityId}
-                onValueChange={setOriginCityId}
-                disabled={!originCountryId || cityLoading}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={
-                      cityLoading
-                        ? t("loading")
-                        : !originCountryId
-                        ? t("selectCountry")
-                        : t("selectCity")
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {cityOptions.map((city) => (
-                    <SelectItem key={city.id} value={city.id}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {cityError && (
-                <span className="text-xs text-destructive">{cityError}</span>
-              )}
-            </div>
-            {/* Surface */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("surfaceLabel")}</Label>
-              <Select value={surfaceId} onValueChange={setSurfaceId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={
-                      surfaceLoading ? t("loading") : t("selectSurface")
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {surfaceOptions.map((surface) => (
-                    <SelectItem key={surface.id} value={surface.id}>
-                      {surface.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {surfaceError && (
-                <span className="text-xs text-destructive">{surfaceError}</span>
-              )}
-            </div>
-            {/* Receiving Ports */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("receivingPortsLabel")}</Label>
-              <DropdownMultiSelect
-                options={portOptions.map((p) => ({
-                  label: p.name,
-                  value: p.id,
-                }))}
-                value={selectedReceivingPorts}
-                onChange={setSelectedReceivingPorts}
-                placeholder={
-                  portLoading ? t("loading") : t("selectReceivingPorts")
-                }
-                disabled={portLoading || !portOptions.length}
-              />
-              {portError && (
-                <span className="text-xs text-destructive">{portError}</span>
-              )}
-            </div>
-            {/* Export Ports */}
-            <div className="flex flex-col gap-1">
-              <Label>{t("exportPortsLabel")}</Label>
-              <DropdownMultiSelect
-                options={portOptions.map((p) => ({
-                  label: p.name,
-                  value: p.id,
-                }))}
-                value={selectedExportPorts}
-                onChange={setSelectedExportPorts}
-                placeholder={
-                  portLoading ? t("loading") : t("selectExportPorts")
-                }
-                disabled={portLoading || !portOptions.length}
-              />
-              {portError && (
-                <span className="text-xs text-destructive">{portError}</span>
-              )}
-            </div>
-          </form>
+          </div>
         </Card>
       </div>
     </div>

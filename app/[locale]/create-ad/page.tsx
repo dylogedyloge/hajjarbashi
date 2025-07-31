@@ -432,7 +432,7 @@ export default function CreateAdPage() {
           if (adData.uploaded_files) {
             setImageUrls(
               adData.uploaded_files.map((file: UploadedFile) => ({
-                url: `https://api.hajjardevs.ir/${file.thumb_path}`,
+                url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/${file.thumb_path}`,
                 mediaPath: file.path,
               }))
             );
@@ -593,7 +593,7 @@ export default function CreateAdPage() {
           return [
             ...prev,
             {
-              url: `https://api.hajjardevs.ir/${res.data.media_thumb_path}`,
+              url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/${res.data.media_thumb_path}`,
               mediaPath: res.data.media_path,
             },
           ];

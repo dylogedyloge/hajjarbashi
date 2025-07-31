@@ -189,7 +189,7 @@ export interface ResetPasswordResponse {
   timestamp: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '${process.env.NEXT_PUBLIC_API_BASE_URL}';
 // const API_BASE_URL = 'http://192.168.10.6:3001';
 
 export const authService = {

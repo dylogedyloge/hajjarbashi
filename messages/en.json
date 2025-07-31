@@ -277,7 +277,10 @@
       "slab": "Slab",
       "tile": "Tile",
       "unknown": "Unknown",
-      "unknownCompany": "Unknown Company"
+      "unknownCompany": "Unknown Company",
+      "otherSellers": "Other Sellers",
+      "pros": "Pros",
+      "cons": "Cons"
     },
     "MobileBottomNav": {
     "home": "home",

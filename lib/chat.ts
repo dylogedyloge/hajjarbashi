@@ -1,6 +1,6 @@
 // lib/chat.ts
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '${process.env.NEXT_PUBLIC_API_BASE_URL}';
 
 export async function getChatList({ limit = 10, page = 1, token, lang = 'en' }: { limit?: number; page?: number; token: string; lang?: string }) {
   const res = await fetch(`${API_BASE_URL}/chats?limit=${limit}&page=${page}`, {

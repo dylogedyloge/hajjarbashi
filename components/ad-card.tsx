@@ -91,7 +91,7 @@ const AdCard = ({ ad,
   const imageSrc = ad.cover_thumb || ad.cover || mediaImage || ad.image
     ? (ad.cover_thumb || ad.cover || mediaImage || ad.image)?.startsWith("http") 
       ? (ad.cover_thumb || ad.cover || mediaImage || ad.image)
-      : `https://api.hajjardevs.ir/${ad.cover_thumb || ad.cover || mediaImage || ad.image}`
+      : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${ad.cover_thumb || ad.cover || mediaImage || ad.image}`
     : null;
 
   // Get the appropriate date to display

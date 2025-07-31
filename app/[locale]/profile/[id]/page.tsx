@@ -52,7 +52,7 @@ export default function PublicProfilePage() {
     if (!id) return;
     setLoading(true);
     setError(null);
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '${process.env.NEXT_PUBLIC_API_BASE_URL}';
     fetch(`${apiBaseUrl}/users/profile/${id}`, {
       headers: lang ? { "x-lang": lang } : {},
     })
@@ -102,7 +102,7 @@ export default function PublicProfilePage() {
           <Avatar className="w-32 h-32 border-4 border-primary shadow-md">
             {profile.avatar_thumb ? (
               <AvatarImage
-                src={`https://api.hajjardevs.ir/${profile.avatar_thumb}`}
+                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${profile.avatar_thumb}`}
                 alt={profile.name}
               />
             ) : null}

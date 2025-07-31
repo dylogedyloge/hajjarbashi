@@ -1,31 +1,31 @@
 "use client";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Textarea } from "@/components/ui/textarea";
-import { Info, X, UploadIcon } from "lucide-react";
+// import { Input } from "@/components/ui/input";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+// import { Label } from "@/components/ui/label";
+// import {
+//   Tooltip,
+//   TooltipContent,
+//   TooltipProvider,
+//   TooltipTrigger,
+// } from "@/components/ui/tooltip";
+// import { Textarea } from "@/components/ui/textarea";
+// import { Info, X, UploadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+// import Image from "next/image";
+// import { Badge } from "@/components/ui/badge";
+// import { Skeleton } from "@/components/ui/skeleton";
 import {
   uploadAdMedia,
   deleteAdMedia,
@@ -35,26 +35,26 @@ import {
   fetchSurfaces,
   fetchCategories,
   fetchPorts,
-  initAdvertisement,
+  // initAdvertisement,
   updateAd,
 } from "@/lib/advertisements";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
+// import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
 import {
-  DndContext,
-  closestCenter,
+  // DndContext,
+  // closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import {
   arrayMove,
-  SortableContext,
-  useSortable,
-  rectSortingStrategy,
+  // SortableContext,
+  // useSortable,
+  // rectSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+// import { CSS } from "@dnd-kit/utilities";
 import type { DragEndEvent } from "@dnd-kit/core";
 import Stepper from "@/components/Stepper";
 import StepFormAndCategoryOfStone from "@/components/steps/StepFormAndCategoryOfStone";
@@ -102,7 +102,7 @@ export default function CreateAdPage() {
   const adId = searchParams.get("id");
   const locale = searchParams.get("lang") || "en";
   const { token } = useAuth();
-  const router = useRouter();
+  // const router = useRouter();
   
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
@@ -609,9 +609,9 @@ export default function CreateAdPage() {
   };
 
   // dnd-kit drag and drop logic
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
+  // const sensors = useSensors(
+  //   useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  // );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -703,9 +703,9 @@ export default function CreateAdPage() {
   }, [adId, selectedForm, selectedCategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts]);
 
   // Check if form is dirty
-  const isDirty = initialFormState.current
-    ? !isEqual(getFormState(), initialFormState.current)
-    : false;
+  // const isDirty = initialFormState.current
+  //   ? !isEqual(getFormState(), initialFormState.current)
+  //   : false;
 
   // Unified submit handler for both actions
   const handleSubmit = async (statusValue: string) => {

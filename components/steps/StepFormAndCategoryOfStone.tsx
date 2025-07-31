@@ -20,7 +20,7 @@ export default function StepFormAndCategoryOfStone({
   setSelectedForm, 
   selectedCategory,
   setSelectedCategory,
-  t,
+  // t,
   locale
 }: StepFormAndCategoryOfStoneProps) {
   const [categoryOptions, setCategoryOptions] = useState<{ id: string; name: string }[]>([]);
@@ -72,10 +72,10 @@ export default function StepFormAndCategoryOfStone({
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold text-gray-900">
-          Ready to sell? Let's start with your stone details.
+         Title
         </h1>
         <p className="text-gray-600">
-          Please choose the form and type of stone you're listing.
+          Subtitle
         </p>
       </div>
 

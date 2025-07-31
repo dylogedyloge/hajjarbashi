@@ -1,7 +1,6 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UploadIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -15,7 +14,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
+  // arrayMove,
   SortableContext,
   useSortable,
   rectSortingStrategy,

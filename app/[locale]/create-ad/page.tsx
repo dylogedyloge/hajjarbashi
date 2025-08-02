@@ -35,7 +35,7 @@ import {
   fetchSurfaces,
   fetchCategories,
   fetchPorts,
-  // initAdvertisement,
+  initAdvertisement,
   updateAd,
 } from "@/lib/advertisements";
 import { useState, useEffect, useRef } from "react";
@@ -58,12 +58,12 @@ import {
 import type { DragEndEvent } from "@dnd-kit/core";
 import Stepper from "@/components/Stepper";
 import StepFormAndCategoryOfStone from "@/components/steps/StepFormAndCategoryOfStone";
+import StepSubcategoryOfStone from "@/components/steps/StepSubcategoryOfStone";
+import StepSizeWeightSurfaceGradeOfStone from "@/components/steps/StepSizeWeightSurfaceGradeOfStone";
+import StepReviewAndPublish from "@/components/steps/StepReviewAndPublish";
 import StepImages from "@/components/steps/StepImages";
-import StepBasicInfo from "@/components/steps/StepBasicInfo";
-import StepPhysicalSpecs from "@/components/steps/StepPhysicalSpecs";
-import StepOriginPorts from "@/components/steps/StepOriginPorts";
-import StepOptions from "@/components/steps/StepOptions";
-import isEqual from "lodash.isequal";
+import StepPriceAndPorts from "@/components/steps/StepPriceAndPorts";
+// import isEqual from "lodash.isequal";
 
 // Add localStorage utilities for form persistence
 const FORM_STORAGE_KEY = 'create-ad-form-data';
@@ -109,6 +109,7 @@ export default function CreateAdPage() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [selectedForm, setSelectedForm] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
   
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -127,8 +128,8 @@ export default function CreateAdPage() {
   const [surfaceId, setSurfaceId] = useState<string>("");
   const [originCountryId, setOriginCountryId] = useState<string>("");
   const [originCityId, setOriginCityId] = useState<string>("");
-  const [benefits, setBenefits] = useState<string>("");
-  const [defects, setDefects] = useState<string>("");
+  const [benefits, setBenefits] = useState<string[]>([]);
+  const [defects, setDefects] = useState<string[]>([]);
   const [saleUnitType, setSaleUnitType] = useState<string>("");
   const [formType, setFormType] = useState<string>("");
   const [grade, setGrade] = useState<string>("");
@@ -158,7 +159,24 @@ export default function CreateAdPage() {
   const [surfaceLoading, setSurfaceLoading] = useState(false);
   const [surfaceError, setSurfaceError] = useState<string | null>(null);
   const [categoryOptions, setCategoryOptions] = useState<
-    { id: string; name: string; colors: string[] }[]
+    { 
+      id: string; 
+      name: string; 
+      colors: string[];
+      origin_city_id?: string;
+      origin_country_id?: string;
+      origin_city_name?: string;
+      origin_country_name?: string;
+      children?: {
+        id: string;
+        name: string;
+        colors: string[];
+        origin_city_id?: string;
+        origin_country_id?: string;
+        origin_city_name?: string;
+        origin_country_name?: string;
+      }[];
+    }[]
   >([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [categoryError, setCategoryError] = useState<string | null>(null);
@@ -175,6 +193,15 @@ export default function CreateAdPage() {
   >([]);
   const [selectedExportPorts, setSelectedExportPorts] = useState<string[]>([]);
 
+  // Review step features and payment state
+  const [reviewFeatures, setReviewFeatures] = useState({
+    is_chat_enabled: false,
+    contact_info_enabled: false,
+    express: false,
+    auto_renew: false,
+  });
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
+
   // Track initial form state for dirty check
   const initialFormState = useRef<any>(null);
   // Add a ref to store the last loaded adData for use in the city effect
@@ -185,11 +212,11 @@ export default function CreateAdPage() {
   // Define steps for the multi-step form
   const steps = [
     { id: 1, title: t("formOfStone"), description: t("selectStoneForm") },
-    { id: 2, title: t("images"), description: t("uploadImages") },
-    { id: 3, title: t("basicInfo"), description: t("basicDetails") },
-    { id: 4, title: t("physicalSpecs"), description: t("specifications") },
-    { id: 5, title: t("originPorts"), description: t("originAndPorts") },
-    { id: 6, title: t("options"), description: t("adOptions") },
+    { id: 2, title: t("subcategoryOfStone"), description: t("selectStoneSubcategory") },
+    { id: 3, title: t("sizeWeightSurfaceGrade"), description: t("stoneSpecifications") },
+    { id: 4, title: t("images"), description: t("uploadImages") },
+    { id: 5, title: t("priceAndPorts"), description: t("priceAndPortsDetails") },
+    { id: 6, title: t("reviewAndPublish"), description: t("reviewAndPublishDetails") },
   ];
 
   // Step navigation functions
@@ -233,6 +260,7 @@ export default function CreateAdPage() {
         // Restore form state from cache
         if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
         if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
+        if (cachedData.selectedSubcategory) setSelectedSubcategory(cachedData.selectedSubcategory);
         if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
         if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
         if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
@@ -242,8 +270,22 @@ export default function CreateAdPage() {
         if (cachedData.surfaceId) setSurfaceId(cachedData.surfaceId);
         if (cachedData.originCountryId) setOriginCountryId(cachedData.originCountryId);
         if (cachedData.originCityId) setOriginCityId(cachedData.originCityId);
-        if (cachedData.benefits) setBenefits(cachedData.benefits);
-        if (cachedData.defects) setDefects(cachedData.defects);
+        if (cachedData.benefits) {
+          // Handle both old string format and new array format
+          if (Array.isArray(cachedData.benefits)) {
+            setBenefits(cachedData.benefits);
+          } else if (typeof cachedData.benefits === 'string') {
+            setBenefits(cachedData.benefits.split(',').map((b: string) => b.trim()).filter(Boolean));
+          }
+        }
+        if (cachedData.defects) {
+          // Handle both old string format and new array format
+          if (Array.isArray(cachedData.defects)) {
+            setDefects(cachedData.defects);
+          } else if (typeof cachedData.defects === 'string') {
+            setDefects(cachedData.defects.split(',').map((d: string) => d.trim()).filter(Boolean));
+          }
+        }
         if (cachedData.saleUnitType) setSaleUnitType(cachedData.saleUnitType);
         if (cachedData.formType) setFormType(cachedData.formType);
         if (cachedData.grade) setGrade(cachedData.grade);
@@ -258,6 +300,8 @@ export default function CreateAdPage() {
         if (cachedData.selectedColors) setSelectedColors(cachedData.selectedColors);
         if (cachedData.selectedReceivingPorts) setSelectedReceivingPorts(cachedData.selectedReceivingPorts);
         if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
+        if (cachedData.reviewFeatures) setReviewFeatures(cachedData.reviewFeatures);
+        if (cachedData.selectedPaymentMethod) setSelectedPaymentMethod(cachedData.selectedPaymentMethod);
         
         isLoadingFromCache.current = false;
       }
@@ -298,6 +342,7 @@ export default function CreateAdPage() {
             // Restore form state from cache
             if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
             if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
+            if (cachedData.selectedSubcategory) setSelectedSubcategory(cachedData.selectedSubcategory);
             if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
             if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
             if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
@@ -307,8 +352,22 @@ export default function CreateAdPage() {
             if (cachedData.surfaceId) setSurfaceId(cachedData.surfaceId);
             if (cachedData.originCountryId) setOriginCountryId(cachedData.originCountryId);
             if (cachedData.originCityId) setOriginCityId(cachedData.originCityId);
-            if (cachedData.benefits) setBenefits(cachedData.benefits);
-            if (cachedData.defects) setDefects(cachedData.defects);
+            if (cachedData.benefits) {
+              // Handle both old string format and new array format
+              if (Array.isArray(cachedData.benefits)) {
+                setBenefits(cachedData.benefits);
+              } else if (typeof cachedData.benefits === 'string') {
+                setBenefits(cachedData.benefits.split(',').map((b: string) => b.trim()).filter(Boolean));
+              }
+            }
+            if (cachedData.defects) {
+              // Handle both old string format and new array format
+              if (Array.isArray(cachedData.defects)) {
+                setDefects(cachedData.defects);
+              } else if (typeof cachedData.defects === 'string') {
+                setDefects(cachedData.defects.split(',').map((d: string) => d.trim()).filter(Boolean));
+              }
+            }
             if (cachedData.saleUnitType) setSaleUnitType(cachedData.saleUnitType);
             if (cachedData.formType) setFormType(cachedData.formType);
             if (cachedData.grade) setGrade(cachedData.grade);
@@ -323,6 +382,8 @@ export default function CreateAdPage() {
             if (cachedData.selectedColors) setSelectedColors(cachedData.selectedColors);
             if (cachedData.selectedReceivingPorts) setSelectedReceivingPorts(cachedData.selectedReceivingPorts);
             if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
+            if (cachedData.reviewFeatures) setReviewFeatures(cachedData.reviewFeatures);
+            if (cachedData.selectedPaymentMethod) setSelectedPaymentMethod(cachedData.selectedPaymentMethod);
             
             isLoadingFromCache.current = false;
           }
@@ -349,8 +410,22 @@ export default function CreateAdPage() {
           if (cachedData.surfaceId) setSurfaceId(cachedData.surfaceId);
           if (cachedData.originCountryId) setOriginCountryId(cachedData.originCountryId);
           if (cachedData.originCityId) setOriginCityId(cachedData.originCityId);
-          if (cachedData.benefits) setBenefits(cachedData.benefits);
-          if (cachedData.defects) setDefects(cachedData.defects);
+          if (cachedData.benefits) {
+            // Handle both old string format and new array format
+            if (Array.isArray(cachedData.benefits)) {
+              setBenefits(cachedData.benefits);
+            } else if (typeof cachedData.benefits === 'string') {
+              setBenefits(cachedData.benefits.split(',').map((b: string) => b.trim()).filter(Boolean));
+            }
+          }
+          if (cachedData.defects) {
+            // Handle both old string format and new array format
+            if (Array.isArray(cachedData.defects)) {
+              setDefects(cachedData.defects);
+            } else if (typeof cachedData.defects === 'string') {
+              setDefects(cachedData.defects.split(',').map((d: string) => d.trim()).filter(Boolean));
+            }
+          }
           if (cachedData.saleUnitType) setSaleUnitType(cachedData.saleUnitType);
           if (cachedData.formType) setFormType(cachedData.formType);
           if (cachedData.grade) setGrade(cachedData.grade);
@@ -365,6 +440,8 @@ export default function CreateAdPage() {
           if (cachedData.selectedColors) setSelectedColors(cachedData.selectedColors);
           if (cachedData.selectedReceivingPorts) setSelectedReceivingPorts(cachedData.selectedReceivingPorts);
           if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
+          if (cachedData.reviewFeatures) setReviewFeatures(cachedData.reviewFeatures);
+          if (cachedData.selectedPaymentMethod) setSelectedPaymentMethod(cachedData.selectedPaymentMethod);
           
           isLoadingFromCache.current = false;
         }
@@ -386,10 +463,10 @@ export default function CreateAdPage() {
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    selectedForm, selectedCategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo,
+    selectedForm, selectedCategory, selectedSubcategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo,
     surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType,
     formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId,
-    price, description, selectedColors, selectedReceivingPorts, selectedExportPorts
+    price, description, selectedColors, selectedReceivingPorts, selectedExportPorts, reviewFeatures, selectedPaymentMethod
   ]);
 
   // Clear storage when form is successfully submitted
@@ -451,8 +528,8 @@ export default function CreateAdPage() {
           if (adData.price) setPrice(adData.price.toString());
           if (adData.description) setDescription(adData.description);
           if (adData.colors) setSelectedColors(adData.colors);
-          if (adData.benefits) setBenefits(adData.benefits.join(', '));
-          if (adData.defects) setDefects(adData.defects.join(', '));
+                     if (adData.benefits) setBenefits(adData.benefits);
+           if (adData.defects) setDefects(adData.defects);
           // Optionally update color options if category has colors
           if (adData.category?.colors) setColorOptions(adData.category.colors);
           
@@ -538,14 +615,45 @@ export default function CreateAdPage() {
       )
       .finally(() => setCategoryLoading(false));
   }, [locale]);
-  // Update color options when categoryId changes
+  // Update color options and origin data when categoryId changes
   useEffect(() => {
-    const cat = categoryOptions.find((c) => c.id === categoryId);
-    setColorOptions(cat?.colors || []);
-    if (selectedColors.some((c) => !(cat?.colors || []).includes(c))) {
-      setSelectedColors([]);
+    // Use the same logic as the payload to determine which category ID to use
+    const effectiveCategoryId = selectedSubcategory || selectedCategory || categoryId;
+    
+    console.log('useEffect triggered - effectiveCategoryId:', effectiveCategoryId);
+    console.log('useEffect triggered - selectedSubcategory:', selectedSubcategory);
+    console.log('useEffect triggered - selectedCategory:', selectedCategory);
+    console.log('useEffect triggered - categoryId:', categoryId);
+    console.log('useEffect triggered - categoryOptions length:', categoryOptions.length);
+    
+    const cat = categoryOptions.find((c) => c.id === effectiveCategoryId);
+    console.log('Found category:', cat);
+    
+    if (cat) {
+      console.log('Category found:', cat);
+      console.log('Category colors:', cat.colors);
+      // Set color options
+      setColorOptions(cat.colors || []);
+      // Automatically set selectedColors to the category's colors
+      setSelectedColors(cat.colors || []);
+      console.log('Setting selectedColors to:', cat.colors || []);
+      
+      // Set origin city and country from category data
+      if (cat.origin_city_id) {
+        setOriginCityId(cat.origin_city_id);
+      }
+      if (cat.origin_country_id) {
+        setOriginCountryId(cat.origin_country_id);
+      }
+    } else {
+      console.log('No category found for effectiveCategoryId:', effectiveCategoryId);
     }
-  }, [categoryId, categoryOptions]);
+  }, [selectedSubcategory, selectedCategory, categoryId, categoryOptions]);
+
+  // Monitor selectedColors changes
+  useEffect(() => {
+    console.log('selectedColors changed:', selectedColors);
+  }, [selectedColors]);
 
   // Fetch ports on mount
   useEffect(() => {
@@ -625,10 +733,25 @@ export default function CreateAdPage() {
     }
   };
 
+  // Review step callbacks
+  const handleReviewFeaturesChange = (features: {
+    is_chat_enabled: boolean;
+    contact_info_enabled: boolean;
+    express: boolean;
+    auto_renew: boolean;
+  }) => {
+    setReviewFeatures(features);
+  };
+
+  const handlePaymentMethodChange = (paymentMethod: string) => {
+    setSelectedPaymentMethod(paymentMethod);
+  };
+
   // Helper to get current form state
   const getFormState = () => ({
     selectedForm,
     selectedCategory,
+    selectedSubcategory,
     imageUrls,
     featured,
     autoRenew,
@@ -654,6 +777,8 @@ export default function CreateAdPage() {
     selectedColors,
     selectedReceivingPorts,
     selectedExportPorts,
+    reviewFeatures,
+    selectedPaymentMethod,
   });
 
   // Helper to check if form is empty
@@ -663,6 +788,7 @@ export default function CreateAdPage() {
     return (
       !state.selectedForm &&
       !state.selectedCategory &&
+      !state.selectedSubcategory &&
       !state.imageUrls.length &&
       !state.featured &&
       !state.autoRenew &&
@@ -700,7 +826,7 @@ export default function CreateAdPage() {
       initialFormState.current = getFormState();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adId, selectedForm, selectedCategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts]);
+  }, [adId, selectedForm, selectedCategory, selectedSubcategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts, reviewFeatures, selectedPaymentMethod]);
 
   // Check if form is dirty
   // const isDirty = initialFormState.current
@@ -709,52 +835,117 @@ export default function CreateAdPage() {
 
   // Unified submit handler for both actions
   const handleSubmit = async (statusValue: string) => {
-    const updateAdPayload = {
-      id: adId!,
-      status: Number(statusValue),
-      sale_unit_type: saleUnitType,
-      form: formType,
-      grade,
-      size: {
-        h: Number(sizeH),
-        w: Number(sizeW),
-        l: Number(sizeL),
-      },
-      weight: Number(weight),
-      description,
-      is_chat_enabled: enableChat,
-      contact_info_enabled: contactInfo,
-      express: expressReady,
-      minimum_order: Number(minimumOrder),
-      category_id: categoryId,
-      price: Number(price),
-      colors: selectedColors,
-      receiving_ports: selectedReceivingPorts,
-      export_ports: selectedExportPorts,
-      surface_id: surfaceId,
-      origin_country_id: originCountryId,
-      origin_city_id: originCityId,
-      auto_renew: autoRenew,
-      media: imageUrls.map((img, idx) => {
-        const url = new URL(img.url);
-        const media_thumb_path = url.pathname.replace(/^\//, "");
-        return {
-          index: idx,
-          media_path: img.mediaPath,
-          media_thumb_path,
-        };
-      }),
-      benefits: benefits
-        .split(",")
-        .map((b) => b.trim())
-        .filter(Boolean),
-      defects: defects
-        .split(",")
-        .map((d) => d.trim())
-        .filter(Boolean),
+    // Transform values to match API expectations
+    const transformSaleUnitType = (value: string) => {
+      // The values are already correct (weight, volume), just return as is
+      return value || 'weight'; // Default to weight if empty
     };
+
+    const transformForm = (value: string) => {
+      switch (value) {
+        case 'slabs':
+          return 'slab';
+        case 'blocks':
+          return 'block';
+        case 'tiles':
+          return 'tile';
+        default:
+          return value;
+      }
+    };
+
+    const transformGrade = (value: string) => {
+      return value.toLowerCase();
+    };
+
+    const transformStatus = (value: string) => {
+      switch (value) {
+        case 'draft':
+          return 3;
+        case 'published':
+          return 1;
+        case 'pending':
+          return 2;
+        default:
+          // If it's already a number, return it as number
+          const numValue = Number(value);
+          return isNaN(numValue) ? 3 : numValue; // Default to draft (3) if invalid
+      }
+    };
+
     setSubmitting(true);
     try {
+      let currentAdId = adId;
+
+      // If no adId, create a new ad first
+      if (!currentAdId) {
+        const initRes = await initAdvertisement(locale, token!);
+        if (initRes?.success && initRes?.data?.id) {
+          currentAdId = initRes.data.id;
+          // Update the URL to include the new ad ID
+          window.history.replaceState(null, '', `?id=${currentAdId}&lang=${locale}`);
+        } else {
+          throw new Error(initRes?.message || "Failed to initialize advertisement");
+        }
+      }
+
+                           // Create payload with validation to avoid sending empty required fields
+              const updateAdPayload: any = {
+                id: currentAdId!,
+                sale_unit_type: transformSaleUnitType(saleUnitType),
+                form: transformForm(selectedForm),
+                grade: transformGrade(grade),
+                size: {
+                  h: Number(sizeH),
+                  w: Number(sizeW),
+                  l: Number(sizeL),
+                },
+                weight: Number(weight),
+                description,
+                is_chat_enabled: reviewFeatures.is_chat_enabled,
+                contact_info_enabled: reviewFeatures.contact_info_enabled,
+                express: reviewFeatures.express,
+                minimum_order: Number(minimumOrder),
+                category_id: selectedSubcategory || selectedCategory || categoryId,
+                price: Number(price),
+                auto_renew: reviewFeatures.auto_renew,
+                media: imageUrls.map((img, idx) => {
+                  const url = new URL(img.url);
+                  const media_thumb_path = url.pathname.replace(/^\//, "");
+                  return {
+                    index: idx,
+                    media_path: img.mediaPath,
+                    media_thumb_path,
+                  };
+                }),
+                benefits: benefits,
+                defects: defects,
+              };
+
+                           // Only add fields if they have values
+              console.log('selectedColors during payload construction:', selectedColors);
+              console.log('selectedColors.length:', selectedColors.length);
+              if (selectedColors.length > 0) {
+                updateAdPayload.colors = selectedColors;
+                console.log('Added colors to payload:', selectedColors);
+              } else {
+                console.log('No colors added to payload - selectedColors is empty');
+              }
+              if (selectedReceivingPorts.length > 0) {
+                updateAdPayload.receiving_ports = selectedReceivingPorts;
+              }
+              if (selectedExportPorts.length > 0) {
+                updateAdPayload.export_ports = selectedExportPorts;
+              }
+                             if (surfaceId) {
+                 updateAdPayload.surface_id = surfaceId;
+               }
+
+       // Log the payload for debugging
+       console.log('updateAdPayload being sent to API:', JSON.stringify(updateAdPayload, null, 2));
+
+
+
       const res = await updateAd({
         payload: updateAdPayload,
         locale,
@@ -773,12 +964,14 @@ export default function CreateAdPage() {
         // Clear form cache on successful submission
         clearFormCache();
       } else {
+        console.error('API Error Response:', res);
         toast.error(
           res?.message ||
             t("adUpdateError", { defaultValue: "Failed to update ad." })
         );
       }
     } catch (err: unknown) {
+      console.error('API Error Details:', err);
       const message =
         err instanceof Error
           ? err.message
@@ -794,6 +987,7 @@ export default function CreateAdPage() {
     // Clear all form data
     setSelectedForm("");
     setSelectedCategory("");
+    setSelectedSubcategory("");
     setImageUrls([]);
     setFeatured(true);
     setAutoRenew(false);
@@ -803,8 +997,8 @@ export default function CreateAdPage() {
     setSurfaceId("");
     setOriginCountryId("");
     setOriginCityId("");
-    setBenefits("");
-    setDefects("");
+    setBenefits([]);
+    setDefects([]);
     setSaleUnitType("");
     setFormType("");
     setGrade("");
@@ -853,115 +1047,113 @@ export default function CreateAdPage() {
             />
           )}
           
-          {/* Step 2: Images */}
+          {/* Step 2: Subcategory of Stone */}
           {currentStep === 2 && (
-            <StepImages
-              imageUrls={imageUrls}
-              uploading={uploading}
-              uploadError={uploadError}
-              onFileChange={handleFileChange}
-              onDeleteImage={handleDeleteImage}
-              onDragEnd={handleDragEnd}
-              t={t}
-            />
-          )}
-          
-          {/* Step 3: Basic Info */}
-          {currentStep === 3 && (
-            <StepBasicInfo
-              categoryId={categoryId}
-              setCategoryId={setCategoryId}
-              categoryOptions={categoryOptions}
-              categoryLoading={categoryLoading}
-              categoryError={categoryError}
-              selectedColors={selectedColors}
-              setSelectedColors={setSelectedColors}
-              colorOptions={colorOptions}
-              description={description}
-              setDescription={setDescription}
-              benefits={benefits}
-              setBenefits={setBenefits}
-              defects={defects}
-              setDefects={setDefects}
-              t={t}
-            />
-          )}
-          
-          {/* Step 4: Physical Specs */}
-          {currentStep === 4 && (
-            <StepPhysicalSpecs
-              formType={formType}
-              setFormType={setFormType}
-              grade={grade}
-              setGrade={setGrade}
-              sizeH={sizeH}
-              setSizeH={setSizeH}
-              sizeW={sizeW}
-              setSizeW={setSizeW}
-              sizeL={sizeL}
-              setSizeL={setSizeL}
-              weight={weight}
-              setWeight={setWeight}
-              minimumOrder={minimumOrder}
-              setMinimumOrder={setMinimumOrder}
-              saleUnitType={saleUnitType}
-              setSaleUnitType={setSaleUnitType}
-              price={price}
-              setPrice={setPrice}
-              t={t}
-            />
-          )}
-          
-          {/* Step 5: Origin & Ports */}
-          {currentStep === 5 && (
-            <StepOriginPorts
-              originCountryId={originCountryId}
-              setOriginCountryId={setOriginCountryId}
-              originCityId={originCityId}
-              setOriginCityId={setOriginCityId}
-              surfaceId={surfaceId}
-              setSurfaceId={setSurfaceId}
-              selectedReceivingPorts={selectedReceivingPorts}
-              setSelectedReceivingPorts={setSelectedReceivingPorts}
-              selectedExportPorts={selectedExportPorts}
-              setSelectedExportPorts={setSelectedExportPorts}
-              countryOptions={countryOptions}
-              cityOptions={cityOptions}
-              countryLoading={countryLoading}
-              cityLoading={cityLoading}
-              countryError={countryError}
-              cityError={cityError}
-              surfaceOptions={surfaceOptions}
-              surfaceLoading={surfaceLoading}
-              surfaceError={surfaceError}
-              portOptions={portOptions}
-              portLoading={portLoading}
-              portError={portError}
-              t={t}
-            />
-          )}
-          
-          {/* Step 6: Options */}
-          {currentStep === 6 && (
-            <StepOptions
-              featured={featured}
-              setFeatured={setFeatured}
-              autoRenew={autoRenew}
-              setAutoRenew={setAutoRenew}
-              expressReady={expressReady}
-              setExpressReady={setExpressReady}
-              enableChat={enableChat}
-              setEnableChat={setEnableChat}
-              contactInfo={contactInfo}
-              setContactInfo={setContactInfo}
-              onSubmit={handleSubmit}
+            <StepSubcategoryOfStone
+              selectedCategory={selectedCategory}
+              selectedSubcategory={selectedSubcategory}
+              setSelectedSubcategory={setSelectedSubcategory}
               onDiscard={handleDiscard}
-              submitting={submitting}
-              isFormEmpty={isFormEmpty}
-              isDirty={!isEqual(getFormState(), initialFormState.current)}
-              t={t}
+              locale={locale}
             />
           )}
+          
+                     {/* Step 3: Size, Weight, Surface, Grade */}
+           {currentStep === 3 && (
+             <StepSizeWeightSurfaceGradeOfStone
+               sizeH={sizeH}
+               setSizeH={setSizeH}
+               sizeW={sizeW}
+               setSizeW={setSizeW}
+               sizeL={sizeL}
+               setSizeL={setSizeL}
+               weight={weight}
+               setWeight={setWeight}
+               surfaceId={surfaceId}
+               setSurfaceId={setSurfaceId}
+               grade={grade}
+               setGrade={setGrade}
+               surfaceOptions={surfaceOptions}
+               surfaceLoading={surfaceLoading}
+               surfaceError={surfaceError}
+               t={t}
+             />
+           )}
+          
+                     {/* Step 4: Images */}
+           {currentStep === 4 && (
+             <StepImages
+               imageUrls={imageUrls}
+               uploading={uploading}
+               uploadError={uploadError}
+               onFileChange={handleFileChange}
+               onDeleteImage={handleDeleteImage}
+               onDragEnd={handleDragEnd}
+               benefits={benefits}
+               setBenefits={setBenefits}
+               defects={defects}
+               setDefects={setDefects}
+               t={t}
+             />
+           )}
+          
+                     {/* Step 5: Price & Ports */}
+           {currentStep === 5 && (
+             <StepPriceAndPorts
+               price={price}
+               setPrice={setPrice}
+               minimumOrder={minimumOrder}
+               setMinimumOrder={setMinimumOrder}
+               saleUnitType={saleUnitType}
+               setSaleUnitType={setSaleUnitType}
+               description={description}
+               setDescription={setDescription}
+               selectedReceivingPorts={selectedReceivingPorts}
+               setSelectedReceivingPorts={setSelectedReceivingPorts}
+               selectedExportPorts={selectedExportPorts}
+               setSelectedExportPorts={setSelectedExportPorts}
+               portOptions={portOptions}
+               portLoading={portLoading}
+               portError={portError}
+               t={t}
+             />
+           )}
+          
+                                 {/* Step 6: Review & Publish */}
+            {currentStep === 6 && (
+              <StepReviewAndPublish
+                stoneForm={selectedForm}
+                selectedCategory={categoryOptions.find(cat => cat.id === selectedCategory)?.name || selectedCategory}
+                selectedSubcategory={(() => {
+                  // Find the parent category that contains this subcategory
+                  const parentCategory = categoryOptions.find(cat => 
+                    cat.children?.some(child => child.id === selectedSubcategory)
+                  );
+                  // Find the subcategory within the parent
+                  const subcategory = parentCategory?.children?.find(child => child.id === selectedSubcategory);
+                  return subcategory?.name || selectedSubcategory;
+                })()}
+                sizeH={sizeH}
+                sizeW={sizeW}
+                sizeL={sizeL}
+                weight={weight}
+                surfaceId={surfaceOptions.find(surface => surface.id === surfaceId)?.name || surfaceId}
+                grade={grade}
+                price={price}
+                minimumOrder={minimumOrder}
+                saleUnitType={saleUnitType}
+                selectedReceivingPorts={selectedReceivingPorts}
+                selectedExportPorts={selectedExportPorts}
+                portOptions={portOptions}
+                images={imageUrls.map(img => img.url)}
+                selectedOptions={[]} // This will be populated when options step is implemented
+                selectedOriginPorts={[]} // This will be populated when origin ports step is implemented
+                onFeaturesChange={handleReviewFeaturesChange}
+                onPaymentMethodChange={handlePaymentMethodChange}
+              />
+            )}
+          
+
           
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-6">

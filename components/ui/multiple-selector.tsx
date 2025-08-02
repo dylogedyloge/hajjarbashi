@@ -19,10 +19,11 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
   disabled = false,
 }) => {
   const handleToggle = (optionValue: string) => {
-    if (value.includes(optionValue)) {
-      onChange(value.filter((v) => v !== optionValue));
+    const safeValue = value || [];
+    if (safeValue.includes(optionValue)) {
+      onChange(safeValue.filter((v) => v !== optionValue));
     } else {
-      onChange([...value, optionValue]);
+      onChange([...safeValue, optionValue]);
     }
   };
 
@@ -32,7 +33,7 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
         {value.length === 0 && (
           <span className="text-muted-foreground text-sm">{placeholder}</span>
         )}
-        {value.map((val) => {
+        {(value || []).map((val) => {
           const opt = options.find((o) => o.value === val);
           return (
             <span key={val} className="bg-primary text-primary-foreground rounded px-2 py-1 text-xs">
@@ -46,12 +47,12 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
           <button
             key={opt.value}
             type="button"
-            className={`border rounded px-2 py-1 text-xs ${value.includes(opt.value) ? "bg-primary text-primary-foreground" : "bg-background text-foreground"}`}
+            className={`border rounded px-2 py-1 text-xs ${(value || []).includes(opt.value) ? "bg-primary text-primary-foreground" : "bg-background text-foreground"}`}
             onClick={() => handleToggle(opt.value)}
             disabled={disabled}
           >
             {opt.label}
-            {value.includes(opt.value) && <span className="ml-1">✓</span>}
+            {(value || []).includes(opt.value) && <span className="ml-1">✓</span>}
           </button>
         ))}
       </div>

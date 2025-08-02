@@ -33,15 +33,16 @@ const DropdownMultiSelect: React.FC<DropdownMultiSelectProps> = ({
   }, [open]);
 
   const handleToggle = (optionValue: string) => {
-    if (value.includes(optionValue)) {
-      onChange(value.filter((v) => v !== optionValue));
+    const safeValue = value || [];
+    if (safeValue.includes(optionValue)) {
+      onChange(safeValue.filter((v) => v !== optionValue));
     } else {
-      onChange([...value, optionValue]);
+      onChange([...safeValue, optionValue]);
     }
   };
 
   const selectedLabels = options
-    .filter((opt) => value.includes(opt.value))
+    .filter((opt) => (value || []).includes(opt.value))
     .map((opt) => opt.label)
     .join(", ");
 
@@ -67,7 +68,7 @@ const DropdownMultiSelect: React.FC<DropdownMultiSelectProps> = ({
           options.map((opt) => (
             <label key={opt.value} className="flex items-center gap-2 py-1 cursor-pointer">
               <Checkbox
-                checked={value.includes(opt.value)}
+                checked={(value || []).includes(opt.value)}
                 onCheckedChange={() => handleToggle(opt.value)}
                 disabled={disabled}
               />

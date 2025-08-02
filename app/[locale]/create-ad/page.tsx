@@ -142,17 +142,7 @@ export default function CreateAdPage() {
   const [price, setPrice] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
-  // Add state for country/city options and loading
-  const [countryOptions, setCountryOptions] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [cityOptions, setCityOptions] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [countryLoading, setCountryLoading] = useState(false);
-  const [cityLoading, setCityLoading] = useState(false);
-  const [countryError, setCountryError] = useState<string | null>(null);
-  const [cityError, setCityError] = useState<string | null>(null);
+
   const [surfaceOptions, setSurfaceOptions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -178,11 +168,7 @@ export default function CreateAdPage() {
       }[];
     }[]
   >([]);
-  const [categoryLoading, setCategoryLoading] = useState(false);
-  const [categoryError, setCategoryError] = useState<string | null>(null);
-  const [colorOptions, setColorOptions] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [submitting, setSubmitting] = useState(false);
   const [portOptions, setPortOptions] = useState<
     { id: string; name: string }[]
   >([]);
@@ -530,8 +516,7 @@ export default function CreateAdPage() {
           if (adData.colors) setSelectedColors(adData.colors);
                      if (adData.benefits) setBenefits(adData.benefits);
            if (adData.defects) setDefects(adData.defects);
-          // Optionally update color options if category has colors
-          if (adData.category?.colors) setColorOptions(adData.category.colors);
+
           
           // Set checkboxes
           if (adData.is_chat_enabled !== undefined) setEnableChat(adData.is_chat_enabled);
@@ -546,53 +531,7 @@ export default function CreateAdPage() {
     })();
   }, [adId, token, locale, isValidAdId]);
 
-  // Fetch countries on mount
-  useEffect(() => {
-    setCountryLoading(true);
-    setCountryError(null);
-    fetchCountries(locale)
-      .then((data) => setCountryOptions(data))
-      .catch((err) =>
-        setCountryError(err.message || "Failed to load countries")
-      )
-      .finally(() => setCountryLoading(false));
-  }, [locale]);
-  // Patch the city effect to add the current city if missing from the fetched list
-  useEffect(() => {
-    if (!originCountryId) {
-      setCityOptions([]);
-      setOriginCityId("");
-      return;
-    }
-    setCityLoading(true);
-    setCityError(null);
-    fetchCities(originCountryId, locale)
-      .then((data) => {
-        console.log('Fetched cities for country', originCountryId, data);
-        console.log('Current originCityId:', originCityId);
-        let patchedData = data;
-        if (
-          originCityId &&
-          !data.some((city: { id: string }) => city.id === originCityId) &&
-          lastLoadedAdData.current?.origin_city?.id === originCityId
-        ) {
-          patchedData = [
-            ...data,
-            {
-              id: lastLoadedAdData.current.origin_city.id,
-              name: lastLoadedAdData.current.origin_city.name,
-            },
-          ];
-        }
-        setCityOptions(patchedData);
-        if (!patchedData.some((city: { id: string }) => city.id === originCityId)) {
-          setOriginCityId("");
-        }
-      })
-      .catch((err) => setCityError(err.message || "Failed to load cities"))
-      .finally(() => setCityLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [originCountryId, locale]);
+
 
   // Fetch surfaces on mount
   useEffect(() => {
@@ -604,18 +543,8 @@ export default function CreateAdPage() {
       .finally(() => setSurfaceLoading(false));
   }, [locale]);
 
-  // Fetch categories on mount
-  useEffect(() => {
-    setCategoryLoading(true);
-    setCategoryError(null);
-    fetchCategories(locale)
-      .then((data) => setCategoryOptions(data))
-      .catch((err) =>
-        setCategoryError(err.message || "Failed to load categories")
-      )
-      .finally(() => setCategoryLoading(false));
-  }, [locale]);
-  // Update color options and origin data when categoryId changes
+
+  // Update selectedColors and origin data when categoryId changes
   useEffect(() => {
     // Use the same logic as the payload to determine which category ID to use
     const effectiveCategoryId = selectedSubcategory || selectedCategory || categoryId;
@@ -632,8 +561,6 @@ export default function CreateAdPage() {
     if (cat) {
       console.log('Category found:', cat);
       console.log('Category colors:', cat.colors);
-      // Set color options
-      setColorOptions(cat.colors || []);
       // Automatically set selectedColors to the category's colors
       setSelectedColors(cat.colors || []);
       console.log('Setting selectedColors to:', cat.colors || []);
@@ -782,40 +709,40 @@ export default function CreateAdPage() {
   });
 
   // Helper to check if form is empty
-  const isFormEmpty = () => {
-    const state = getFormState();
-    // Consider empty if all fields are empty/false/[]
-    return (
-      !state.selectedForm &&
-      !state.selectedCategory &&
-      !state.selectedSubcategory &&
-      !state.imageUrls.length &&
-      !state.featured &&
-      !state.autoRenew &&
-      !state.expressReady &&
-      !state.enableChat &&
-      !state.contactInfo &&
-      !state.surfaceId &&
-      !state.originCountryId &&
-      !state.originCityId &&
-      !state.benefits &&
-      !state.defects &&
-      !state.saleUnitType &&
-      !state.formType &&
-      !state.grade &&
-      !state.sizeH &&
-      !state.sizeW &&
-      !state.sizeL &&
-      !state.weight &&
-      !state.minimumOrder &&
-      !state.categoryId &&
-      !state.price &&
-      !state.description &&
-      !state.selectedColors.length &&
-      !state.selectedReceivingPorts.length &&
-      !state.selectedExportPorts.length
-    );
-  };
+  // const isFormEmpty = () => {
+  //   const state = getFormState();
+  //   // Consider empty if all fields are empty/false/[]
+  //   return (
+  //     !state.selectedForm &&
+  //     !state.selectedCategory &&
+  //     !state.selectedSubcategory &&
+  //     !state.imageUrls.length &&
+  //     !state.featured &&
+  //     !state.autoRenew &&
+  //     !state.expressReady &&
+  //     !state.enableChat &&
+  //     !state.contactInfo &&
+  //     !state.surfaceId &&
+  //     !state.originCountryId &&
+  //     !state.originCityId &&
+  //     !state.benefits &&
+  //     !state.defects &&
+  //     !state.saleUnitType &&
+  //     !state.formType &&
+  //     !state.grade &&
+  //     !state.sizeH &&
+  //     !state.sizeW &&
+  //     !state.sizeL &&
+  //     !state.weight &&
+  //     !state.minimumOrder &&
+  //     !state.categoryId &&
+  //     !state.price &&
+  //     !state.description &&
+  //     !state.selectedColors.length &&
+  //     !state.selectedReceivingPorts.length &&
+  //     !state.selectedExportPorts.length
+  //   );
+  // };
 
   // Set initial form state after loading ad data
   useEffect(() => {
@@ -858,22 +785,22 @@ export default function CreateAdPage() {
       return value.toLowerCase();
     };
 
-    const transformStatus = (value: string) => {
-      switch (value) {
-        case 'draft':
-          return 3;
-        case 'published':
-          return 1;
-        case 'pending':
-          return 2;
-        default:
-          // If it's already a number, return it as number
-          const numValue = Number(value);
-          return isNaN(numValue) ? 3 : numValue; // Default to draft (3) if invalid
-      }
-    };
+    // const transformStatus = (value: string) => {
+    //   switch (value) {
+    //     case 'draft':
+    //       return 3;
+    //     case 'published':
+    //       return 1;
+    //     case 'pending':
+    //       return 2;
+    //     default:
+    //       // If it's already a number, return it as number
+    //       const numValue = Number(value);
+    //       return isNaN(numValue) ? 3 : numValue; // Default to draft (3) if invalid
+    //   }
+    // };
 
-    setSubmitting(true);
+
     try {
       let currentAdId = adId;
 
@@ -977,8 +904,6 @@ export default function CreateAdPage() {
           ? err.message
           : t("adUpdateError", { defaultValue: "Failed to update ad." });
       toast.error(message);
-    } finally {
-      setSubmitting(false);
     }
   };
 

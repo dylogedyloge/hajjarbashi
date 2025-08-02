@@ -1,8 +1,8 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { cn } from "@/utils/cn";
-import { useState, useEffect } from "react";
+// import { Card } from "@/components/ui/card";
+// import { cn } from "@/utils/cn";
+import {  useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -46,7 +46,7 @@ export default function StepSizeWeightSurfaceGradeOfStone({
   surfaceOptions,
   surfaceLoading,
   surfaceError,
-  t
+  
 }: StepSizeWeightSurfaceGradeOfStoneProps) {
   // Grade options - you can make this dynamic if needed
   const gradeOptions = [

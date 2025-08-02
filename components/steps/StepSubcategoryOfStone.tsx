@@ -31,7 +31,6 @@ export default function StepSubcategoryOfStone({
   onDiscard,
   locale
 }: StepSubcategoryOfStoneProps) {
-  const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +43,6 @@ export default function StepSubcategoryOfStone({
       setError(null);
       try {
         const data = await fetchCategories(locale);
-        setCategories(data);
         
         // Find the selected category and extract its children (subcategories)
         const selectedCategoryData = data.find((cat: any) => cat.id === selectedCategory);
@@ -76,10 +74,10 @@ export default function StepSubcategoryOfStone({
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold text-gray-900">
-          Ready to sell? Let's start with your stone details.
+          Ready to sell? Lets start with your stone details.
         </h1>
         <p className="text-gray-600">
-          Please choose the form and type of stone you're listing.
+          Please choose the form and type of stone youre listing.
         </p>
       </div>
 

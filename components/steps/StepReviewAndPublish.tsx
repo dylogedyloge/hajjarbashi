@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -79,8 +79,8 @@ export default function StepReviewAndPublish({
   selectedExportPorts,
   portOptions = [],
   images,
-  selectedOptions,
-  selectedOriginPorts,
+  // selectedOptions,
+  // selectedOriginPorts,
   onFeaturesChange,
   onPaymentMethodChange,
 }: StepReviewAndPublishProps) {
@@ -116,10 +116,10 @@ export default function StepReviewAndPublish({
     return portNames.join(", ");
   };
 
-  const formatOptions = (options?: string[]) => {
-    if (!options || options.length === 0) return t("noneSelected");
-    return options.join(", ");
-  };
+  // const formatOptions = (options?: string[]) => {
+  //   if (!options || options.length === 0) return t("noneSelected");
+  //   return options.join(", ");
+  // };
 
   const handleFeatureToggle = (feature: string) => {
     const newSelectedFeatures = selectedFeatures.includes(feature) 

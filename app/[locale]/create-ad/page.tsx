@@ -30,8 +30,8 @@ import {
   uploadAdMedia,
   deleteAdMedia,
   getAdDetails,
-  fetchCountries,
-  fetchCities,
+  // fetchCountries,
+  // fetchCities,
   fetchSurfaces,
   fetchCategories,
   fetchPorts,
@@ -590,6 +590,13 @@ export default function CreateAdPage() {
       .then((data) => setPortOptions(data))
       .catch((err) => setPortError(err.message || "Failed to load ports"))
       .finally(() => setPortLoading(false));
+  }, [locale]);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories(locale)
+      .then((data: any) => setCategoryOptions(data))
+      .catch((err: any) => console.error("Failed to load categories:", err));
   }, [locale]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

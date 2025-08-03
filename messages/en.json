@@ -601,14 +601,18 @@
     "priceAndPortsDetails": "Price and Port Information",
     "pros": "Pros",
     "cons": "Cons",
-    "prosPlaceholder": "Enter the benefits/advantages of your product (separate with commas)",
-    "consPlaceholder": "Enter any defects/disadvantages of your product (separate with commas)",
-    "prosHelp": "Separate multiple benefits with commas",
-    "consHelp": "Separate multiple defects with commas",
+    "prosPlaceholder": "Enter the benefits/advantages of your product ",
+    "consPlaceholder": "Enter any defects/disadvantages of your product ",
+    "prosHelp": "Separate multiple benefits by hitting enter",
+    "consHelp": "Separate multiple defects by hitting enter",
     "descriptionHelp": "Enter a description of your product",
-    "benefitsHelp": "Enter the benefits/advantages of your product (separate with commas)",
-    "defectsHelp": "Enter any defects/disadvantages of your product (separate with commas)"
-    
+    "benefitsHelp": "Type the benefits of your product",
+    "defectsHelp": "Type the defects of your product",
+    "video": "Video",
+    "addVideo": "Add Video",
+    "formatMp4Size30mb": "Format: MP4, Size: 30mb",
+    "addImage": "Add Image",
+    "formatJpgSize3mb": "Format: JPG, Size: 3mb"
   },
   "ViewYourAds": {
     "title": "Your Advertisements",

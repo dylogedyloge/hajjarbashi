@@ -17,7 +17,7 @@ interface Subcategory {
   description?: string;
 }
 
-interface StepFormAndCategoryOfStoneProps {
+interface StepFormCategorySubCategoryOfStoneProps {
   selectedForm: string;
   setSelectedForm: (form: string) => void;
   selectedCategory: string;
@@ -28,7 +28,7 @@ interface StepFormAndCategoryOfStoneProps {
   locale: string;
 }
 
-export default function StepFormAndCategoryOfStone({ 
+export default function StepFormCategorySubCategoryOfStone({ 
   selectedForm, 
   setSelectedForm, 
   selectedCategory,
@@ -37,7 +37,7 @@ export default function StepFormAndCategoryOfStone({
   setSelectedSubcategory,
   t,
   locale
-}: StepFormAndCategoryOfStoneProps) {
+}: StepFormCategorySubCategoryOfStoneProps) {
   const [categoryOptions, setCategoryOptions] = useState<{ id: string; name: string }[]>([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [categoryError, setCategoryError] = useState<string | null>(null);
@@ -134,101 +134,106 @@ export default function StepFormAndCategoryOfStone({
         </p>
       </div>
 
-      {/* Form Selection Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {formOptions.map((option) => {
-          const IconComponent = option.icon;
-          const isSelected = selectedForm === option.id;
-          
-          return (
-            <Card
-              key={option.id}
-              className={cn(
-                "p-6 cursor-pointer transition-all duration-200 hover:shadow-lg",
-                isSelected 
-                  ? "ring-2 ring-primary bg-primary/5" 
-                  : "hover:bg-gray-50"
-              )}
-              onClick={() => setSelectedForm(option.id)}
-            >
-              <div className="flex flex-col items-center space-y-4">
-                <div className={cn(
-                  "p-4 rounded-lg transition-colors duration-200",
-                  isSelected ? "bg-primary/10" : "bg-gray-100"
-                )}>
-                  <IconComponent 
-                    width={64}
-                    height={64}
-                    className={cn(
-                      "transition-colors duration-200",
-                      isSelected ? "text-primary" : "text-gray-600"
-                    )}
-                  />
-                </div>
-                <div className="text-center">
-                  <h3 className={cn(
-                    "text-lg font-semibold transition-colors duration-200",
-                    isSelected ? "text-primary" : "text-gray-900"
-                  )}>
-                    {option.title}
-                  </h3>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Category Selection - Only show if a form is selected */}
-      {selectedForm && (
-        <div className="space-y-4">
-          {categoryLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[...Array(8)].map((_, index) => (
-                <Card key={index} className="p-4">
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded"></div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : categoryError ? (
-            <div className="text-center text-red-600">
-              <p>Failed to load categories: {categoryError}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {categoryOptions.map((category) => {
-                const isSelected = selectedCategory === category.id;
-                
-                return (
-                  <Card
-                    key={category.id}
-                    className={cn(
-                      "p-4 cursor-pointer transition-all duration-200 hover:shadow-md",
-                      isSelected 
-                        ? "ring-2 ring-primary bg-primary/5" 
-                        : "hover:bg-gray-50"
-                    )}
-                    onClick={() => setSelectedCategory(category.id)}
-                  >
+      {/* Show Form and Category options only when no category is selected */}
+      {!selectedCategory && (
+        <>
+          {/* Form Selection Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {formOptions.map((option) => {
+              const IconComponent = option.icon;
+              const isSelected = selectedForm === option.id;
+              
+              return (
+                <Card
+                  key={option.id}
+                  className={cn(
+                    "p-6 cursor-pointer transition-all duration-200 hover:shadow-lg",
+                    isSelected 
+                      ? "ring-2 ring-primary bg-primary/5" 
+                      : "hover:bg-gray-50"
+                  )}
+                  onClick={() => setSelectedForm(option.id)}
+                >
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className={cn(
+                      "p-4 rounded-lg transition-colors duration-200",
+                      isSelected ? "bg-primary/10" : "bg-gray-100"
+                    )}>
+                      <IconComponent 
+                        width={64}
+                        height={64}
+                        className={cn(
+                          "transition-colors duration-200",
+                          isSelected ? "text-primary" : "text-gray-600"
+                        )}
+                      />
+                    </div>
                     <div className="text-center">
                       <h3 className={cn(
-                        "text-sm font-medium transition-colors duration-200",
+                        "text-lg font-semibold transition-colors duration-200",
                         isSelected ? "text-primary" : "text-gray-900"
                       )}>
-                        {category.name}
+                        {option.title}
                       </h3>
                     </div>
-                  </Card>
-                );
-              })}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Category Selection - Only show if a form is selected */}
+          {selectedForm && (
+            <div className="space-y-4">
+              {categoryLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[...Array(8)].map((_, index) => (
+                    <Card key={index} className="p-4">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : categoryError ? (
+                <div className="text-center text-red-600">
+                  <p>Failed to load categories: {categoryError}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {categoryOptions.map((category) => {
+                    const isSelected = selectedCategory === category.id;
+                    
+                    return (
+                      <Card
+                        key={category.id}
+                        className={cn(
+                          "p-4 cursor-pointer transition-all duration-200 hover:shadow-md",
+                          isSelected 
+                            ? "ring-2 ring-primary bg-primary/5" 
+                            : "hover:bg-gray-50"
+                        )}
+                        onClick={() => setSelectedCategory(category.id)}
+                      >
+                        <div className="text-center">
+                          <h3 className={cn(
+                            "text-sm font-medium transition-colors duration-200",
+                            isSelected ? "text-primary" : "text-gray-900"
+                          )}>
+                            {category.name}
+                          </h3>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
 
-      {/* Subcategory Selection - Only show if a category is selected */}
+      {/* Subcategory Selection - Show when a category is selected */}
       {selectedCategory && (
         <div className="space-y-4">
           {/* Search Bar */}

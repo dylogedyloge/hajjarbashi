@@ -99,7 +99,7 @@
     "category": "دسته‌بندی",
     "grade": "درجه",
     "minOrder": "حداقل سفارش",
-    "saleUnitType": "نوع فروش واحد",
+    "saleUnitType": "مبنای فروش",
     "originCountry": "کشور مبدا",
     "originCity": "شهر مبدا",
     "receivingPorts": "مبدا تحویل",
@@ -570,7 +570,12 @@
     "consPlaceholder": "معایب (با کاما جدا کنید)",
     "prosHelp": "مزایا را با کاما جدا کنید",
     "consHelp": "معایب را با کاما جدا کنید",
-    "descriptionHelp": "توضیحات محصول خود را وارد کنید"
+    "descriptionHelp": "توضیحات محصول خود را وارد کنید",
+    "video": "ویدیو",
+    "addVideo": "افزودن ویدیو",
+    "formatMp4Size30mb": "فرمت: MP4, اندازه: 30 مگابایت",
+    "addImage": "افزودن تصویر",
+    "formatJpgSize3mb": "فرمت: JPG, اندازه: 3 مگابایت"
   },
   "ViewYourAds": {
     "title": "آگهی‌های شما",

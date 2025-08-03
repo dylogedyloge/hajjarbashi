@@ -42,8 +42,8 @@ import { useState, useEffect, useRef } from "react";
 // import { useRouter } from "next/navigation";
 // import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
 // import {
-  // DndContext,
-  // closestCenter,
+// DndContext,
+// closestCenter,
 //   PointerSensor,
 //   useSensor,
 //   useSensors,
@@ -57,8 +57,7 @@ import {
 // import { CSS } from "@dnd-kit/utilities";
 import type { DragEndEvent } from "@dnd-kit/core";
 import Stepper from "@/components/Stepper";
-import StepFormAndCategoryOfStone from "@/components/steps/StepFormAndCategoryOfStone";
-import StepSubcategoryOfStone from "@/components/steps/StepSubcategoryOfStone";
+import StepFormCategorySubCategoryOfStone from "@/components/steps/StepFormCategorySubCategoryOfStone";
 import StepSizeWeightSurfaceGradeOfStone from "@/components/steps/StepSizeWeightSurfaceGradeOfStone";
 import StepReviewAndPublish from "@/components/steps/StepReviewAndPublish";
 import StepImages from "@/components/steps/StepImages";
@@ -103,14 +102,14 @@ export default function CreateAdPage() {
   const locale = searchParams.get("lang") || "en";
   const { token } = useAuth();
   // const router = useRouter();
-  
+
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [selectedForm, setSelectedForm] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
-  
+
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<
@@ -149,9 +148,9 @@ export default function CreateAdPage() {
   const [surfaceLoading, setSurfaceLoading] = useState(false);
   const [surfaceError, setSurfaceError] = useState<string | null>(null);
   const [categoryOptions, setCategoryOptions] = useState<
-    { 
-      id: string; 
-      name: string; 
+    {
+      id: string;
+      name: string;
       colors: string[];
       origin_city_id?: string;
       origin_country_id?: string;
@@ -198,11 +197,10 @@ export default function CreateAdPage() {
   // Define steps for the multi-step form
   const steps = [
     { id: 1, title: t("formOfStone"), description: t("selectStoneForm") },
-    { id: 2, title: t("subcategoryOfStone"), description: t("selectStoneSubcategory") },
-    { id: 3, title: t("sizeWeightSurfaceGrade"), description: t("stoneSpecifications") },
-    { id: 4, title: t("images"), description: t("uploadImages") },
-    { id: 5, title: t("priceAndPorts"), description: t("priceAndPortsDetails") },
-    { id: 6, title: t("reviewAndPublish"), description: t("reviewAndPublishDetails") },
+    { id: 2, title: t("sizeWeightSurfaceGrade"), description: t("stoneSpecifications") },
+    { id: 3, title: t("images"), description: t("uploadImages") },
+    { id: 4, title: t("priceAndPorts"), description: t("priceAndPortsDetails") },
+    { id: 5, title: t("reviewAndPublish"), description: t("reviewAndPublishDetails") },
   ];
 
   // Step navigation functions
@@ -242,7 +240,7 @@ export default function CreateAdPage() {
       if (cachedData) {
         isLoadingFromCache.current = true;
         console.log('Loading cached form data:', cachedData);
-        
+
         // Restore form state from cache
         if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
         if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
@@ -288,7 +286,7 @@ export default function CreateAdPage() {
         if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
         if (cachedData.reviewFeatures) setReviewFeatures(cachedData.reviewFeatures);
         if (cachedData.selectedPaymentMethod) setSelectedPaymentMethod(cachedData.selectedPaymentMethod);
-        
+
         isLoadingFromCache.current = false;
       }
     }
@@ -310,7 +308,7 @@ export default function CreateAdPage() {
           locale,
           token: token || undefined,
         });
-        
+
         if (res?.success && res?.data) {
           setIsValidAdId(true);
           // This is a valid ad, proceed with normal loading
@@ -318,13 +316,13 @@ export default function CreateAdPage() {
           setIsValidAdId(false);
           // Invalid adId, treat as new ad creation
           console.log('Invalid adId, treating as new ad creation');
-          
+
           // Load cached data if available
           const cachedData = loadFormFromStorage();
           if (cachedData) {
             isLoadingFromCache.current = true;
             console.log('Loading cached form data for invalid adId:', cachedData);
-            
+
             // Restore form state from cache
             if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
             if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
@@ -370,20 +368,20 @@ export default function CreateAdPage() {
             if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
             if (cachedData.reviewFeatures) setReviewFeatures(cachedData.reviewFeatures);
             if (cachedData.selectedPaymentMethod) setSelectedPaymentMethod(cachedData.selectedPaymentMethod);
-            
+
             isLoadingFromCache.current = false;
           }
         }
       } catch (error) {
         console.log('AdId validation failed, treating as new ad creation:', error);
         setIsValidAdId(false);
-        
+
         // Load cached data if available
         const cachedData = loadFormFromStorage();
         if (cachedData) {
           isLoadingFromCache.current = true;
           console.log('Loading cached form data for failed adId:', cachedData);
-          
+
           // Restore form state from cache
           if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
           if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
@@ -428,7 +426,7 @@ export default function CreateAdPage() {
           if (cachedData.selectedExportPorts) setSelectedExportPorts(cachedData.selectedExportPorts);
           if (cachedData.reviewFeatures) setReviewFeatures(cachedData.reviewFeatures);
           if (cachedData.selectedPaymentMethod) setSelectedPaymentMethod(cachedData.selectedPaymentMethod);
-          
+
           isLoadingFromCache.current = false;
         }
       }
@@ -440,12 +438,12 @@ export default function CreateAdPage() {
   // Save form data to localStorage whenever it changes (debounced)
   useEffect(() => {
     if (adId || isLoadingFromCache.current) return; // Don't save when editing existing ad or loading from cache
-    
+
     const timeoutId = setTimeout(() => {
       const formData = getFormState();
       saveFormToStorage(formData);
     }, 500); // Debounce saves to avoid excessive localStorage writes
-    
+
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -469,15 +467,15 @@ export default function CreateAdPage() {
           locale,
           token: token || undefined,
         });
-        
+
         if (res?.success && res?.data) {
           const adData = res.data;
           lastLoadedAdData.current = adData;
-          
+
           console.log('Loading ad data:', adData);
           console.log('Setting originCountryId to:', adData.origin_country?.id);
           console.log('Setting originCityId to:', adData.origin_city?.id);
-          
+
           // Set images
           if (adData.uploaded_files) {
             setImageUrls(
@@ -487,7 +485,7 @@ export default function CreateAdPage() {
               }))
             );
           }
-          
+
           // Set form fields
           if (adData.sale_unit_type) setSaleUnitType(adData.sale_unit_type);
           if (adData.form) setFormType(adData.form);
@@ -514,10 +512,10 @@ export default function CreateAdPage() {
           if (adData.price) setPrice(adData.price.toString());
           if (adData.description) setDescription(adData.description);
           if (adData.colors) setSelectedColors(adData.colors);
-                     if (adData.benefits) setBenefits(adData.benefits);
-           if (adData.defects) setDefects(adData.defects);
+          if (adData.benefits) setBenefits(adData.benefits);
+          if (adData.defects) setDefects(adData.defects);
 
-          
+
           // Set checkboxes
           if (adData.is_chat_enabled !== undefined) setEnableChat(adData.is_chat_enabled);
           if (adData.contact_info_enabled !== undefined) setContactInfo(adData.contact_info_enabled);
@@ -548,23 +546,23 @@ export default function CreateAdPage() {
   useEffect(() => {
     // Use the same logic as the payload to determine which category ID to use
     const effectiveCategoryId = selectedSubcategory || selectedCategory || categoryId;
-    
+
     console.log('useEffect triggered - effectiveCategoryId:', effectiveCategoryId);
     console.log('useEffect triggered - selectedSubcategory:', selectedSubcategory);
     console.log('useEffect triggered - selectedCategory:', selectedCategory);
     console.log('useEffect triggered - categoryId:', categoryId);
     console.log('useEffect triggered - categoryOptions length:', categoryOptions.length);
-    
+
     const cat = categoryOptions.find((c) => c.id === effectiveCategoryId);
     console.log('Found category:', cat);
-    
+
     if (cat) {
       console.log('Category found:', cat);
       console.log('Category colors:', cat.colors);
       // Automatically set selectedColors to the category's colors
       setSelectedColors(cat.colors || []);
       console.log('Setting selectedColors to:', cat.colors || []);
-      
+
       // Set origin city and country from category data
       if (cat.origin_city_id) {
         setOriginCityId(cat.origin_city_id);
@@ -823,60 +821,60 @@ export default function CreateAdPage() {
         }
       }
 
-                           // Create payload with validation to avoid sending empty required fields
-              const updateAdPayload: any = {
-                id: currentAdId!,
-                sale_unit_type: transformSaleUnitType(saleUnitType),
-                form: transformForm(selectedForm),
-                grade: transformGrade(grade),
-                size: {
-                  h: Number(sizeH),
-                  w: Number(sizeW),
-                  l: Number(sizeL),
-                },
-                weight: Number(weight),
-                description,
-                is_chat_enabled: reviewFeatures.is_chat_enabled,
-                contact_info_enabled: reviewFeatures.contact_info_enabled,
-                express: reviewFeatures.express,
-                minimum_order: Number(minimumOrder),
-                category_id: selectedSubcategory || selectedCategory || categoryId,
-                price: Number(price),
-                auto_renew: reviewFeatures.auto_renew,
-                media: imageUrls.map((img, idx) => {
-                  const url = new URL(img.url);
-                  const media_thumb_path = url.pathname.replace(/^\//, "");
-                  return {
-                    index: idx,
-                    media_path: img.mediaPath,
-                    media_thumb_path,
-                  };
-                }),
-                benefits: benefits,
-                defects: defects,
-              };
+      // Create payload with validation to avoid sending empty required fields
+      const updateAdPayload: any = {
+        id: currentAdId!,
+        sale_unit_type: transformSaleUnitType(saleUnitType),
+        form: transformForm(selectedForm),
+        grade: transformGrade(grade),
+        size: {
+          h: Number(sizeH),
+          w: Number(sizeW),
+          l: Number(sizeL),
+        },
+        weight: Number(weight),
+        description,
+        is_chat_enabled: reviewFeatures.is_chat_enabled,
+        contact_info_enabled: reviewFeatures.contact_info_enabled,
+        express: reviewFeatures.express,
+        minimum_order: Number(minimumOrder),
+        category_id: selectedSubcategory || selectedCategory || categoryId,
+        price: Number(price),
+        auto_renew: reviewFeatures.auto_renew,
+        media: imageUrls.map((img, idx) => {
+          const url = new URL(img.url);
+          const media_thumb_path = url.pathname.replace(/^\//, "");
+          return {
+            index: idx,
+            media_path: img.mediaPath,
+            media_thumb_path,
+          };
+        }),
+        benefits: benefits,
+        defects: defects,
+      };
 
-                           // Only add fields if they have values
-              console.log('selectedColors during payload construction:', selectedColors);
-              console.log('selectedColors.length:', selectedColors.length);
-              if (selectedColors.length > 0) {
-                updateAdPayload.colors = selectedColors;
-                console.log('Added colors to payload:', selectedColors);
-              } else {
-                console.log('No colors added to payload - selectedColors is empty');
-              }
-              if (selectedReceivingPorts.length > 0) {
-                updateAdPayload.receiving_ports = selectedReceivingPorts;
-              }
-              if (selectedExportPorts.length > 0) {
-                updateAdPayload.export_ports = selectedExportPorts;
-              }
-                             if (surfaceId) {
-                 updateAdPayload.surface_id = surfaceId;
-               }
+      // Only add fields if they have values
+      console.log('selectedColors during payload construction:', selectedColors);
+      console.log('selectedColors.length:', selectedColors.length);
+      if (selectedColors.length > 0) {
+        updateAdPayload.colors = selectedColors;
+        console.log('Added colors to payload:', selectedColors);
+      } else {
+        console.log('No colors added to payload - selectedColors is empty');
+      }
+      if (selectedReceivingPorts.length > 0) {
+        updateAdPayload.receiving_ports = selectedReceivingPorts;
+      }
+      if (selectedExportPorts.length > 0) {
+        updateAdPayload.export_ports = selectedExportPorts;
+      }
+      if (surfaceId) {
+        updateAdPayload.surface_id = surfaceId;
+      }
 
-       // Log the payload for debugging
-       console.log('updateAdPayload being sent to API:', JSON.stringify(updateAdPayload, null, 2));
+      // Log the payload for debugging
+      console.log('updateAdPayload being sent to API:', JSON.stringify(updateAdPayload, null, 2));
 
 
 
@@ -901,7 +899,7 @@ export default function CreateAdPage() {
         console.error('API Error Response:', res);
         toast.error(
           res?.message ||
-            t("adUpdateError", { defaultValue: "Failed to update ad." })
+          t("adUpdateError", { defaultValue: "Failed to update ad." })
         );
       }
     } catch (err: unknown) {
@@ -945,17 +943,17 @@ export default function CreateAdPage() {
     setSelectedColors([]);
     setSelectedReceivingPorts([]);
     setSelectedExportPorts([]);
-    
+
     // Clear form cache
     clearFormCache();
-    
+
     toast.success(t("formCleared", { defaultValue: "Form cleared!" }));
   };
 
   return (
-    <div className="flex gap-8 max-w-7xl mx-auto py-12">
+    <div className="flex gap-8 px-4 py-12">
       {/* Stepper Panel */}
-      <Card className="w-80 flex-shrink-0 p-6 h-fit">
+      <Card className="w-80 flex-shrink-0 p-6 ">
         <Stepper
           steps={steps}
           currentStep={currentStep}
@@ -963,132 +961,144 @@ export default function CreateAdPage() {
           completedSteps={completedSteps}
         />
       </Card>
-      
+
       {/* Main Form Panel */}
       <div className="flex-1">
         <Card className="p-8 flex flex-col gap-8">
-          {/* Step 1: Form and Category of Stone */}
+          {/* Step 1: Form, Category and Subcategory of Stone */}
           {currentStep === 1 && (
-            <StepFormAndCategoryOfStone
+            <StepFormCategorySubCategoryOfStone
               selectedForm={selectedForm}
               setSelectedForm={setSelectedForm}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
+              selectedSubcategory={selectedSubcategory}
+              setSelectedSubcategory={setSelectedSubcategory}
               t={t}
               locale={locale}
             />
           )}
-          
-          {/* Step 2: Subcategory of Stone */}
+
+          {/* Step 2: Size, Weight, Surface, Grade */}
           {currentStep === 2 && (
-            <StepSubcategoryOfStone
-              selectedCategory={selectedCategory}
-              selectedSubcategory={selectedSubcategory}
-              setSelectedSubcategory={setSelectedSubcategory}
-              onDiscard={handleDiscard}
-              locale={locale}
+            <StepSizeWeightSurfaceGradeOfStone
+              sizeH={sizeH}
+              setSizeH={setSizeH}
+              sizeW={sizeW}
+              setSizeW={setSizeW}
+              sizeL={sizeL}
+              setSizeL={setSizeL}
+              weight={weight}
+              setWeight={setWeight}
+              surfaceId={surfaceId}
+              setSurfaceId={setSurfaceId}
+              grade={grade}
+              setGrade={setGrade}
+              surfaceOptions={surfaceOptions}
+              surfaceLoading={surfaceLoading}
+              surfaceError={surfaceError}
+              t={t}
             />
           )}
-          
-                     {/* Step 3: Size, Weight, Surface, Grade */}
-           {currentStep === 3 && (
-             <StepSizeWeightSurfaceGradeOfStone
-               sizeH={sizeH}
-               setSizeH={setSizeH}
-               sizeW={sizeW}
-               setSizeW={setSizeW}
-               sizeL={sizeL}
-               setSizeL={setSizeL}
-               weight={weight}
-               setWeight={setWeight}
-               surfaceId={surfaceId}
-               setSurfaceId={setSurfaceId}
-               grade={grade}
-               setGrade={setGrade}
-               surfaceOptions={surfaceOptions}
-               surfaceLoading={surfaceLoading}
-               surfaceError={surfaceError}
-               t={t}
-             />
-           )}
-          
-                     {/* Step 4: Images */}
-           {currentStep === 4 && (
-             <StepImages
-               imageUrls={imageUrls}
-               uploading={uploading}
-               uploadError={uploadError}
-               onFileChange={handleFileChange}
-               onDeleteImage={handleDeleteImage}
-               onDragEnd={handleDragEnd}
-               benefits={benefits}
-               setBenefits={setBenefits}
-               defects={defects}
-               setDefects={setDefects}
-               t={t}
-             />
-           )}
-          
-                     {/* Step 5: Price & Ports */}
-           {currentStep === 5 && (
-             <StepPriceAndPorts
-               price={price}
-               setPrice={setPrice}
-               minimumOrder={minimumOrder}
-               setMinimumOrder={setMinimumOrder}
-               saleUnitType={saleUnitType}
-               setSaleUnitType={setSaleUnitType}
-               description={description}
-               setDescription={setDescription}
-               selectedReceivingPorts={selectedReceivingPorts}
-               setSelectedReceivingPorts={setSelectedReceivingPorts}
-               selectedExportPorts={selectedExportPorts}
-               setSelectedExportPorts={setSelectedExportPorts}
-               portOptions={portOptions}
-               portLoading={portLoading}
-               portError={portError}
-               t={t}
-             />
-           )}
-          
-                                 {/* Step 6: Review & Publish */}
-            {currentStep === 6 && (
-              <StepReviewAndPublish
-                stoneForm={selectedForm}
-                selectedCategory={categoryOptions.find(cat => cat.id === selectedCategory)?.name || selectedCategory}
-                selectedSubcategory={(() => {
-                  // Find the parent category that contains this subcategory
-                  const parentCategory = categoryOptions.find(cat => 
-                    cat.children?.some(child => child.id === selectedSubcategory)
-                  );
-                  // Find the subcategory within the parent
-                  const subcategory = parentCategory?.children?.find(child => child.id === selectedSubcategory);
-                  return subcategory?.name || selectedSubcategory;
-                })()}
-                sizeH={sizeH}
-                sizeW={sizeW}
-                sizeL={sizeL}
-                weight={weight}
-                surfaceId={surfaceOptions.find(surface => surface.id === surfaceId)?.name || surfaceId}
-                grade={grade}
-                price={price}
-                minimumOrder={minimumOrder}
-                saleUnitType={saleUnitType}
-                selectedReceivingPorts={selectedReceivingPorts}
-                selectedExportPorts={selectedExportPorts}
-                portOptions={portOptions}
-                images={imageUrls.map(img => img.url)}
-                selectedOptions={[]} // This will be populated when options step is implemented
-                selectedOriginPorts={[]} // This will be populated when origin ports step is implemented
-                onFeaturesChange={handleReviewFeaturesChange}
-                onPaymentMethodChange={handlePaymentMethodChange}
-              />
-            )}
-          
 
-          
+          {/* Step 3: Images */}
+          {currentStep === 3 && (
+            <StepImages
+              imageUrls={imageUrls}
+              uploading={uploading}
+              uploadError={uploadError}
+              onFileChange={handleFileChange}
+              onDeleteImage={handleDeleteImage}
+              onDragEnd={handleDragEnd}
+              benefits={benefits}
+              setBenefits={setBenefits}
+              defects={defects}
+              setDefects={setDefects}
+              t={t}
+            />
+          )}
+
+          {/* Step 4: Price & Ports */}
+          {currentStep === 4 && (
+            <StepPriceAndPorts
+              price={price}
+              setPrice={setPrice}
+              minimumOrder={minimumOrder}
+              setMinimumOrder={setMinimumOrder}
+              saleUnitType={saleUnitType}
+              setSaleUnitType={setSaleUnitType}
+              description={description}
+              setDescription={setDescription}
+              selectedReceivingPorts={selectedReceivingPorts}
+              setSelectedReceivingPorts={setSelectedReceivingPorts}
+              selectedExportPorts={selectedExportPorts}
+              setSelectedExportPorts={setSelectedExportPorts}
+              portOptions={portOptions}
+              portLoading={portLoading}
+              portError={portError}
+              t={t}
+            />
+          )}
+
+          {/* Step 5: Review & Publish */}
+          {currentStep === 5 && (
+            <StepReviewAndPublish
+              stoneForm={selectedForm}
+              selectedCategory={categoryOptions.find(cat => cat.id === selectedCategory)?.name || selectedCategory}
+              selectedSubcategory={(() => {
+                // Find the parent category that contains this subcategory
+                const parentCategory = categoryOptions.find(cat =>
+                  cat.children?.some(child => child.id === selectedSubcategory)
+                );
+                // Find the subcategory within the parent
+                const subcategory = parentCategory?.children?.find(child => child.id === selectedSubcategory);
+                return subcategory?.name || selectedSubcategory;
+              })()}
+              sizeH={sizeH}
+              sizeW={sizeW}
+              sizeL={sizeL}
+              weight={weight}
+              surfaceId={surfaceOptions.find(surface => surface.id === surfaceId)?.name || surfaceId}
+              grade={grade}
+              price={price}
+              minimumOrder={minimumOrder}
+              saleUnitType={saleUnitType}
+              selectedReceivingPorts={selectedReceivingPorts}
+              selectedExportPorts={selectedExportPorts}
+              portOptions={portOptions}
+              images={imageUrls.map(img => img.url)}
+              selectedOptions={[]} // This will be populated when options step is implemented
+              selectedOriginPorts={[]} // This will be populated when origin ports step is implemented
+              onFeaturesChange={handleReviewFeaturesChange}
+              onPaymentMethodChange={handlePaymentMethodChange}
+            />
+          )}
+
+
+
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-6">
+          {/* <div className="flex justify-between mt-6"> */}
+          {/* <Button
+              variant="outline"
+              onClick={handleDiscard}
+              className="flex items-center space-x-2 border-red-500 text-red-500 hover:bg-red-50"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span>{t("discard", { defaultValue: "Discard" })}</span>
+            </Button> */}
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={handleDiscard}
+              className="flex items-center space-x-2 border-red-500 text-red-500 hover:bg-red-50"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span>{t("discard", { defaultValue: "Discard" })}</span>
+            </Button>
             <Button
               variant="outline"
               onClick={handlePrevStep}
@@ -1096,18 +1106,17 @@ export default function CreateAdPage() {
             >
               {t("previous")}
             </Button>
-            <div className="flex gap-2">
-              {currentStep < steps.length ? (
-                <Button onClick={handleNextStep}>
-                  {t("next")}
-                </Button>
-              ) : (
-                <Button onClick={() => handleSubmit("draft")}>
-                  {t("saveAsDraft")}
-                </Button>
-              )}
-            </div>
+            {currentStep < steps.length ? (
+              <Button onClick={handleNextStep}>
+                {t("next")}
+              </Button>
+            ) : (
+              <Button onClick={() => handleSubmit("draft")}>
+                {t("saveAsDraft")}
+              </Button>
+            )}
           </div>
+          {/* </div> */}
         </Card>
       </div>
     </div>

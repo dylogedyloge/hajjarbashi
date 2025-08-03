@@ -1,37 +1,14 @@
 "use client";
 import { Card } from "@/components/ui/card";
-// import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-// import { Label } from "@/components/ui/label";
-// import {
-//   Tooltip,
-//   TooltipContent,
-//   TooltipProvider,
-//   TooltipTrigger,
-// } from "@/components/ui/tooltip";
-// import { Textarea } from "@/components/ui/textarea";
-// import { Info, X, UploadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-// import Image from "next/image";
-// import { Badge } from "@/components/ui/badge";
-// import { Skeleton } from "@/components/ui/skeleton";
 import {
   uploadAdMedia,
   deleteAdMedia,
   getAdDetails,
-  // fetchCountries,
-  // fetchCities,
   fetchSurfaces,
   fetchCategories,
   fetchPorts,
@@ -39,30 +16,16 @@ import {
   updateAd,
 } from "@/lib/advertisements";
 import { useState, useEffect, useRef } from "react";
-// import { useRouter } from "next/navigation";
-// import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
-// import {
-// DndContext,
-// closestCenter,
-//   PointerSensor,
-//   useSensor,
-//   useSensors,
-// } from "@dnd-kit/core";
 import {
   arrayMove,
-  // SortableContext,
-  // useSortable,
-  // rectSortingStrategy,
 } from "@dnd-kit/sortable";
-// import { CSS } from "@dnd-kit/utilities";
 import type { DragEndEvent } from "@dnd-kit/core";
 import Stepper from "@/components/Stepper";
 import StepFormCategorySubCategoryOfStone from "@/components/steps/StepFormCategorySubCategoryOfStone";
-import StepSizeWeightSurfaceGradeOfStone from "@/components/steps/StepSizeWeightSurfaceGradeOfStone";
-import StepReviewAndPublish from "@/components/steps/StepReviewAndPublish";
-import StepImages from "@/components/steps/StepImages";
-import StepPriceAndPorts from "@/components/steps/StepPriceAndPorts";
-// import isEqual from "lodash.isequal";
+import StepStoneSpecifications from "@/components/steps/StepStoneSpecifications";
+import StepReviewAndFeatures from "@/components/steps/StepReviewAndFeatures";
+import StepImagesAndProsAndCons from "@/components/steps/StepImagesAndProsAndCons";
+import StepPricingAndShipping from "@/components/steps/StepPricingAndShipping";
 
 // Add localStorage utilities for form persistence
 const FORM_STORAGE_KEY = 'create-ad-form-data';
@@ -101,7 +64,6 @@ export default function CreateAdPage() {
   const adId = searchParams.get("id");
   const locale = searchParams.get("lang") || "en";
   const { token } = useAuth();
-  // const router = useRouter();
 
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
@@ -196,11 +158,11 @@ export default function CreateAdPage() {
 
   // Define steps for the multi-step form
   const steps = [
-    { id: 1, title: t("formOfStone"), description: t("selectStoneForm") },
-    { id: 2, title: t("sizeWeightSurfaceGrade"), description: t("stoneSpecifications") },
-    { id: 3, title: t("images"), description: t("uploadImages") },
-    { id: 4, title: t("priceAndPorts"), description: t("priceAndPortsDetails") },
-    { id: 5, title: t("reviewAndPublish"), description: t("reviewAndPublishDetails") },
+    { id: 1, title: t("formCategorySubcategory"), description: t("selectStoneFormCategorySubcategory") },
+    { id: 2, title: t("stoneSpecifications"), description: t("stoneSpecificationsDetails") },
+    { id: 3, title: t("imagesAndProsCons"), description: t("uploadImagesAndProsCons") },
+    { id: 4, title: t("pricingAndShipping"), description: t("pricingAndShippingDetails") },
+    { id: 5, title: t("reviewAndFeatures"), description: t("reviewAndFeaturesDetails") },
   ];
 
   // Step navigation functions
@@ -648,11 +610,6 @@ export default function CreateAdPage() {
     }
   };
 
-  // dnd-kit drag and drop logic
-  // const sensors = useSensors(
-  //   useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  // );
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -713,41 +670,6 @@ export default function CreateAdPage() {
     selectedPaymentMethod,
   });
 
-  // Helper to check if form is empty
-  // const isFormEmpty = () => {
-  //   const state = getFormState();
-  //   // Consider empty if all fields are empty/false/[]
-  //   return (
-  //     !state.selectedForm &&
-  //     !state.selectedCategory &&
-  //     !state.selectedSubcategory &&
-  //     !state.imageUrls.length &&
-  //     !state.featured &&
-  //     !state.autoRenew &&
-  //     !state.expressReady &&
-  //     !state.enableChat &&
-  //     !state.contactInfo &&
-  //     !state.surfaceId &&
-  //     !state.originCountryId &&
-  //     !state.originCityId &&
-  //     !state.benefits &&
-  //     !state.defects &&
-  //     !state.saleUnitType &&
-  //     !state.formType &&
-  //     !state.grade &&
-  //     !state.sizeH &&
-  //     !state.sizeW &&
-  //     !state.sizeL &&
-  //     !state.weight &&
-  //     !state.minimumOrder &&
-  //     !state.categoryId &&
-  //     !state.price &&
-  //     !state.description &&
-  //     !state.selectedColors.length &&
-  //     !state.selectedReceivingPorts.length &&
-  //     !state.selectedExportPorts.length
-  //   );
-  // };
 
   // Set initial form state after loading ad data
   useEffect(() => {
@@ -760,10 +682,6 @@ export default function CreateAdPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adId, selectedForm, selectedCategory, selectedSubcategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts, reviewFeatures, selectedPaymentMethod]);
 
-  // Check if form is dirty
-  // const isDirty = initialFormState.current
-  //   ? !isEqual(getFormState(), initialFormState.current)
-  //   : false;
 
   // Unified submit handler for both actions
   const handleSubmit = async (statusValue: string) => {
@@ -967,155 +885,203 @@ export default function CreateAdPage() {
         <Card className="p-8 flex flex-col gap-8">
           {/* Step 1: Form, Category and Subcategory of Stone */}
           {currentStep === 1 && (
-            <StepFormCategorySubCategoryOfStone
-              selectedForm={selectedForm}
-              setSelectedForm={setSelectedForm}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              selectedSubcategory={selectedSubcategory}
-              setSelectedSubcategory={setSelectedSubcategory}
-              t={t}
-              locale={locale}
-            />
+            <div className="space-y-8">
+              {/* Step Header */}
+              <div className="text-center space-y-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {steps[0].title}
+                </h1>
+                <p className="text-gray-600">
+                  {steps[0].description}
+                </p>
+              </div>
+              
+              <StepFormCategorySubCategoryOfStone
+                selectedForm={selectedForm}
+                setSelectedForm={setSelectedForm}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedSubcategory={selectedSubcategory}
+                setSelectedSubcategory={setSelectedSubcategory}
+                t={t}
+                locale={locale}
+              />
+            </div>
           )}
 
-          {/* Step 2: Size, Weight, Surface, Grade */}
+          {/* Step 2: Stone Specifications */}
           {currentStep === 2 && (
-            <StepSizeWeightSurfaceGradeOfStone
-              sizeH={sizeH}
-              setSizeH={setSizeH}
-              sizeW={sizeW}
-              setSizeW={setSizeW}
-              sizeL={sizeL}
-              setSizeL={setSizeL}
-              weight={weight}
-              setWeight={setWeight}
-              surfaceId={surfaceId}
-              setSurfaceId={setSurfaceId}
-              grade={grade}
-              setGrade={setGrade}
-              surfaceOptions={surfaceOptions}
-              surfaceLoading={surfaceLoading}
-              surfaceError={surfaceError}
-              t={t}
-            />
+            <div className="space-y-8">
+              {/* Step Header */}
+              <div className="text-center space-y-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {steps[1].title}
+                </h1>
+                <p className="text-gray-600">
+                  {steps[1].description}
+                </p>
+              </div>
+              
+              <StepStoneSpecifications
+                sizeH={sizeH}
+                setSizeH={setSizeH}
+                sizeW={sizeW}
+                setSizeW={setSizeW}
+                sizeL={sizeL}
+                setSizeL={setSizeL}
+                weight={weight}
+                setWeight={setWeight}
+                surfaceId={surfaceId}
+                setSurfaceId={setSurfaceId}
+                grade={grade}
+                setGrade={setGrade}
+                surfaceOptions={surfaceOptions}
+                surfaceLoading={surfaceLoading}
+                surfaceError={surfaceError}
+                t={t}
+              />
+            </div>
           )}
 
-          {/* Step 3: Images */}
+          {/* Step 3: Images and Pros/Cons */}
           {currentStep === 3 && (
-            <StepImages
-              imageUrls={imageUrls}
-              uploading={uploading}
-              uploadError={uploadError}
-              onFileChange={handleFileChange}
-              onDeleteImage={handleDeleteImage}
-              onDragEnd={handleDragEnd}
-              benefits={benefits}
-              setBenefits={setBenefits}
-              defects={defects}
-              setDefects={setDefects}
-              t={t}
-            />
+            <div className="space-y-8">
+              {/* Step Header */}
+              <div className="text-center space-y-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {steps[2].title}
+                </h1>
+                <p className="text-gray-600">
+                  {steps[2].description}
+                </p>
+              </div>
+              
+              <StepImagesAndProsAndCons
+                imageUrls={imageUrls}
+                uploading={uploading}
+                uploadError={uploadError}
+                onFileChange={handleFileChange}
+                onDeleteImage={handleDeleteImage}
+                onDragEnd={handleDragEnd}
+                benefits={benefits}
+                setBenefits={setBenefits}
+                defects={defects}
+                setDefects={setDefects}
+                t={t}
+              />
+            </div>
           )}
 
-          {/* Step 4: Price & Ports */}
+          {/* Step 4: Pricing and Shipping */}
           {currentStep === 4 && (
-            <StepPriceAndPorts
-              price={price}
-              setPrice={setPrice}
-              minimumOrder={minimumOrder}
-              setMinimumOrder={setMinimumOrder}
-              saleUnitType={saleUnitType}
-              setSaleUnitType={setSaleUnitType}
-              description={description}
-              setDescription={setDescription}
-              selectedReceivingPorts={selectedReceivingPorts}
-              setSelectedReceivingPorts={setSelectedReceivingPorts}
-              selectedExportPorts={selectedExportPorts}
-              setSelectedExportPorts={setSelectedExportPorts}
-              portOptions={portOptions}
-              portLoading={portLoading}
-              portError={portError}
-              t={t}
-            />
+            <div className="space-y-8">
+              {/* Step Header */}
+              <div className="text-center space-y-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {steps[3].title}
+                </h1>
+                <p className="text-gray-600">
+                  {steps[3].description}
+                </p>
+              </div>
+              
+              <StepPricingAndShipping
+                price={price}
+                setPrice={setPrice}
+                minimumOrder={minimumOrder}
+                setMinimumOrder={setMinimumOrder}
+                saleUnitType={saleUnitType}
+                setSaleUnitType={setSaleUnitType}
+                description={description}
+                setDescription={setDescription}
+                selectedReceivingPorts={selectedReceivingPorts}
+                setSelectedReceivingPorts={setSelectedReceivingPorts}
+                selectedExportPorts={selectedExportPorts}
+                setSelectedExportPorts={setSelectedExportPorts}
+                portOptions={portOptions}
+                portLoading={portLoading}
+                portError={portError}
+                t={t}
+              />
+            </div>
           )}
 
-          {/* Step 5: Review & Publish */}
+          {/* Step 5: Review and Features */}
           {currentStep === 5 && (
-            <StepReviewAndPublish
-              stoneForm={selectedForm}
-              selectedCategory={categoryOptions.find(cat => cat.id === selectedCategory)?.name || selectedCategory}
-              selectedSubcategory={(() => {
-                // Find the parent category that contains this subcategory
-                const parentCategory = categoryOptions.find(cat =>
-                  cat.children?.some(child => child.id === selectedSubcategory)
-                );
-                // Find the subcategory within the parent
-                const subcategory = parentCategory?.children?.find(child => child.id === selectedSubcategory);
-                return subcategory?.name || selectedSubcategory;
-              })()}
-              sizeH={sizeH}
-              sizeW={sizeW}
-              sizeL={sizeL}
-              weight={weight}
-              surfaceId={surfaceOptions.find(surface => surface.id === surfaceId)?.name || surfaceId}
-              grade={grade}
-              price={price}
-              minimumOrder={minimumOrder}
-              saleUnitType={saleUnitType}
-              selectedReceivingPorts={selectedReceivingPorts}
-              selectedExportPorts={selectedExportPorts}
-              portOptions={portOptions}
-              images={imageUrls.map(img => img.url)}
-              selectedOptions={[]} // This will be populated when options step is implemented
-              selectedOriginPorts={[]} // This will be populated when origin ports step is implemented
-              onFeaturesChange={handleReviewFeaturesChange}
-              onPaymentMethodChange={handlePaymentMethodChange}
-            />
+            <div className="space-y-8">
+              {/* Step Header */}
+              <div className="text-center space-y-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {steps[4].title}
+                </h1>
+                <p className="text-gray-600">
+                  {steps[4].description}
+                </p>
+              </div>
+              
+              <StepReviewAndFeatures
+                stoneForm={selectedForm}
+                selectedCategory={categoryOptions.find(cat => cat.id === selectedCategory)?.name || selectedCategory}
+                selectedSubcategory={(() => {
+                  // Find the parent category that contains this subcategory
+                  const parentCategory = categoryOptions.find(cat =>
+                    cat.children?.some(child => child.id === selectedSubcategory)
+                  );
+                  // Find the subcategory within the parent
+                  const subcategory = parentCategory?.children?.find(child => child.id === selectedSubcategory);
+                  return subcategory?.name || selectedSubcategory;
+                })()}
+                sizeH={sizeH}
+                sizeW={sizeW}
+                sizeL={sizeL}
+                weight={weight}
+                surfaceId={surfaceOptions.find(surface => surface.id === surfaceId)?.name || surfaceId}
+                grade={grade}
+                price={price}
+                minimumOrder={minimumOrder}
+                saleUnitType={saleUnitType}
+                selectedReceivingPorts={selectedReceivingPorts}
+                selectedExportPorts={selectedExportPorts}
+                portOptions={portOptions}
+                images={imageUrls.map(img => img.url)}
+                selectedOptions={[]} // This will be populated when options step is implemented
+                selectedOriginPorts={[]} // This will be populated when origin ports step is implemented
+                onFeaturesChange={handleReviewFeaturesChange}
+                onPaymentMethodChange={handlePaymentMethodChange}
+              />
+            </div>
           )}
-
-
-
-          {/* Navigation Buttons */}
-          {/* <div className="flex justify-between mt-6"> */}
-          {/* <Button
-              variant="outline"
-              onClick={handleDiscard}
-              className="flex items-center space-x-2 border-red-500 text-red-500 hover:bg-red-50"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              <span>{t("discard", { defaultValue: "Discard" })}</span>
-            </Button> */}
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              onClick={handleDiscard}
-              className="flex items-center space-x-2 border-red-500 text-red-500 hover:bg-red-50"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              <span>{t("discard", { defaultValue: "Discard" })}</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handlePrevStep}
-              disabled={currentStep === 1}
-            >
-              {t("previous")}
-            </Button>
-            {currentStep < steps.length ? (
-              <Button onClick={handleNextStep}>
-                {t("next")}
+          {/* Navigation buttons - hide on step 1 until subcategory options appear */}
+          {!(currentStep === 1 && !selectedCategory) && (
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={handleDiscard}
+                className="flex items-center space-x-2 border-red-500 text-red-500 hover:bg-red-50"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>{t("discard", { defaultValue: "Discard" })}</span>
               </Button>
-            ) : (
-              <Button onClick={() => handleSubmit("draft")}>
-                {t("saveAsDraft")}
+              <Button
+                variant="outline"
+                onClick={handlePrevStep}
+                disabled={currentStep === 1}
+              >
+                {t("previous")}
               </Button>
-            )}
-          </div>
+              {currentStep < steps.length ? (
+                <Button onClick={handleNextStep}>
+                  {t("next")}
+                </Button>
+              ) : (
+                <Button onClick={() => handleSubmit("draft")}>
+                  {t("saveAsDraft")}
+                </Button>
+              )}
+            </div>
+          )}
           {/* </div> */}
         </Card>
       </div>

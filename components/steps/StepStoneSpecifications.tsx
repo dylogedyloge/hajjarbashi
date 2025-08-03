@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface StepSizeWeightSurfaceGradeOfStoneProps {
+interface StepStoneSpecificationsProps {
   sizeH: string;
   setSizeH: (value: string) => void;
   sizeW: string;
@@ -30,7 +30,7 @@ interface StepSizeWeightSurfaceGradeOfStoneProps {
   t: any;
 }
 
-export default function StepSizeWeightSurfaceGradeOfStone({
+export default function StepStoneSpecifications({
   sizeH,
   setSizeH,
   sizeW,
@@ -47,7 +47,7 @@ export default function StepSizeWeightSurfaceGradeOfStone({
   surfaceLoading,
   surfaceError,
   
-}: StepSizeWeightSurfaceGradeOfStoneProps) {
+}: StepStoneSpecificationsProps) {
   // Grade options - you can make this dynamic if needed
   const gradeOptions = [
     { id: "A", name: "A" },
@@ -65,7 +65,7 @@ export default function StepSizeWeightSurfaceGradeOfStone({
 
   // Debug logging
   useEffect(() => {
-    console.log('StepSizeWeightSurfaceGradeOfStone props:', {
+    console.log('StepStoneSpecifications props:', {
       surfaceId,
       grade,
       sizeH,
@@ -80,15 +80,6 @@ export default function StepSizeWeightSurfaceGradeOfStone({
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Tell us about your stone
-        </h1>
-        <p className="text-gray-600">
-          Please provide details such as its dimensions, weight, surface texture, and finish.
-        </p>
-      </div>
 
       {/* Form Fields */}
       <div className="space-y-6">

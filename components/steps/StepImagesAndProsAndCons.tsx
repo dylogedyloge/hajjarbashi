@@ -98,7 +98,7 @@ function SortableImage({
   );
 }
 
-interface StepImagesProps {
+interface StepImagesAndProsAndConsProps {
   imageUrls: { url: string; mediaPath: string }[];
   videoUrl?: { url: string; mediaPath: string } | null;
   uploading: boolean;
@@ -115,7 +115,7 @@ interface StepImagesProps {
   t: ReturnType<typeof useTranslations>;
 }
 
-export default function StepImages({
+export default function StepImagesAndProsAndCons({
   imageUrls,
   videoUrl,
   uploading,
@@ -130,14 +130,13 @@ export default function StepImages({
   defects,
   setDefects,
   t,
-}: StepImagesProps) {
+}: StepImagesAndProsAndConsProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
   return (
     <div className="p-8 flex flex-col gap-4">
-      <h2 className="text-xl font-bold mb-2">{t("productImage")}</h2>
       
       {/* Media Upload Section */}
       <div className="border border-dashed border-muted rounded-lg p-6 flex flex-col items-center justify-center text-center mb-6 min-h-[120px]">
@@ -163,7 +162,7 @@ export default function StepImages({
                     onDelete={onDeleteImage}
                     t={t}
                   />
-                                 ) : (
+                                  ) : (
                    <div className="relative border-2 border-dashed border-primary rounded-lg bg-muted/20 aspect-square min-w-[200px] min-h-[200px] flex flex-col items-center justify-center">
                      <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
                        <UploadIcon className="w-8 h-8 text-primary mb-2" />
@@ -183,29 +182,29 @@ export default function StepImages({
                      </label>
                    </div>
                  )}
-              </div>
+               </div>
 
-              {/* Secondary Image Slots (2x3 Grid) */}
-              <div className="col-span-4 grid grid-cols-3 gap-2">
-                {Array.from({ length: 5 }, (_, idx) => {
-                  const img = imageUrls[idx + 1] || null;
-                  const showUpload = imageUrls.length < 7 && imageUrls.length === idx + 1;
-                  
-                  if (img) {
-                    return (
-                      <SortableImage
-                        key={img.mediaPath}
-                        id={img.mediaPath}
-                        idx={idx + 1}
-                        img={img}
-                        isCover={false}
-                        onDelete={onDeleteImage}
-                        t={t}
-                      />
-                    );
-                  }
-                  
-                                     return (
+               {/* Secondary Image Slots (2x3 Grid) */}
+               <div className="col-span-4 grid grid-cols-3 gap-2">
+                 {Array.from({ length: 5 }, (_, idx) => {
+                   const img = imageUrls[idx + 1] || null;
+                   const showUpload = imageUrls.length < 7 && imageUrls.length === idx + 1;
+                   
+                   if (img) {
+                     return (
+                       <SortableImage
+                         key={img.mediaPath}
+                         id={img.mediaPath}
+                         idx={idx + 1}
+                         img={img}
+                         isCover={false}
+                         onDelete={onDeleteImage}
+                         t={t}
+                       />
+                     );
+                   }
+                   
+                                      return (
                      <div
                        key={`secondary-${idx}`}
                        className={`relative border-2 border-dashed border-muted rounded-lg bg-muted/20 aspect-square min-w-[90px] min-h-[90px] ${
@@ -230,104 +229,104 @@ export default function StepImages({
                        )}
                      </div>
                    );
-                })}
-              </div>
+                 })}
+               </div>
 
-              {/* Video Upload Slot */}
-              <div className="col-span-2 row-span-2">
-                {videoUrl ? (
-                  <div className="relative w-full h-0 pt-[56.25%] overflow-hidden rounded-lg">
-                    <video
-                      src={videoUrl.url}
-                      className="absolute inset-0 w-full h-full object-cover rounded-lg"
-                      controls
-                    />
-                    <button
-                      type="button"
-                      className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity z-30"
-                      onClick={() => onDeleteVideo?.(videoUrl.mediaPath)}
-                      aria-label={t("deleteVideo", { defaultValue: "Delete Video" })}
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="relative border-2 border-dashed border-muted rounded-lg bg-muted/20 min-h-[200px] flex flex-col items-center justify-center">
-                    <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
-                      <VideoIcon className="w-8 h-8 text-primary mb-2" />
-                      <span className="text-sm text-primary font-medium select-none mb-1">
-                        {t("addVideo", { defaultValue: "Add Video" })}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {t("formatMp4Size30mb", { defaultValue: "Format: MP4 | Size: 30MB" })}
-                      </span>
-                      <input
-                        type="file"
-                        accept="video/*"
-                        className="hidden"
-                        onChange={onVideoChange}
-                        disabled={uploading}
-                      />
-                    </label>
-                  </div>
-                )}
-              </div>
-            </div>
-          </SortableContext>
-        </DndContext>
-        
-        <span className="text-muted-foreground text-sm">
-          <span className="text-xs text-muted-foreground">
-            {t("supportedFormats")}
-          </span>
-        </span>
-        {uploading && (
-          <div className="text-xs text-blue-500 mt-2">{t("uploading")}</div>
-        )}
-        {uploadError && (
-          <div className="text-xs text-red-500 mt-2">{uploadError}</div>
-        )}
-        {imageUrls.length >= 7 && (
-          <div className="text-xs text-orange-500 mt-2">
-            {t("maxImages", { count: 7 })}
-          </div>
-        )}
-      </div>
+               {/* Video Upload Slot */}
+               <div className="col-span-2 row-span-2">
+                 {videoUrl ? (
+                   <div className="relative w-full h-0 pt-[56.25%] overflow-hidden rounded-lg">
+                     <video
+                       src={videoUrl.url}
+                       className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                       controls
+                     />
+                     <button
+                       type="button"
+                       className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity z-30"
+                       onClick={() => onDeleteVideo?.(videoUrl.mediaPath)}
+                       aria-label={t("deleteVideo", { defaultValue: "Delete Video" })}
+                     >
+                       <X size={16} />
+                     </button>
+                   </div>
+                 ) : (
+                   <div className="relative border-2 border-dashed border-muted rounded-lg bg-muted/20 min-h-[200px] flex flex-col items-center justify-center">
+                     <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
+                       <VideoIcon className="w-8 h-8 text-primary mb-2" />
+                       <span className="text-sm text-primary font-medium select-none mb-1">
+                         {t("addVideo", { defaultValue: "Add Video" })}
+                       </span>
+                       <span className="text-xs text-muted-foreground">
+                         {t("formatMp4Size30mb", { defaultValue: "Format: MP4 | Size: 30MB" })}
+                       </span>
+                       <input
+                         type="file"
+                         accept="video/*"
+                         className="hidden"
+                         onChange={onVideoChange}
+                         disabled={uploading}
+                       />
+                     </label>
+                   </div>
+                 )}
+               </div>
+             </div>
+           </SortableContext>
+         </DndContext>
+         
+         <span className="text-muted-foreground text-sm">
+           <span className="text-xs text-muted-foreground">
+             {t("supportedFormats")}
+           </span>
+         </span>
+         {uploading && (
+           <div className="text-xs text-blue-500 mt-2">{t("uploading")}</div>
+         )}
+         {uploadError && (
+           <div className="text-xs text-red-500 mt-2">{uploadError}</div>
+         )}
+         {imageUrls.length >= 7 && (
+           <div className="text-xs text-orange-500 mt-2">
+             {t("maxImages", { count: 7 })}
+           </div>
+         )}
+       </div>
 
-      {/* Pros and Cons Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Pros */}
-        <div className="space-y-2">
-          <Label htmlFor="benefits" className="text-sm font-medium">
-            {t("pros", { defaultValue: "Pros" })}
-          </Label>
-          <TagInput
-            value={benefits}
-            onChange={setBenefits}
-            placeholder={t("prosPlaceholder", { defaultValue: "Type benefits and press Enter" })}
-            // className="min-h-[120px]"
-          />
-          <p className="text-xs text-muted-foreground">
-            {t("prosHelp", { defaultValue: "Type and press Enter to add benefits" })}
-          </p>
-        </div>
+       {/* Pros and Cons Section */}
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         {/* Pros */}
+         <div className="space-y-2">
+           <Label htmlFor="benefits" className="text-sm font-medium">
+             {t("pros", { defaultValue: "Pros" })}
+           </Label>
+           <TagInput
+             value={benefits}
+             onChange={setBenefits}
+             placeholder={t("prosPlaceholder", { defaultValue: "Type benefits and press Enter" })}
+             // className="min-h-[120px]"
+           />
+           <p className="text-xs text-muted-foreground">
+             {t("prosHelp", { defaultValue: "Type and press Enter to add benefits" })}
+           </p>
+         </div>
 
-        {/* Cons */}
-        <div className="space-y-2">
-          <Label htmlFor="defects" className="text-sm font-medium">
-            {t("cons", { defaultValue: "Cons" })}
-          </Label>
-          <TagInput
-            value={defects}
-            onChange={setDefects}
-            placeholder={t("consPlaceholder", { defaultValue: "Type defects and press Enter" })}
-            // className="min-h-[120px]"
-          />
-          <p className="text-xs text-muted-foreground">
-            {t("consHelp", { defaultValue: "Type and press Enter to add defects" })}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-} 
+         {/* Cons */}
+         <div className="space-y-2">
+           <Label htmlFor="defects" className="text-sm font-medium">
+             {t("cons", { defaultValue: "Cons" })}
+           </Label>
+           <TagInput
+             value={defects}
+             onChange={setDefects}
+             placeholder={t("consPlaceholder", { defaultValue: "Type defects and press Enter" })}
+             // className="min-h-[120px]"
+           />
+           <p className="text-xs text-muted-foreground">
+             {t("consHelp", { defaultValue: "Type and press Enter to add defects" })}
+           </p>
+         </div>
+       </div>
+     </div>
+   );
+ } 

@@ -575,7 +575,16 @@
     "addVideo": "افزودن ویدیو",
     "formatMp4Size30mb": "فرمت: MP4, اندازه: 30 مگابایت",
     "addImage": "افزودن تصویر",
-    "formatJpgSize3mb": "فرمت: JPG, اندازه: 3 مگابایت"
+    "formatJpgSize3mb": "فرمت: JPG, اندازه: 3 مگابایت",
+    "formCategorySubcategory": "دسته‌بندی و زیردسته",
+    "selectStoneFormCategorySubcategory": "انتخاب شکل سنگ، دسته‌بندی و زیردسته",
+    "stoneSpecificationsDetails": "تعریف مشخصات سنگ شامل اندازه، وزن، سطح و درجه",
+    "imagesAndProsCons": "تصاویر و جزئیات",
+    "uploadImagesAndProsCons": "آپلود تصاویر و افزودن مزایا/معایب محصول",
+    "pricingAndShipping": "قیمت و ارسال",
+    "pricingAndShippingDetails": "تنظیم قیمت و اطلاعات ارسال شامل بنادر",
+    "reviewAndFeatures": "بررسی و ویژگی‌ها",
+    "reviewAndFeaturesDetails": "بررسی تمام اطلاعات و تنظیم ویژگی‌های اضافی"
   },
   "ViewYourAds": {
     "title": "آگهی‌های شما",

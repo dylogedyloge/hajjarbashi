@@ -612,7 +612,16 @@
     "addVideo": "Add Video",
     "formatMp4Size30mb": "Format: MP4, Size: 30mb",
     "addImage": "Add Image",
-    "formatJpgSize3mb": "Format: JPG, Size: 3mb"
+    "formatJpgSize3mb": "Format: JPG, Size: 3mb",
+    "formCategorySubcategory": "Category & Subcategory",
+    "selectStoneFormCategorySubcategory": "Select the stone form, category, and subcategory",
+    "stoneSpecificationsDetails": "Define stone specifications including size, weight, surface, and grade",
+    "imagesAndProsCons": "Images & Details",
+    "uploadImagesAndProsCons": "Upload images and add benefits/defects of your product",
+    "pricingAndShipping": "Pricing & Shipping",
+    "pricingAndShippingDetails": "Set pricing and shipping information including ports",
+    "reviewAndFeatures": "Review & Features",
+    "reviewAndFeaturesDetails": "Review all information and configure additional features"
   },
   "ViewYourAds": {
     "title": "Your Advertisements",

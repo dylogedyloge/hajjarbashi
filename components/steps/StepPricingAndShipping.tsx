@@ -14,7 +14,7 @@ import {
 import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
 import { useTranslations } from "next-intl";
 
-interface StepPriceAndPortsProps {
+interface StepPricingAndShippingProps {
   price: string;
   setPrice: (value: string) => void;
   minimumOrder: string;
@@ -33,7 +33,7 @@ interface StepPriceAndPortsProps {
   t: ReturnType<typeof useTranslations>;
 }
 
-export default function StepPriceAndPorts({
+export default function StepPricingAndShipping({
   price,
   setPrice,
   minimumOrder,
@@ -50,10 +50,9 @@ export default function StepPriceAndPorts({
   portLoading,
   portError,
   t,
-}: StepPriceAndPortsProps) {
+}: StepPricingAndShippingProps) {
   return (
     <div className="p-8 flex flex-col gap-8">
-      <h2 className="text-lg font-semibold mb-4">{t("priceAndPorts")}</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Price */}

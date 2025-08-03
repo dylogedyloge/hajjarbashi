@@ -20,7 +20,7 @@ import {
   CreditCard 
 } from "lucide-react";
 
-interface StepReviewAndPublishProps {
+interface StepReviewAndFeaturesProps {
   // Basic Info
   stoneForm?: string;
   selectedCategory?: string;
@@ -62,7 +62,7 @@ interface StepReviewAndPublishProps {
   onPaymentMethodChange?: (paymentMethod: string) => void;
 }
 
-export default function StepReviewAndPublish({
+export default function StepReviewAndFeatures({
   stoneForm,
   selectedCategory,
   selectedSubcategory,
@@ -83,7 +83,7 @@ export default function StepReviewAndPublish({
   // selectedOriginPorts,
   onFeaturesChange,
   onPaymentMethodChange,
-}: StepReviewAndPublishProps) {
+}: StepReviewAndFeaturesProps) {
   const t = useTranslations("CreateAd");
   
   // State for features and payment method
@@ -150,10 +150,6 @@ export default function StepReviewAndPublish({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">{t("reviewAndPublish")}</h2>
-        <p className="text-muted-foreground">{t("reviewAndPublishDetails")}</p>
-      </div>
 
       <div className="grid gap-6">
         {/* Basic Information */}

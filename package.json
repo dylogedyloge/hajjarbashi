@@ -34,6 +34,7 @@
     "cmdk": "^1.1.1",
     "country-flag-icons": "^1.5.19",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.12",
     "fslightbox-react": "^1.8.0",
     "input-otp": "^1.4.2",
     "lodash.isequal": "^4.5.0",

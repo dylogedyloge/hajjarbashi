@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+// import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UploadIcon, X, VideoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";

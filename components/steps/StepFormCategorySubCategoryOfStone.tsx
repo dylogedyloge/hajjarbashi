@@ -35,7 +35,7 @@ export default function StepFormCategorySubCategoryOfStone({
   setSelectedCategory,
   selectedSubcategory,
   setSelectedSubcategory,
-  t,
+  
   locale
 }: StepFormCategorySubCategoryOfStoneProps) {
   const [categoryOptions, setCategoryOptions] = useState<{ id: string; name: string }[]>([]);

@@ -1,6 +1,5 @@
 "use client";
 
-// import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UploadIcon, X, VideoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -8,6 +7,8 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { TagInput } from "@/components/ui/tag-input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DndContext,
   closestCenter,
@@ -85,14 +86,16 @@ function SortableImage({
             {t("coverImage", { defaultValue: "Cover Image" })}
           </Badge>
         )}
-        <button
+        <Button
           type="button"
-          className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity group-hover:opacity-100 z-30"
+          variant="destructive"
+          size="sm"
+          className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity group-hover:opacity-100 z-30 h-6 w-6"
           onClick={() => onDelete(img.mediaPath)}
           aria-label={t("deleteImage")}
         >
-          <X size={16} />
-        </button>
+          <X size={12} />
+        </Button>
       </div>
     </div>
   );
@@ -164,7 +167,7 @@ export default function StepImagesAndProsAndCons({
                   />
                                   ) : (
                    <div className="relative border-2 border-dashed border-primary rounded-lg bg-muted/20 aspect-square min-w-[200px] min-h-[200px] flex flex-col items-center justify-center">
-                     <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
+                     <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40 hover:bg-muted/30 transition-colors">
                        <UploadIcon className="w-8 h-8 text-primary mb-2" />
                        <span className="text-sm text-primary font-medium select-none mb-1">
                          {t("addImage", { defaultValue: "Add Image" })}
@@ -172,7 +175,7 @@ export default function StepImagesAndProsAndCons({
                        <span className="text-xs text-muted-foreground">
                          {t("formatJpgSize3mb", { defaultValue: "Format: JPG | Size: 3MB" })}
                        </span>
-                       <input
+                       <Input
                          type="file"
                          accept="image/*"
                          className="hidden"
@@ -213,12 +216,12 @@ export default function StepImagesAndProsAndCons({
                      >
                        <Skeleton className="w-full h-full rounded-lg" />
                        {showUpload && (
-                         <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
+                         <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40 hover:bg-muted/30 transition-colors">
                            <UploadIcon className="w-4 h-4 text-primary mb-1" />
                            <span className="text-xs text-primary font-medium select-none">
                              {t("clickHere", { defaultValue: "Click Here" })}
                            </span>
-                           <input
+                           <Input
                              type="file"
                              accept="image/*"
                              className="hidden"
@@ -241,18 +244,20 @@ export default function StepImagesAndProsAndCons({
                        className="absolute inset-0 w-full h-full object-cover rounded-lg"
                        controls
                      />
-                     <button
+                     <Button
                        type="button"
-                       className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity z-30"
+                       variant="destructive"
+                       size="sm"
+                       className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity z-30 h-6 w-6"
                        onClick={() => onDeleteVideo?.(videoUrl.mediaPath)}
                        aria-label={t("deleteVideo", { defaultValue: "Delete Video" })}
                      >
-                       <X size={16} />
-                     </button>
+                       <X size={12} />
+                     </Button>
                    </div>
                  ) : (
                    <div className="relative border-2 border-dashed border-muted rounded-lg bg-muted/20 min-h-[200px] flex flex-col items-center justify-center">
-                     <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40">
+                     <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-40 hover:bg-muted/30 transition-colors">
                        <VideoIcon className="w-8 h-8 text-primary mb-2" />
                        <span className="text-sm text-primary font-medium select-none mb-1">
                          {t("addVideo", { defaultValue: "Add Video" })}
@@ -260,7 +265,7 @@ export default function StepImagesAndProsAndCons({
                        <span className="text-xs text-muted-foreground">
                          {t("formatMp4Size30mb", { defaultValue: "Format: MP4 | Size: 30MB" })}
                        </span>
-                       <input
+                       <Input
                          type="file"
                          accept="video/*"
                          className="hidden"

@@ -1,8 +1,6 @@
 "use client";
 
-// import { Card } from "@/components/ui/card";
-// import { cn } from "@/utils/cn";
-import {  useEffect } from "react";
+import { useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -10,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface StepStoneSpecificationsProps {
   sizeH: string;
@@ -87,62 +87,62 @@ export default function StepStoneSpecifications({
         <div className="grid grid-cols-2 gap-6">
           {/* Size Section */}
           <div className="space-y-3">
-            <label className="text-sm font-semibold text-gray-900">Size</label>
+            <Label className="text-sm   text-gray-900">Size</Label>
             <div className="grid grid-cols-3 gap-2">
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   placeholder="Height"
                   value={safeSizeH}
                   onChange={(e) => setSizeH(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="pr-8"
                 />
-                <span className="absolute right-3 top-2 text-sm text-gray-500">cm</span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">cm</span>
               </div>
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   placeholder="Width"
                   value={safeSizeW}
                   onChange={(e) => setSizeW(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="pr-8"
                 />
-                <span className="absolute right-3 top-2 text-sm text-gray-500">cm</span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">cm</span>
               </div>
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   placeholder="Length"
                   value={safeSizeL}
                   onChange={(e) => setSizeL(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="pr-8"
                 />
-                <span className="absolute right-3 top-2 text-sm text-gray-500">cm</span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">cm</span>
               </div>
             </div>
           </div>
 
           {/* Weight Section */}
           <div className="space-y-3">
-            <label className="text-sm font-semibold text-gray-900">Weight</label>
+            <Label className="text-sm   text-gray-900">Weight</Label>
             <div className="relative">
-              <input
+              <Input
                 type="number"
                 placeholder="Weight"
                 value={safeWeight}
                 onChange={(e) => setWeight(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="pr-8"
               />
-              <span className="absolute right-3 top-2 text-sm text-gray-500">kg</span>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">kg</span>
             </div>
           </div>
         </div>
 
         {/* Surface and Grade Row */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-6 mt-12">
           {/* Surface Section */}
           <div className="space-y-3">
-            <label className="text-sm font-semibold text-gray-900">Surface</label>
+            <Label className="text-sm   text-gray-900">Surface</Label>
             <Select value={safeSurfaceId} onValueChange={setSurfaceId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Surface Stone" />
@@ -169,7 +169,7 @@ export default function StepStoneSpecifications({
 
           {/* Grade Section */}
           <div className="space-y-3">
-            <label className="text-sm font-semibold text-gray-900">Grade</label>
+            <Label className="text-sm   text-gray-900">Grade</Label>
             <Select value={safeGrade} onValueChange={setGrade}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Grade Stone" />

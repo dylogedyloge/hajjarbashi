@@ -267,7 +267,12 @@
     "gradeB": "Grade B",
     "gradeC": "Grade C",
     "clearColors": "Clear Colors",
-    "back": "Back"
+    "back": "Back",
+    "promoCode": "Promo Code",
+    "typeCode": "Type Code",
+    "payAndPublish": "Pay & Publish",
+    "saveAsDraft": "Save as Draft",
+    "selectOriginCountries": "Select Origin Countries"
   },
   "AdDetailPage": {
     "home": "Home",

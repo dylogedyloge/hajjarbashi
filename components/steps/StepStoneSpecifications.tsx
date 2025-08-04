@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 interface StepStoneSpecificationsProps {
   sizeH: string;
@@ -63,6 +64,35 @@ export default function StepStoneSpecifications({
   const safeSizeL = typeof sizeL === 'string' ? sizeL : '';
   const safeWeight = typeof weight === 'string' ? weight : '';
 
+  // Function to determine size category based on dimensions
+  const getSizeCategory = () => {
+    const h = parseFloat(safeSizeH) || 0;
+    const w = parseFloat(safeSizeW) || 0;
+    const l = parseFloat(safeSizeL) || 0;
+    
+    // If no dimensions are filled, return null
+    if (h === 0 && w === 0 && l === 0) {
+      return null;
+    }
+    
+    // Calculate average dimension (using non-zero values only)
+    const dimensions = [h, w, l].filter(d => d > 0);
+    if (dimensions.length === 0) return null;
+    
+    const avgDimension = dimensions.reduce((sum, dim) => sum + dim, 0) / dimensions.length;
+    
+    // Define size categories based on average dimension
+    if (avgDimension <= 50) {
+      return { text: "Small", variant: "secondary" as const };
+    } else if (avgDimension <= 150) {
+      return { text: "Medium", variant: "default" as const };
+    } else {
+      return { text: "Large", variant: "destructive" as const };
+    }
+  };
+
+  const sizeCategory = getSizeCategory();
+
   // Debug logging
   useEffect(() => {
     console.log('StepStoneSpecifications props:', {
@@ -87,7 +117,14 @@ export default function StepStoneSpecifications({
         <div className="grid grid-cols-2 gap-6">
           {/* Size Section */}
           <div className="space-y-3">
-            <Label className="text-sm   text-gray-900">Size</Label>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm text-gray-900">Size</Label>
+              {sizeCategory && (
+                <Badge variant={sizeCategory.variant} className="text-xs">
+                  {sizeCategory.text}
+                </Badge>
+              )}
+            </div>
             <div className="grid grid-cols-3 gap-2">
               <div className="relative">
                 <Input

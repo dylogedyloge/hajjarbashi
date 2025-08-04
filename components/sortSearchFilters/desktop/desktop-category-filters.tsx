@@ -5,6 +5,7 @@ import { Stone, Block, Slab, Tile } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
 import { AdsFilters } from "@/components/ads-list";
@@ -585,44 +586,27 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
               )}
             </div>
 
-            {/* Origin Section */}
-            <div className="space-y-3">
-              <h3 className="font-bold text-foreground text-sm">{t("origin")}</h3>
-              {loadingCountries ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {[...Array(4)].map((_, index) => (
-                    <div key={index} className="animate-pulse">
-                      <div className="h-10 bg-muted rounded-md" />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {countries.map((country) => (
-                    <Button
-                      key={country.id}
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "text-xs",
-                        selectedOriginCountries.includes(country.id) 
-                          ? "border-orange-500" 
-                          : "border-muted"
-                      )}
-                      onClick={() => {
-                        setSelectedOriginCountries(prev => 
-                          prev.includes(country.id) 
-                            ? prev.filter(c => c !== country.id)
-                            : [...prev, country.id]
-                        );
-                      }}
-                    >
-                      {country.name}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </div>
+                         {/* Origin Section */}
+             <div className="space-y-3">
+               <h3 className="font-bold text-foreground text-sm">{t("origin")}</h3>
+               {loadingCountries ? (
+                 <div className="grid grid-cols-2 gap-2">
+                   {[...Array(4)].map((_, index) => (
+                     <div key={index} className="animate-pulse">
+                       <div className="h-10 bg-muted rounded-md" />
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <DropdownMultiSelect
+                   options={countries.map(country => ({ label: country.name, value: country.id }))}
+                   value={selectedOriginCountries}
+                   onChange={setSelectedOriginCountries}
+                   placeholder={t("selectOriginCountries")}
+                   disabled={loadingCountries}
+                 />
+               )}
+             </div>
 
             {/* Grade Section */}
             <div className="space-y-3 mb-10">

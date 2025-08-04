@@ -267,7 +267,12 @@
     "gradeB": "درجه B",
     "gradeC": "درجه C",
     "clearColors": "پاک کردن رنگ‌ها",
-    "back": "بازگشت"
+    "back": "بازگشت",
+    "promoCode": "کد تخفیف",
+    "typeCode": "وارد کردن کد",
+    "payAndPublish": "پرداخت و انتشار",
+    "saveAsDraft": "ذخیره پیش‌نویس",
+    "selectOriginCountries": "انتخاب کشورهای مبدا"
   },
   "MobileBottomNav": {
     "home": "خانه",

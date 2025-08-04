@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 // import Image from "next/image";
 import { useState } from "react";
-import { updatePaymentReceipt, getPaymentReceipts, validateDiscountCode } from "@/lib/advertisements";
+import { updatePaymentReceipt, validateDiscountCode } from "@/lib/advertisements";
 import { 
   Zap, 
   Star, 

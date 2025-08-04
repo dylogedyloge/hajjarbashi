@@ -16,7 +16,7 @@ import {
   initAdvertisement,
   updateAd,
   getPaymentReceipt,
-  updatePaymentReceipt,
+  // updatePaymentReceipt,
   getPaymentReceipts,
 } from "@/lib/advertisements";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -30,7 +30,7 @@ import StepStoneSpecifications from "@/components/steps/StepStoneSpecifications"
 import StepReviewAndFeatures from "@/components/steps/StepReviewAndFeatures";
 import StepImagesAndProsAndCons from "@/components/steps/StepImagesAndProsAndCons";
 import StepPricingAndShipping from "@/components/steps/StepPricingAndShipping";
-import { cn } from "@/utils/cn";
+// import { cn } from "@/utils/cn";
 
 // Add localStorage utilities for form persistence
 const FORM_STORAGE_KEY = 'create-ad-form-data';

@@ -1,6 +1,7 @@
 "use client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -14,8 +15,11 @@ import {
   fetchPorts,
   initAdvertisement,
   updateAd,
+  getPaymentReceipt,
+  updatePaymentReceipt,
+  getPaymentReceipts,
 } from "@/lib/advertisements";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   arrayMove,
 } from "@dnd-kit/sortable";
@@ -26,6 +30,7 @@ import StepStoneSpecifications from "@/components/steps/StepStoneSpecifications"
 import StepReviewAndFeatures from "@/components/steps/StepReviewAndFeatures";
 import StepImagesAndProsAndCons from "@/components/steps/StepImagesAndProsAndCons";
 import StepPricingAndShipping from "@/components/steps/StepPricingAndShipping";
+import { cn } from "@/utils/cn";
 
 // Add localStorage utilities for form persistence
 const FORM_STORAGE_KEY = 'create-ad-form-data';
@@ -79,7 +84,7 @@ export default function CreateAdPage() {
   >([]);
 
   // Add state for left panel checkboxes
-  const [featured, setFeatured] = useState(true);
+  const [featured, setFeatured] = useState(false);
   const [autoRenew, setAutoRenew] = useState(false);
   const [expressReady, setExpressReady] = useState(false); // Not in API, but keep for UI
   const [enableChat, setEnableChat] = useState(false);
@@ -149,6 +154,84 @@ export default function CreateAdPage() {
   });
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
+  // Add state for receipt/pricing
+  const [discountCode, setDiscountCode] = useState<string>("");
+  const [discountApplied, setDiscountApplied] = useState<boolean>(false);
+  const [discountAmount, setDiscountAmount] = useState<number>(0);
+  
+  // Add state for API-based receipt data
+  const [receiptData, setReceiptData] = useState<any>(null);
+  const [receiptLoading, setReceiptLoading] = useState<boolean>(false);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
+
+  // Pricing constants
+  const BASE_PRICE = 10;
+  const FEATURE_PRICE = 4;
+
+  // Calculate total price
+  const calculateTotal = () => {
+    let total = BASE_PRICE;
+
+    // Add feature costs - only Featured adds $4
+    if (featured) total += FEATURE_PRICE;
+
+    // Apply discount
+    if (discountApplied) {
+      total -= discountAmount;
+    }
+
+    return Math.max(0, total); // Ensure total is not negative
+  };
+
+  // Function to refresh receipt data from API
+  const refreshReceiptData = useCallback(async () => {
+    if (currentStep === 5) {
+      try {
+        setReceiptLoading(true);
+        setReceiptError(null);
+        
+        // Use GET API to fetch the latest receipt data
+        const response = await getPaymentReceipts({
+          adId: adId || "temp-id",
+          limit: 10,
+          page: 1,
+          locale,
+          token: token || "",
+        });
+        
+        // Use the first index of the response data
+        if (response.data && response.data.length > 0) {
+          setReceiptData(response.data[0]);
+        } else {
+          // If no receipts found, create a new one using POST API
+          const payables = [{ type: "purchase_ad" }];
+          // Get the current featured state from the state variable
+          if (featured) {
+            payables.push({ type: "ad_promotion" });
+          }
+          
+          const postResponse = await getPaymentReceipt({
+            relatedAdId: adId || "temp-id",
+            payables,
+            discountCode: discountCode || "",
+            locale,
+            token: token || "",
+          });
+          
+          setReceiptData(postResponse.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch receipt data:', error);
+        setReceiptError(error instanceof Error ? error.message : 'Failed to fetch receipt data');
+      } finally {
+        setReceiptLoading(false);
+      }
+    }
+  }, [currentStep, adId, discountCode, locale, token]);
+
+  // Discount code is now handled directly in StepReviewAndFeatures component
+  // No need for separate callback function
+
   // Track initial form state for dirty check
   const initialFormState = useRef<any>(null);
   // Add a ref to store the last loaded adData for use in the city effect
@@ -176,9 +259,13 @@ export default function CreateAdPage() {
     }
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep < steps.length) {
       const nextStep = currentStep + 1;
+      
+      // Remove the direct API call logic from here
+      // The useEffect watching currentStep will handle receipt data fetching
+      
       setCurrentStep(nextStep);
       if (!completedSteps.includes(currentStep)) {
         setCompletedSteps([...completedSteps, currentStep]);
@@ -682,6 +769,13 @@ export default function CreateAdPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adId, selectedForm, selectedCategory, selectedSubcategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts, reviewFeatures, selectedPaymentMethod]);
 
+  // Refresh receipt data when featured state changes or when navigating to step 5
+  useEffect(() => {
+    if (currentStep === 5) {
+      refreshReceiptData();
+    }
+  }, [featured, currentStep, refreshReceiptData]);
+
 
   // Unified submit handler for both actions
   const handleSubmit = async (statusValue: string) => {
@@ -871,13 +965,109 @@ export default function CreateAdPage() {
   return (
     <div className="flex gap-8 px-4 py-12">
       {/* Stepper Panel */}
-      <Card className="w-80 flex-shrink-0 p-6 ">
+      <Card className="w-80 flex-shrink-0 p-6">
         <Stepper
           steps={steps}
           currentStep={currentStep}
           onStepClick={handleStepClick}
           completedSteps={completedSteps}
         />
+
+        {/* Receipt Section - Only show on review step */}
+        {currentStep === 5 && (
+          <Card className="mt-8">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Payment Receipt
+                {receiptLoading && (
+                  <div className="ml-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+                  </div>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {receiptError ? (
+                <div className="text-sm text-red-600">
+                  Error loading receipt: {receiptError}
+                </div>
+              ) : receiptData ? (
+                <>
+                  {/* Individual Payables */}
+                  {receiptData.payables?.map((payable: any, index: number) => (
+                    <div key={index} className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">
+                        {payable.type === "purchase_ad" ? "Base Publishing Fee" : 
+                         payable.type === "ad_promotion" ? "Featured" : payable.type}
+                      </span>
+                      <span className="text-sm font-medium">
+                        ${payable.amount?.toFixed(2) || "0.00"}
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* Discount */}
+                  {receiptData.total_discount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-600">Discount Code</span>
+                      <span className="text-sm font-medium text-green-600">
+                        -${receiptData.total_discount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Divider */}
+                  <Separator className="my-2" />
+                  
+                  {/* Total */}
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-md">Total</span>
+                    <span className="font-semibold text-md">
+                      ${receiptData.total_payable_amount?.toFixed(2) || "0.00"}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                // Fallback to frontend calculation if API data is not available
+                <>
+                  {/* Base Price */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Base Publishing Fee</span>
+                    <span className="text-sm font-medium">$10.00</span>
+                  </div>
+
+                  {/* Features */}
+                  {featured && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Featured</span>
+                      <span className="text-sm font-medium">+$4.00</span>
+                    </div>
+                  )}
+
+                  {/* Discount */}
+                  {discountApplied && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-600">Discount Code</span>
+                      <span className="text-sm font-medium text-green-600">-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {/* Divider */}
+                  <Separator className="my-2" />
+                  
+                  {/* Total */}
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-md">Total</span>
+                    <span className="font-semibold text-md">${calculateTotal().toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </Card>
 
       {/* Main Form Panel */}
@@ -895,7 +1085,7 @@ export default function CreateAdPage() {
                   {steps[0].description}
                 </p>
               </div>
-              
+
               <StepFormCategorySubCategoryOfStone
                 selectedForm={selectedForm}
                 setSelectedForm={setSelectedForm}
@@ -921,7 +1111,7 @@ export default function CreateAdPage() {
                   {steps[1].description}
                 </p>
               </div>
-              
+
               <StepStoneSpecifications
                 sizeH={sizeH}
                 setSizeH={setSizeH}
@@ -955,7 +1145,7 @@ export default function CreateAdPage() {
                   {steps[2].description}
                 </p>
               </div>
-              
+
               <StepImagesAndProsAndCons
                 imageUrls={imageUrls}
                 uploading={uploading}
@@ -984,7 +1174,7 @@ export default function CreateAdPage() {
                   {steps[3].description}
                 </p>
               </div>
-              
+
               <StepPricingAndShipping
                 price={price}
                 setPrice={setPrice}
@@ -1022,7 +1212,7 @@ export default function CreateAdPage() {
                   {steps[4].description}
                 </p>
               </div>
-              
+
               <StepReviewAndFeatures
                 stoneForm={selectedForm}
                 selectedCategory={categoryOptions.find(cat => cat.id === selectedCategory)?.name || selectedCategory}
@@ -1050,8 +1240,16 @@ export default function CreateAdPage() {
                 images={imageUrls.map(img => img.url)}
                 selectedOptions={[]} // This will be populated when options step is implemented
                 selectedOriginPorts={[]} // This will be populated when origin ports step is implemented
+                featured={featured}
+                onFeaturedChange={setFeatured}
                 onFeaturesChange={handleReviewFeaturesChange}
                 onPaymentMethodChange={handlePaymentMethodChange}
+
+                receiptId={receiptData?.id}
+                onReceiptUpdate={refreshReceiptData}
+                locale={locale}
+                token={token || ""}
+                adId={adId || ""}
               />
             </div>
           )}
@@ -1077,7 +1275,7 @@ export default function CreateAdPage() {
               </Button>
               {currentStep < steps.length ? (
                 <Button onClick={handleNextStep}>
-                  {t("next")}
+                  {currentStep === 4 ? t("review", { defaultValue: "Review" }) : t("next")}
                 </Button>
               ) : (
                 <Button onClick={() => handleSubmit("draft")}>

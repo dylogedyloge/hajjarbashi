@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
         hostname: '192.168.10.106',
         pathname: '/**',
       },
+      {
+        protocol: 'http',
+        hostname: '192.168.10.6',
+        pathname: '/**',
+      },
     ],
   },
   webpack: (config) => {

@@ -441,4 +441,142 @@ export async function fetchBookmarkedAds({ limit, page, locale, token }: { limit
   return response.json();
 }
 
+export async function getPaymentReceipt({
+  relatedAdId,
+  payables,
+  discountCode,
+  locale,
+  token,
+}: {
+  relatedAdId: string;
+  payables: Array<{ type: string }>;
+  discountCode: string;
+  locale: string;
+  token: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/payment_receipts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-lang": locale,
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      related_ad_id: relatedAdId,
+      payables,
+      discount_code: discountCode,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to get payment receipt: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function updatePaymentReceipt({
+  id,
+  relatedAdId,
+  payables,
+  discountCode,
+  locale,
+  token,
+}: {
+  id: string;
+  relatedAdId: string;
+  payables: Array<{ type: string }>;
+  discountCode: string;
+  locale: string;
+  token: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/payment_receipts`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "x-lang": locale,
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      id,
+      related_ad_id: relatedAdId,
+      payables,
+      discount_code: discountCode,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to update payment receipt: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function getPaymentReceipts({
+  adId,
+  limit = 10,
+  page = 1,
+  locale,
+  token,
+}: {
+  adId: string;
+  limit?: number;
+  page?: number;
+  locale: string;
+  token: string;
+}) {
+  const queryParams = new URLSearchParams({
+    ad_id: adId,
+    limit: limit.toString(),
+    page: page.toString(),
+  });
+
+  const response = await fetch(`${API_BASE_URL}/payment_receipts?${queryParams}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "x-lang": locale,
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to get payment receipts: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function validateDiscountCode({
+  discountCode,
+  locale,
+  token,
+}: {
+  discountCode: string;
+  locale: string;
+  token: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/discount_codes/validate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-lang": locale,
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      discount_code: discountCode,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to validate discount code: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
  

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 // import Image from "next/image";
 import { useState } from "react";
+import { updatePaymentReceipt, getPaymentReceipts, validateDiscountCode } from "@/lib/advertisements";
 import { 
   Zap, 
   Star, 
@@ -20,6 +21,7 @@ import {
   // Trash2,
   // ArrowLeft
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface StepReviewAndFeaturesProps {
   // Basic Info
@@ -52,6 +54,10 @@ interface StepReviewAndFeaturesProps {
   // Origin Ports
   selectedOriginPorts?: string[];
   
+  // Feature states from parent
+  featured?: boolean;
+  onFeaturedChange?: (featured: boolean) => void;
+  
   // Callbacks for features and payment data
   onFeaturesChange?: (features: {
     is_chat_enabled: boolean;
@@ -61,6 +67,19 @@ interface StepReviewAndFeaturesProps {
   }) => void;
   
   onPaymentMethodChange?: (paymentMethod: string) => void;
+  
+
+  
+  // Receipt management
+  receiptId?: string;
+  onReceiptUpdate?: () => Promise<void>;
+  
+  // API credentials
+  locale?: string;
+  token?: string;
+  
+  // Ad ID for API calls
+  adId?: string;
 }
 
 export default function StepReviewAndFeatures({
@@ -80,8 +99,15 @@ export default function StepReviewAndFeatures({
   selectedExportPorts,
   portOptions = [],
   // images,
+  featured = false,
+  onFeaturedChange,
   onFeaturesChange,
   onPaymentMethodChange,
+  receiptId,
+  onReceiptUpdate,
+  locale,
+  token,
+  adId,
 }: StepReviewAndFeaturesProps) {
   const t = useTranslations("CreateAd");
   
@@ -89,6 +115,7 @@ export default function StepReviewAndFeatures({
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<string>("paypal"); // Default to PayPal as shown in image
   const [promoCode, setPromoCode] = useState<string>("");
+  const [isPromoCodeValid, setIsPromoCodeValid] = useState<boolean | null>(null);
 
   // const formatSize = () => {
   //   const dimensions = [sizeH, sizeW, sizeL].filter(Boolean);
@@ -112,7 +139,43 @@ export default function StepReviewAndFeatures({
     return portNames.join(", ");
   };
 
-  const handleFeatureToggle = (feature: string) => {
+  const handleFeatureToggle = async (feature: string) => {
+    // Handle featured separately since it's controlled by parent
+    if (feature === "featured") {
+      if (onFeaturedChange) {
+        onFeaturedChange(!featured);
+        
+        // Call PATCH API to update receipt when Featured is toggled
+        if (receiptId && locale && token) {
+          try {
+            const payables = [{ type: "purchase_ad" }];
+            if (!featured) { // If we're enabling featured (current state is false, so new state will be true)
+              payables.push({ type: "ad_promotion" });
+            }
+            // If featured is currently true, we're disabling it, so don't include ad_promotion
+            
+            await updatePaymentReceipt({
+              id: receiptId,
+              relatedAdId: adId || "temp-id",
+              payables,
+              discountCode: promoCode || "",
+              locale,
+              token,
+            });
+            
+            // After PATCH, call the parent's update function to refresh receipt data
+            if (onReceiptUpdate) {
+              await onReceiptUpdate();
+            }
+          } catch (error) {
+            console.error('Failed to update receipt for Featured toggle:', error);
+            // You might want to show a toast notification here
+          }
+        }
+      }
+      return;
+    }
+    
     const newSelectedFeatures = selectedFeatures.includes(feature) 
       ? selectedFeatures.filter(f => f !== feature)
       : [...selectedFeatures, feature];
@@ -137,15 +200,76 @@ export default function StepReviewAndFeatures({
     }
   };
 
+  const handleApplyPromoCode = async () => {
+    if (!promoCode) {
+      toast.error("Promo code cannot be empty.");
+      return;
+    }
+
+    if (!locale || !token) {
+      toast.error("Missing authentication. Please try again.");
+      return;
+    }
+
+    try {
+      const response = await validateDiscountCode({
+        discountCode: promoCode,
+        locale,
+        token,
+      });
+      
+      // Check if the API call was successful AND the code is valid
+      if (response.success && response.data?.valid === true) {
+        setIsPromoCodeValid(true);
+        toast.success("Promo code applied successfully!");
+        
+        // Use the discount information from the validation response to update receipt
+        if (receiptId && onReceiptUpdate) {
+          try {
+            const payables = [{ type: "purchase_ad" }];
+            if (featured) {
+              payables.push({ type: "ad_promotion" });
+            }
+            
+            // Add the discount type from the validation response
+            if (response.data.type) {
+              payables.push({ type: response.data.type });
+            }
+            
+            await updatePaymentReceipt({
+              id: receiptId,
+              relatedAdId: adId || "temp-id",
+              payables,
+              discountCode: promoCode,
+              locale,
+              token,
+            });
+            
+            // Refresh receipt data to show updated amounts
+            await onReceiptUpdate();
+          } catch (error) {
+            console.error('Failed to update receipt with discount:', error);
+            toast.error("Failed to apply discount to receipt.");
+          }
+        }
+      } else {
+        setIsPromoCodeValid(false);
+        toast.error("Invalid promo code. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to validate promo code:", error);
+      setIsPromoCodeValid(false);
+      toast.error("Failed to apply promo code. Please try again.");
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className=" space-y-8">
       
       {/* Preview Section */}
       <Card>
-        <CardHeader>
-          <CardTitle>Preview</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        
+        <CardContent className="space-y-4 text-sm prose-sm">
           {/* Row 1 */}
           <div className="grid grid-cols-3 gap-4">
             <div className="flex gap-2">
@@ -277,7 +401,7 @@ export default function StepReviewAndFeatures({
             {/* Featured Card */}
             <Card 
               className={`cursor-pointer transition-all ${
-                selectedFeatures.includes("featured") 
+                featured 
                   ? "border-orange-500 bg-orange-50" 
                   : "hover:border-gray-300"
               }`}
@@ -350,7 +474,7 @@ export default function StepReviewAndFeatures({
               }`}
               onClick={() => handlePaymentMethodChange("wallet")}
             >
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-full bg-amber-100">
@@ -377,7 +501,7 @@ export default function StepReviewAndFeatures({
               }`}
               onClick={() => handlePaymentMethodChange("paypal")}
             >
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-blue-100">
                     <CreditCard className="w-6 h-6 text-blue-600" />
@@ -391,8 +515,11 @@ export default function StepReviewAndFeatures({
                 
               </CardContent>
             </Card>
-                        {/* Promo Code Input */}
-                        <div className="flex items-center gap-2">
+          </div>
+          
+          {/* Promo Code Input */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
               <Label htmlFor="promoCode" className="text-sm font-medium">
                 Promo Code:
               </Label>
@@ -402,9 +529,31 @@ export default function StepReviewAndFeatures({
                 placeholder="Type Code"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
-                className="w-32 h-8 text-sm"
+                className={`w-32 h-8 text-sm ${
+                  isPromoCodeValid === true ? "border-green-500" : 
+                  isPromoCodeValid === false ? "border-red-500" : ""
+                }`}
               />
+              <Button
+                size="sm"
+                onClick={handleApplyPromoCode}
+                className="h-8 px-3 text-xs cursor-pointer"
+              >
+                Apply
+              </Button>
             </div>
+            {isPromoCodeValid === true && (
+              <div className="text-green-600 text-xs flex items-center gap-1">
+                <span>✓</span>
+                <span>Promo code applied successfully</span>
+              </div>
+            )}
+            {isPromoCodeValid === false && (
+              <div className="text-red-600 text-xs flex items-center gap-1">
+                <span>✗</span>
+                <span>Invalid promo code</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

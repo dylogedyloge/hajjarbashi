@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+// import Image from "next/image";
 import { useState } from "react";
 import { 
   Zap, 
@@ -17,8 +17,8 @@ import {
   Phone, 
   Wallet, 
   CreditCard,
-  Trash2,
-  ArrowLeft
+  // Trash2,
+  // ArrowLeft
 } from "lucide-react";
 
 interface StepReviewAndFeaturesProps {
@@ -79,7 +79,7 @@ export default function StepReviewAndFeatures({
   selectedReceivingPorts,
   selectedExportPorts,
   portOptions = [],
-  images,
+  // images,
   onFeaturesChange,
   onPaymentMethodChange,
 }: StepReviewAndFeaturesProps) {
@@ -90,10 +90,10 @@ export default function StepReviewAndFeatures({
   const [paymentMethod, setPaymentMethod] = useState<string>("paypal"); // Default to PayPal as shown in image
   const [promoCode, setPromoCode] = useState<string>("");
 
-  const formatSize = () => {
-    const dimensions = [sizeH, sizeW, sizeL].filter(Boolean);
-    return dimensions.length > 0 ? `${dimensions.join(" × ")} cm` : t("notSpecified");
-  };
+  // const formatSize = () => {
+  //   const dimensions = [sizeH, sizeW, sizeL].filter(Boolean);
+  //   return dimensions.length > 0 ? `${dimensions.join(" × ")} cm` : t("notSpecified");
+  // };
 
   const formatPorts = (portIds?: string[]) => {
     if (!portIds || portIds.length === 0) {

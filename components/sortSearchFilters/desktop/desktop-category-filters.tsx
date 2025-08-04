@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {  ArrowLeft, DollarSign } from "lucide-react";
-import { Stone, Block, Slab, Tile } from "@/components/icons";
+import Image from "next/image";
+import { StoneSvg, BlocksSvg, SlabsSvg, TilesSvg } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -143,10 +144,10 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
   }, []);
 
   const formStoneOptions = [
-    { id: "all", label: t("allStone"), icon: Stone },
-    { id: "block", label: t("blocks"), icon: Block },
-    { id: "slab", label: t("slabs"), icon: Slab },
-    { id: "tile", label: t("tiles"), icon: Tile },
+    { id: "all", label: t("allStone"), icon: StoneSvg },
+    { id: "block", label: t("blocks"), icon: BlocksSvg },
+    { id: "slab", label: t("slabs"), icon: SlabsSvg },
+    { id: "tile", label: t("tiles"), icon: TilesSvg },
   ];
 
   const colorOptions = [
@@ -327,6 +328,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   {categories.map((category) => (
                     <div
                       key={category.id}
+                      data-category-id={category.id}
                       className={cn(
                         "relative cursor-pointer rounded-lg border-1 transition-all",
                         selectedCategories.includes(category.id) 
@@ -341,8 +343,31 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                         );
                       }}
                     >
-                      <div className="aspect-square bg-muted rounded-md flex items-center justify-center">
-                        <div className="w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-sm" />
+                      <div className="aspect-square bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                        {category.image ? (
+                          <Image
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${category.image}`}
+                            alt={category.name}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                            onError={() => {
+                              // Fallback to placeholder if image fails to load
+                              const imgElement = document.querySelector(`[data-category-id="${category.id}"] img`) as HTMLImageElement;
+                              if (imgElement) {
+                                imgElement.style.display = 'none';
+                                const placeholder = imgElement.nextElementSibling as HTMLElement;
+                                if (placeholder) {
+                                  placeholder.classList.remove('hidden');
+                                }
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div className={cn(
+                          "w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-sm",
+                          category.image ? "hidden" : ""
+                        )} />
                       </div>
                       <div className="p-1 text-center">
                         <span className="text-xs font-medium text-foreground">{category.name}</span>

@@ -5,15 +5,10 @@ export { default as SquareBookmarkTop } from './SquareBookmarkTop';
 export { default as ChatBubbleRectangle } from './ChatBubbleRectangle';
 export { default as User } from './User';
 
-// Custom stone form icons
-export { default as Stone } from './Stone';
-export { default as Block } from './Block';
-export { default as Slab } from './Slab';
-export { default as Tile } from './Tile';
-
 // SVG versions of stone form icons
 export { default as BlocksSvg } from './BlocksSvg';
 export { default as SlabsSvg } from './SlabsSvg';
+export { default as StoneSvg } from './StoneSvg';
 export { default as TilesSvg } from './TilesSvg';
 
 // Additional icons can be added here as needed

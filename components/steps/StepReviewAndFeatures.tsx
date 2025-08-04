@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-// import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,9 @@ import {
   MessageCircle, 
   Phone, 
   Wallet, 
-  CreditCard 
+  CreditCard,
+  Trash2,
+  ArrowLeft
 } from "lucide-react";
 
 interface StepReviewAndFeaturesProps {
@@ -79,8 +80,6 @@ export default function StepReviewAndFeatures({
   selectedExportPorts,
   portOptions = [],
   images,
-  // selectedOptions,
-  // selectedOriginPorts,
   onFeaturesChange,
   onPaymentMethodChange,
 }: StepReviewAndFeaturesProps) {
@@ -88,7 +87,7 @@ export default function StepReviewAndFeatures({
   
   // State for features and payment method
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("paypal"); // Default to PayPal as shown in image
   const [promoCode, setPromoCode] = useState<string>("");
 
   const formatSize = () => {
@@ -97,17 +96,14 @@ export default function StepReviewAndFeatures({
   };
 
   const formatPorts = (portIds?: string[]) => {
-    // Handle empty or undefined portIds
     if (!portIds || portIds.length === 0) {
       return t("notSpecified");
     }
     
-    // If portOptions is empty or not loaded yet, return the IDs as fallback
     if (!portOptions || portOptions.length === 0) {
       return portIds.join(", ");
     }
     
-    // Map port IDs to names, fallback to ID if not found
     const portNames = portIds.map(id => {
       const port = portOptions.find(p => p.id === id);
       return port ? port.name : id;
@@ -116,11 +112,6 @@ export default function StepReviewAndFeatures({
     return portNames.join(", ");
   };
 
-  // const formatOptions = (options?: string[]) => {
-  //   if (!options || options.length === 0) return t("noneSelected");
-  //   return options.join(", ");
-  // };
-
   const handleFeatureToggle = (feature: string) => {
     const newSelectedFeatures = selectedFeatures.includes(feature) 
       ? selectedFeatures.filter(f => f !== feature)
@@ -128,7 +119,6 @@ export default function StepReviewAndFeatures({
     
     setSelectedFeatures(newSelectedFeatures);
     
-    // Call the callback with the updated features
     if (onFeaturesChange) {
       onFeaturesChange({
         is_chat_enabled: newSelectedFeatures.includes("chatEnabled"),
@@ -142,328 +132,267 @@ export default function StepReviewAndFeatures({
   const handlePaymentMethodChange = (method: string) => {
     setPaymentMethod(method);
     
-    // Call the callback with the selected payment method
     if (onPaymentMethodChange) {
       onPaymentMethodChange(method);
     }
   };
 
   return (
-    <div className="space-y-6">
-
-      <div className="grid gap-6">
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="secondary">1</Badge>
-              {t("basicInfo")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("stoneForm")}
-                </label>
-                <p className="text-lg">{stoneForm || t("notSpecified")}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("category")}
-                </label>
-                <p className="text-lg">{selectedCategory || t("notSpecified")}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("subcategory")}
-                </label>
-                <p className="text-lg">{selectedSubcategory || t("notSpecified")}</p>
-              </div>
+    <div className="max-w-4xl mx-auto space-y-8">
+      
+      {/* Preview Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Preview</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Row 1 */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Form:</span>
+              <span className="font-medium">{stoneForm || t("notSpecified")}</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Specifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="secondary">2</Badge>
-              {t("stoneSpecifications")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("size")}
-                </label>
-                <p className="text-lg">{formatSize()}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("weight")}
-                </label>
-                <p className="text-lg">{weight ? `${weight} kg` : t("notSpecified")}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("surface")}
-                </label>
-                <p className="text-lg">{surfaceId || t("notSpecified")}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("grade")}
-                </label>
-                <p className="text-lg">{grade || t("notSpecified")}</p>
-              </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Type:</span>
+              <span className="font-medium">{selectedCategory || t("notSpecified")}</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Price and Ports */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="secondary">3</Badge>
-              {t("priceAndPortsDetails")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("price")}
-                </label>
-                <p className="text-lg">{price ? `$${price}` : t("notSpecified")}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("minimumOrder")}
-                </label>
-                <p className="text-lg">{minimumOrder || t("notSpecified")}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("saleUnitType")}
-                </label>
-                <p className="text-lg">{saleUnitType || t("notSpecified")}</p>
-              </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Sub-Type:</span>
+              <span className="font-medium">{selectedSubcategory || t("notSpecified")}</span>
             </div>
-            
-            <Separator />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("receivingPorts")}
-                </label>
-                <p className="text-lg">
+          </div>
+          
+          <Separator />
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Surface:</span>
+              <span className="font-medium">{surfaceId || t("notSpecified")}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Height:</span>
+              <span className="font-medium">{sizeH ? `${sizeH} cm` : t("notSpecified")}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Width:</span>
+              <span className="font-medium">{sizeW ? `${sizeW} cm` : t("notSpecified")}</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Length:</span>
+              <span className="font-medium">{sizeL ? `${sizeL} cm` : t("notSpecified")}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Weight:</span>
+              <span className="font-medium">{weight ? `${weight} kg` : t("notSpecified")}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Grade:</span>
+              <span className="font-medium">{grade || t("notSpecified")}</span>
+            </div>
+          </div>
+          
+          <Separator />
+          
+          {/* Row 3 */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Price:</span>
+              <span className="font-medium">{price ? `$${price}` : t("notSpecified")}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Min Order:</span>
+              <span className="font-medium">{minimumOrder || t("notSpecified")}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Sale Unit Type:</span>
+              <span className="font-medium">{saleUnitType || t("notSpecified")}</span>
+            </div>
+          </div>
+          
+          <Separator />
+          
+          {/* Row 4 - Spans three columns */}
+          <div className="flex justify-between">
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Port:</span>
+              <span className="font-medium">
+                {selectedExportPorts && selectedExportPorts.length > 0 
+                  ? formatPorts(selectedExportPorts)
+                  : t("notSpecified")
+                }
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-muted-foreground">Receive Port:</span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">
                   {selectedReceivingPorts && selectedReceivingPorts.length > 0 
                     ? formatPorts(selectedReceivingPorts)
                     : t("notSpecified")
                   }
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("exportPorts")}
-                </label>
-                <p className="text-lg">
-                  {selectedExportPorts && selectedExportPorts.length > 0 
-                    ? formatPorts(selectedExportPorts)
-                    : t("notSpecified")
-                  }
-                </p>
+                </span>
+                <Badge variant="secondary">+45</Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Images */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="secondary">4</Badge>
-              {t("images")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {images && images.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {images.map((image, index) => (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                    <Image
-                      src={image}
-                      alt={`Product image ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
+      {/* Features Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Features</CardTitle>
+          <p className="text-sm text-muted-foreground">(Lorem Ipsum 3 Item)</p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Express Card */}
+            <Card 
+              className={`cursor-pointer transition-all ${
+                selectedFeatures.includes("express") 
+                  ? "border-orange-500 bg-orange-50" 
+                  : "hover:border-gray-300"
+              }`}
+              onClick={() => handleFeatureToggle("express")}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-2 rounded-full bg-red-100">
+                    <Zap className="w-6 h-6 text-red-600" />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground">{t("noImagesUploaded")}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Features and Payment Method */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="secondary">5</Badge>
-              {t("featuresAndPayment")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Features */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">{t("features")} (Lorem Ipsum 3 Item)</h3>
-              
-              {/* Large Feature Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {/* Express Card */}
-                <div 
-                  className={`p-6 rounded-lg border-2 cursor-pointer transition-all ${
-                    selectedFeatures.includes("express") 
-                      ? "border-orange-500 bg-orange-50" 
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => handleFeatureToggle("express")}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 rounded-full bg-red-100">
-                      <Zap className="w-6 h-6 text-red-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-lg mb-2">Express</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        Lorem ipsum dolor sit amet, 
-                      </p>
-                    </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-lg mb-2">Express</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Egestas purus viverra accumsan in nisl nisi
+                    </p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                {/* Featured Card */}
-                <div 
-                  className={`p-6 rounded-lg border-2 cursor-pointer transition-all ${
-                    selectedFeatures.includes("featured") 
-                      ? "border-orange-500 bg-orange-50" 
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => handleFeatureToggle("featured")}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 rounded-full bg-gray-100">
-                      <Star className="w-6 h-6 text-gray-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-lg mb-2">Featured</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                      </p>
-                    </div>
+            {/* Featured Card */}
+            <Card 
+              className={`cursor-pointer transition-all ${
+                selectedFeatures.includes("featured") 
+                  ? "border-orange-500 bg-orange-50" 
+                  : "hover:border-gray-300"
+              }`}
+              onClick={() => handleFeatureToggle("featured")}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-2 rounded-full bg-gray-100">
+                    <Star className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-lg mb-2">Featured</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Egestas purus viverra accumsan in nisl nisi
+                    </p>
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
-              {/* Toggle Buttons */}
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => handleFeatureToggle("autoRenew")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
-                    selectedFeatures.includes("autoRenew")
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <RotateCcw className="w-4 h-4 text-yellow-600" />
-                  <span className="text-sm font-medium">Auto Renew</span>
-                </button>
+          {/* Toggle Buttons */}
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant={selectedFeatures.includes("autoRenew") ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFeatureToggle("autoRenew")}
+              className={selectedFeatures.includes("autoRenew") ? "bg-orange-500 hover:bg-orange-600" : ""}
+            >
+              <RotateCcw className="w-4 h-4 mr-2 text-yellow-600" />
+              Auto Renew
+            </Button>
 
-                <button
-                  onClick={() => handleFeatureToggle("chatEnabled")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
-                    selectedFeatures.includes("chatEnabled")
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <MessageCircle className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium">Enable Chat</span>
-                </button>
+            <Button
+              variant={selectedFeatures.includes("chatEnabled") ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFeatureToggle("chatEnabled")}
+              className={selectedFeatures.includes("chatEnabled") ? "bg-orange-500 hover:bg-orange-600" : ""}
+            >
+              <MessageCircle className="w-4 h-4 mr-2 text-blue-600" />
+              Enable Chat
+            </Button>
 
-                <button
-                  onClick={() => handleFeatureToggle("contactInfo")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
-                    selectedFeatures.includes("contactInfo")
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <Phone className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium">Contact Info</span>
-                </button>
-              </div>
-            </div>
+            <Button
+              variant={selectedFeatures.includes("contactInfo") ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFeatureToggle("contactInfo")}
+              className={selectedFeatures.includes("contactInfo") ? "bg-green-500 hover:bg-green-600" : ""}
+            >
+              <Phone className="w-4 h-4 mr-2 text-green-600" />
+              Contact Info
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-            <Separator />
-
-            {/* Payment Method */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">{t("paymentMethod")}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Wallet Option */}
-                <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === "wallet" 
-                      ? "border-orange-500 bg-orange-50" 
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => handlePaymentMethodChange("wallet")}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-brown-100">
-                        <Wallet className="w-6 h-6 text-brown-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Wallet</h4>
-                        <p className="text-sm text-gray-600">Balance: $24.25</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="text-gray-700">
-                      Add Balance
-                    </Button>
-                  </div>
-                </div>
-
-                {/* PayPal Option */}
-                <div 
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    paymentMethod === "paypal" 
-                      ? "border-orange-500 bg-orange-50" 
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => handlePaymentMethodChange("paypal")}
-                >
+      {/* Payment Method Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Method</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Wallet Option */}
+            <Card 
+              className={`cursor-pointer transition-all ${
+                paymentMethod === "wallet" 
+                  ? "border-orange-500 bg-orange-50" 
+                  : "hover:border-gray-300"
+              }`}
+              onClick={() => handlePaymentMethodChange("wallet")}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-full bg-blue-100">
-                      <CreditCard className="w-6 h-6 text-blue-600" />
+                    <div className="p-2 rounded-full bg-amber-100">
+                      <Wallet className="w-6 h-6 text-amber-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold">PayPal</h4>
-                      <p className="text-sm text-gray-600">Secure payment</p>
+                      <h4 className="font-semibold">Wallet</h4>
+                      <p className="text-sm text-muted-foreground">Balance: <span className="font-bold">$24.25</span></p>
                     </div>
                   </div>
+                  <Button variant="outline" size="sm">
+                    Add Balance
+                  </Button>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* Promo Code */}
-            <div>
+            {/* PayPal Option */}
+            <Card 
+              className={`cursor-pointer transition-all ${
+                paymentMethod === "paypal" 
+                  ? "border-orange-500 bg-orange-50" 
+                  : "hover:border-gray-300"
+              }`}
+              onClick={() => handlePaymentMethodChange("paypal")}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-blue-100">
+                    <CreditCard className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">PayPal</h4>
+                    <p className="text-sm text-muted-foreground">Secure payment</p>
+                  </div>
+                  
+                </div>
+                
+              </CardContent>
+            </Card>
+                        {/* Promo Code Input */}
+                        <div className="flex items-center gap-2">
               <Label htmlFor="promoCode" className="text-sm font-medium">
                 Promo Code:
               </Label>
@@ -473,12 +402,12 @@ export default function StepReviewAndFeatures({
                 placeholder="Type Code"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
-                className="mt-2"
+                className="w-32 h-8 text-sm"
               />
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 

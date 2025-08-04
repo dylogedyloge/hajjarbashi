@@ -1001,6 +1001,10 @@ export default function CreateAdPage() {
                 portOptions={portOptions}
                 portLoading={portLoading}
                 portError={portError}
+                sizeH={sizeH}
+                sizeW={sizeW}
+                sizeL={sizeL}
+                weight={weight}
                 t={t}
               />
             </div>
@@ -1077,7 +1081,7 @@ export default function CreateAdPage() {
                 </Button>
               ) : (
                 <Button onClick={() => handleSubmit("draft")}>
-                  {t("saveAsDraft")}
+                  {t("payAndPublish")}
                 </Button>
               )}
             </div>

@@ -1,23 +1,9 @@
 variables:
   GIT_STRATEGY: clone
-  SSH_USER: debian    
-  SSH_HOST: 37.152.178.132
-  SSH_PORT: 22       
-  APP_DIR: /home/debian/app
 
 stages:
   - build
   - deploy
-
-
-before_script:
-  - which ssh-agent || (sudo apt-get update -y && sudo apt-get install openssh-client -y)
-  - echo "$SSH_PRIVATE_KEY_B64" | base64 -d > /tmp/deploy_key
-  - chmod 600 /tmp/deploy_key
-  - eval $(ssh-agent -s)
-  - ssh-add /tmp/deploy_key
-  - mkdir -p ~/.ssh
-  - ssh-keyscan -p $SSH_PORT $SSH_HOST >> ~/.ssh/known_hosts
 
 build:
   stage: build
@@ -31,10 +17,6 @@ deploy:
   tags:
     - shell
   script:
-    - cp .env.example .env || true
-    - rsync -az -e "ssh -i /tmp/deploy_key -p $SSH_PORT" ./ $SSH_USER@$SSH_HOST:$APP_DIR
-    - ssh -i /tmp/deploy_key $SSH_USER@$SSH_HOST -p $SSH_PORT "
-        mkdir -p $APP_DIR && cd $APP_DIR && docker compose down || true && docker compose up -d
-      "
-  only:
-    - production
+    - echo "📦 Starting Docker Compose...."
+    - docker compose down || true
+    - docker compose up -d

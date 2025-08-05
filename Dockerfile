@@ -1,5 +1,5 @@
-# Build1
-FROM node:22-alpine AS builder
+# Build
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ COPY . .
 RUN npm run build
 
 # Production
-FROM node:22-slim
+FROM node:22-alpine
 
 WORKDIR /app
 

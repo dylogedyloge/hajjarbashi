@@ -19,7 +19,7 @@ import {
   // updatePaymentReceipt,
   // getPaymentReceipts,
 } from "@/lib/advertisements";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef} from "react";
 import {
   arrayMove,
 } from "@dnd-kit/sortable";
@@ -155,9 +155,6 @@ export default function CreateAdPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
   // Add state for receipt/pricing
-  const [discountCode, setDiscountCode] = useState<string>("");
-  const [discountApplied, setDiscountApplied] = useState<boolean>(false);
-  const [discountAmount, setDiscountAmount] = useState<number>(0);
   
   // Add state for API-based receipt data
   const [receiptData, setReceiptData] = useState<any>(null);
@@ -175,11 +172,6 @@ export default function CreateAdPage() {
     // Add feature costs - only Featured adds $4
     if (featured) total += FEATURE_PRICE;
 
-    // Apply discount
-    if (discountApplied) {
-      total -= discountAmount;
-    }
-
     return Math.max(0, total); // Ensure total is not negative
   };
 
@@ -194,7 +186,7 @@ export default function CreateAdPage() {
           const response = await getPaymentReceipt({
             relatedAdId: adId || "temp-id",
             payables: [{ type: "purchase_ad" }],
-            discountCode: discountCode || "",
+            discountCode: "",
             locale,
             token: token || "",
           });
@@ -1029,13 +1021,7 @@ export default function CreateAdPage() {
                     </div>
                   )}
 
-                  {/* Discount */}
-                  {discountApplied && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-green-600">Discount Code</span>
-                      <span className="text-sm font-medium text-green-600">-${discountAmount.toFixed(2)}</span>
-                    </div>
-                  )}
+
 
                   {/* Divider */}
                   <Separator className="my-2" />

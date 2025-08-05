@@ -72,7 +72,7 @@ interface StepReviewAndFeaturesProps {
   
   // Receipt management
   receiptId?: string;
-  onReceiptUpdate?: () => Promise<void>;
+  onReceiptUpdate?: (newReceiptData?: any) => void;
   
   // API credentials
   locale?: string;
@@ -143,33 +143,39 @@ export default function StepReviewAndFeatures({
     // Handle featured separately since it's controlled by parent
     if (feature === "featured") {
       if (onFeaturedChange) {
-        onFeaturedChange(!featured);
+        const newFeatured = !featured;
+        onFeaturedChange(newFeatured);
         
-        // Call PATCH API to update receipt when Featured is toggled
-        if (receiptId && locale && token) {
+        // Call PATCH API to update receipt when Featured is toggled (both ON and OFF)
+        if (receiptId && locale && token && adId) {
           try {
-            const payables = [{ type: "purchase_ad" }];
-            if (!featured) { // If we're enabling featured (current state is false, so new state will be true)
+            // Determine payables based on new featured state
+            const payables = [
+              { type: "purchase_ad" }
+            ];
+            
+            // Add ad_promotion only if Featured is being enabled
+            if (newFeatured) {
               payables.push({ type: "ad_promotion" });
             }
-            // If featured is currently true, we're disabling it, so don't include ad_promotion
             
-            await updatePaymentReceipt({
+            const patchResponse = await updatePaymentReceipt({
               id: receiptId,
-              relatedAdId: adId || "temp-id",
+              relatedAdId: adId,
               payables,
-              discountCode: promoCode || "",
+              discountCode: "", // Use empty string for type safety
               locale,
               token,
             });
             
-            // After PATCH, call the parent's update function to refresh receipt data
-            if (onReceiptUpdate) {
-              await onReceiptUpdate();
+            // After PATCH, call the parent's update function to refresh receipt data with the new response
+            if (patchResponse?.data && onReceiptUpdate) {
+              await onReceiptUpdate(patchResponse.data); // Pass the new receipt data to parent
             }
           } catch (error) {
             console.error('Failed to update receipt for Featured toggle:', error);
-            // You might want to show a toast notification here
+            // Revert the featured state if API call fails
+            onFeaturedChange(!newFeatured);
           }
         }
       }
@@ -230,13 +236,11 @@ export default function StepReviewAndFeatures({
             if (featured) {
               payables.push({ type: "ad_promotion" });
             }
-            
             // Add the discount type from the validation response
             if (response.data.type) {
               payables.push({ type: response.data.type });
             }
-            
-            await updatePaymentReceipt({
+            const patchRes = await updatePaymentReceipt({
               id: receiptId,
               relatedAdId: adId || "temp-id",
               payables,
@@ -244,9 +248,10 @@ export default function StepReviewAndFeatures({
               locale,
               token,
             });
-            
-            // Refresh receipt data to show updated amounts
-            await onReceiptUpdate();
+            // Update receipt with PATCH response
+            if (patchRes?.data) {
+              await onReceiptUpdate(patchRes.data);
+            }
           } catch (error) {
             console.error('Failed to update receipt with discount:', error);
             toast.error("Failed to apply discount to receipt.");

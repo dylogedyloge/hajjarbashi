@@ -17,7 +17,7 @@ import {
   updateAd,
   getPaymentReceipt,
   // updatePaymentReceipt,
-  getPaymentReceipts,
+  // getPaymentReceipts,
 } from "@/lib/advertisements";
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
@@ -183,51 +183,33 @@ export default function CreateAdPage() {
     return Math.max(0, total); // Ensure total is not negative
   };
 
-  // Function to refresh receipt data from API
-  const refreshReceiptData = useCallback(async () => {
+  // Add new effect to POST receipt when navigating from Step 4 to Step 5
+  useEffect(() => {
+    // Only run when moving from Step 4 to Step 5
     if (currentStep === 5) {
-      try {
+      const fetchReceipt = async () => {
         setReceiptLoading(true);
         setReceiptError(null);
-        
-        // Use GET API to fetch the latest receipt data
-        const response = await getPaymentReceipts({
-          adId: adId || "temp-id",
-          limit: 10,
-          page: 1,
-          locale,
-          token: token || "",
-        });
-        
-        // Use the first index of the response data
-        if (response.data && response.data.length > 0) {
-          setReceiptData(response.data[0]);
-        } else {
-          // If no receipts found, create a new one using POST API
-          const payables = [{ type: "purchase_ad" }];
-          // Get the current featured state from the state variable
-          if (featured) {
-            payables.push({ type: "ad_promotion" });
-          }
-          
-          const postResponse = await getPaymentReceipt({
+        try {
+          const response = await getPaymentReceipt({
             relatedAdId: adId || "temp-id",
-            payables,
+            payables: [{ type: "purchase_ad" }],
             discountCode: discountCode || "",
             locale,
             token: token || "",
           });
-          
-          setReceiptData(postResponse.data);
+          setReceiptData(response.data);
+        } catch (error) {
+          setReceiptError(error instanceof Error ? error.message : 'Failed to fetch receipt data');
+          setReceiptData(null);
+        } finally {
+          setReceiptLoading(false);
         }
-      } catch (error) {
-        console.error('Failed to fetch receipt data:', error);
-        setReceiptError(error instanceof Error ? error.message : 'Failed to fetch receipt data');
-      } finally {
-        setReceiptLoading(false);
-      }
+      };
+      fetchReceipt();
     }
-  }, [currentStep, adId, discountCode, locale, token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, adId, locale, token]);
 
   // Discount code is now handled directly in StepReviewAndFeatures component
   // No need for separate callback function
@@ -769,14 +751,6 @@ export default function CreateAdPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adId, selectedForm, selectedCategory, selectedSubcategory, imageUrls, featured, autoRenew, expressReady, enableChat, contactInfo, surfaceId, originCountryId, originCityId, benefits, defects, saleUnitType, formType, grade, sizeH, sizeW, sizeL, weight, minimumOrder, categoryId, price, description, selectedColors, selectedReceivingPorts, selectedExportPorts, reviewFeatures, selectedPaymentMethod]);
 
-  // Refresh receipt data when featured state changes or when navigating to step 5
-  useEffect(() => {
-    if (currentStep === 5) {
-      refreshReceiptData();
-    }
-  }, [featured, currentStep, refreshReceiptData]);
-
-
   // Unified submit handler for both actions
   const handleSubmit = async (statusValue: string) => {
     // Transform values to match API expectations
@@ -960,6 +934,14 @@ export default function CreateAdPage() {
     clearFormCache();
 
     toast.success(t("formCleared", { defaultValue: "Form cleared!" }));
+  };
+
+  // Update the onReceiptUpdate callback to accept an optional receipt object
+  const handleReceiptUpdate = (newReceiptData?: any) => {
+    if (newReceiptData) {
+      setReceiptData(newReceiptData);
+    }
+    // Do not POST or re-fetch receipt here after PATCH; only update if newReceiptData is provided.
   };
 
   return (
@@ -1246,7 +1228,7 @@ export default function CreateAdPage() {
                 onPaymentMethodChange={handlePaymentMethodChange}
 
                 receiptId={receiptData?.id}
-                onReceiptUpdate={refreshReceiptData}
+                onReceiptUpdate={handleReceiptUpdate}
                 locale={locale}
                 token={token || ""}
                 adId={adId || ""}

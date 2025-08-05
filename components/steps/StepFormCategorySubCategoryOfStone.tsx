@@ -126,127 +126,120 @@ export default function StepFormCategorySubCategoryOfStone({
   return (
     <div className="space-y-8">
 
-      {/* Show Form and Category options only when no category is selected */}
-      {!selectedCategory && (
-        <>
-          {/* Form Selection Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {formOptions.map((option) => {
-              const IconComponent = option.icon;
-              const isSelected = selectedForm === option.id;
-              
-              return (
-                <Card
-                  key={option.id}
-                  className={cn(
-                    "p-6 cursor-pointer transition-all duration-200 hover:shadow-lg",
-                    isSelected 
-                      ? "ring-2 ring-primary bg-primary/5" 
-                      : "hover:bg-gray-50"
-                  )}
-                  onClick={() => setSelectedForm(option.id)}
-                >
-                  <div className="flex flex-col items-center space-y-4">
-                    <div className={cn(
-                      "p-4 rounded-lg transition-colors duration-200",
-                      isSelected ? "bg-primary/10" : ""
-                    )}>
-                      <IconComponent 
-                        width={48}
-                        height={48}
-                        className={cn(
-                          "transition-colors duration-200",
-                          isSelected ? "text-primary" : "text-gray-600"
-                        )}
-                      />
-                    </div>
-                    <div className="text-center">
-                      <h3 className={cn(
-                        "text-md transition-colors duration-200",
-                        isSelected ? "text-primary" : "text-gray-900"
-                      )}>
-                        {option.title}
-                      </h3>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+      {/* Form Selection Cards - Always visible */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {formOptions.map((option) => {
+          const IconComponent = option.icon;
+          const isSelected = selectedForm === option.id;
+          
+          return (
+            <Card
+              key={option.id}
+              className={cn(
+                "p-6 cursor-pointer transition-all duration-200 hover:shadow-lg",
+                isSelected 
+                  ? "ring-2 ring-primary bg-primary/5" 
+                  : "hover:bg-gray-50"
+              )}
+              onClick={() => setSelectedForm(option.id)}
+            >
+              <div className="flex flex-col items-center space-y-4">
+                <div className={cn(
+                  "p-4 rounded-lg transition-colors duration-200",
+                  isSelected ? "bg-primary/10" : ""
+                )}>
+                  <IconComponent 
+                    width={48}
+                    height={48}
+                    className={cn(
+                      "transition-colors duration-200",
+                      isSelected ? "text-primary" : "text-gray-600"
+                    )}
+                  />
+                </div>
+                <div className="text-center">
+                  <h3 className={cn(
+                    "text-md transition-colors duration-200",
+                    isSelected ? "text-primary" : "text-gray-900"
+                  )}>
+                    {option.title}
+                  </h3>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
 
-          {/* Category Selection - Only show if a form is selected */}
-          <AnimatePresence>
-            {selectedForm && (
+      {/* Category Selection - Always visible */}
+      <AnimatePresence>
+        <motion.div 
+          className="space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+            {categoryLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[...Array(8)].map((_, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : categoryError ? (
+              <div className="text-center text-red-600">
+                <p>Failed to load categories: {categoryError}</p>
+              </div>
+            ) : (
               <motion.div 
-                className="space-y-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
               >
-                {categoryLoading ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[...Array(8)].map((_, index) => (
-                      <Card key={index} className="p-4">
-                        <div className="animate-pulse">
-                          <div className="h-4 bg-gray-200 rounded"></div>
+                {categoryOptions.map((category, index) => {
+                  const isSelected = selectedCategory === category.id;
+                  
+                  return (
+                    <motion.div
+                      key={category.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ 
+                        duration: 0.2, 
+                        delay: index * 0.05,
+                        ease: "easeOut"
+                      }}
+                    >
+                      <Card
+                        className={cn(
+                          "p-4 cursor-pointer transition-all duration-200 hover:shadow-md",
+                          isSelected 
+                            ? "ring-2 ring-primary bg-primary/5" 
+                            : "hover:bg-gray-50"
+                        )}
+                        onClick={() => setSelectedCategory(category.id)}
+                      >
+                        <div className="text-center">
+                          <h3 className={cn(
+                            "text-sm font-medium transition-colors duration-200",
+                            isSelected ? "text-primary" : "text-gray-900"
+                          )}>
+                            {category.name}
+                          </h3>
                         </div>
                       </Card>
-                    ))}
-                  </div>
-                ) : categoryError ? (
-                  <div className="text-center text-red-600">
-                    <p>Failed to load categories: {categoryError}</p>
-                  </div>
-                ) : (
-                  <motion.div 
-                    className="grid grid-cols-2 md:grid-cols-4 gap-3"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2, delay: 0.1 }}
-                  >
-                    {categoryOptions.map((category, index) => {
-                      const isSelected = selectedCategory === category.id;
-                      
-                      return (
-                        <motion.div
-                          key={category.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ 
-                            duration: 0.2, 
-                            delay: index * 0.05,
-                            ease: "easeOut"
-                          }}
-                        >
-                          <Card
-                            className={cn(
-                              "p-4 cursor-pointer transition-all duration-200 hover:shadow-md",
-                              isSelected 
-                                ? "ring-2 ring-primary bg-primary/5" 
-                                : "hover:bg-gray-50"
-                            )}
-                            onClick={() => setSelectedCategory(category.id)}
-                          >
-                            <div className="text-center">
-                              <h3 className={cn(
-                                "text-sm font-medium transition-colors duration-200",
-                                isSelected ? "text-primary" : "text-gray-900"
-                              )}>
-                                {category.name}
-                              </h3>
-                            </div>
-                          </Card>
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                )}
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             )}
-          </AnimatePresence>
-        </>
-      )}
+          </motion.div>
+        </AnimatePresence>
 
       {/* Subcategory Selection - Show when a category is selected */}
       <AnimatePresence>

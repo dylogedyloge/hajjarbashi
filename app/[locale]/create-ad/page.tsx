@@ -1491,8 +1491,8 @@ export default function CreateAdPage() {
               />
             </div>
           )}
-          {/* Navigation buttons - hide on step 1 until subcategory options appear */}
-          {!(currentStep === 1 && !selectedCategory) && !paymentSuccess && (
+          {/* Navigation buttons - always show except on payment success */}
+          {!paymentSuccess && (
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"

@@ -4,6 +4,7 @@ export { default as Plus } from './Plus';
 export { default as SquareBookmarkTop } from './SquareBookmarkTop';
 export { default as ChatBubbleRectangle } from './ChatBubbleRectangle';
 export { default as User } from './User';
+export { default as CheckedSvg } from './CheckedSvg';
 
 // SVG versions of stone form icons
 export { default as BlocksSvg } from './BlocksSvg';

@@ -2,8 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { CheckedSvg } from "@/components/icons";
 import { useTranslations } from "next-intl";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import {
@@ -16,6 +17,7 @@ import {
   initAdvertisement,
   updateAd,
   getPaymentReceipt,
+  createTransaction,
   // updatePaymentReceipt,
   // getPaymentReceipts,
 } from "@/lib/advertisements";
@@ -66,6 +68,7 @@ type UploadedFile = { path: string; thumb_path: string };
 export default function CreateAdPage() {
   const t = useTranslations("CreateAd");
   const searchParams = useSearchParams();
+  const router = useRouter();
   const adId = searchParams.get("id");
   const locale = searchParams.get("lang") || "en";
   const { token } = useAuth();
@@ -160,6 +163,10 @@ export default function CreateAdPage() {
   const [receiptData, setReceiptData] = useState<any>(null);
   const [receiptLoading, setReceiptLoading] = useState<boolean>(false);
   const [receiptError, setReceiptError] = useState<string | null>(null);
+
+  // Add state for payment success
+  const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
+  const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
 
   // Pricing constants
   const BASE_PRICE = 10;
@@ -783,7 +790,6 @@ export default function CreateAdPage() {
     //   }
     // };
 
-
     try {
       let currentAdId = adId;
 
@@ -854,25 +860,61 @@ export default function CreateAdPage() {
       // Log the payload for debugging
       console.log('updateAdPayload being sent to API:', JSON.stringify(updateAdPayload, null, 2));
 
-
-
+      // Update the ad first
       const res = await updateAd({
         payload: updateAdPayload,
         locale,
         token: token!,
       });
+      
       if (res?.success) {
-        toast.success(
-          t("adUpdateSuccess", { defaultValue: "Ad updated successfully!" })
-        );
-        // Show confirmation for draft
-        if (statusValue === "3") {
-          toast.success(t("draftSaved", { defaultValue: "Draft saved!" }));
-          // Update initial state to current after saving draft
-          initialFormState.current = getFormState();
+        // If this is a "Pay & Publish" action (not a draft), proceed with payment
+        if (statusValue !== "3" && receiptData?.id) {
+          setPaymentLoading(true);
+          try {
+            // Create transaction
+            const transactionRes = await createTransaction({
+              receiptId: receiptData.id,
+              paymentMethod: selectedPaymentMethod || "wallet", // Default to wallet if not selected
+              currency: "usd", // Default to USD
+              locale,
+              token: token!,
+            });
+
+            if (transactionRes?.success) {
+              setPaymentSuccess(true);
+              toast.success(t("paymentSuccess", { defaultValue: "Payment successful! Ad published successfully!" }));
+              // Clear form cache on successful payment
+              clearFormCache();
+            } else {
+              toast.error(
+                transactionRes?.message ||
+                t("paymentError", { defaultValue: "Payment failed." })
+              );
+            }
+          } catch (paymentErr: unknown) {
+            console.error('Payment Error Details:', paymentErr);
+            const paymentMessage =
+              paymentErr instanceof Error
+                ? paymentErr.message
+                : t("paymentError", { defaultValue: "Payment failed." });
+            toast.error(paymentMessage);
+          } finally {
+            setPaymentLoading(false);
+          }
+        } else {
+          // This is a draft save
+          toast.success(
+            t("adUpdateSuccess", { defaultValue: "Ad updated successfully!" })
+          );
+          if (statusValue === "3") {
+            toast.success(t("draftSaved", { defaultValue: "Draft saved!" }));
+            // Update initial state to current after saving draft
+            initialFormState.current = getFormState();
+          }
+          // Clear form cache on successful submission
+          clearFormCache();
         }
-        // Clear form cache on successful submission
-        clearFormCache();
       } else {
         console.error('API Error Response:', res);
         toast.error(
@@ -939,7 +981,8 @@ export default function CreateAdPage() {
   return (
     <div className="flex gap-8 px-4 py-12">
       {/* Stepper Panel */}
-      <Card className="w-80 flex-shrink-0 p-6">
+      {!paymentSuccess && (
+        <Card className="w-80 flex-shrink-0 p-6">
         <Stepper
           steps={steps}
           currentStep={currentStep}
@@ -1037,12 +1080,55 @@ export default function CreateAdPage() {
           </Card>
         )}
       </Card>
+      )}
 
       {/* Main Form Panel */}
       <div className="flex-1">
         <Card className="p-8 flex flex-col gap-8">
+          {/* Payment Success Card */}
+          {paymentSuccess && (
+            <div className="space-y-8">
+              <div className="text-center space-y-4">
+                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckedSvg className="w-8 h-8" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    Payment Successful!
+                  </h1>
+                  <p className="text-gray-600 mt-2">
+                    Your advertisement has been published successfully. You can view it in your dashboard.
+                  </p>
+                </div>
+                <div className="flex justify-center gap-4">
+                  <Button 
+                    onClick={() => {
+                      setPaymentSuccess(false);
+                      // Reset form and go to step 1
+                      setCurrentStep(1);
+                      clearFormCache();
+                    }}
+                    variant="default"
+                  >
+                    Create Another Ad
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setPaymentSuccess(false);
+                      // Navigate to view your ads using Next.js router
+                      router.push('/profile/view-your-ads');
+                    }}
+                  >
+                    See Your Ads
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Step 1: Form, Category and Subcategory of Stone */}
-          {currentStep === 1 && (
+          {currentStep === 1 && !paymentSuccess && (
             <div className="space-y-8">
               {/* Step Header */}
               <div className="text-center space-y-2">
@@ -1068,7 +1154,7 @@ export default function CreateAdPage() {
           )}
 
           {/* Step 2: Stone Specifications */}
-          {currentStep === 2 && (
+          {currentStep === 2 && !paymentSuccess && (
             <div className="space-y-8">
               {/* Step Header */}
               <div className="text-center space-y-2">
@@ -1102,7 +1188,7 @@ export default function CreateAdPage() {
           )}
 
           {/* Step 3: Images and Pros/Cons */}
-          {currentStep === 3 && (
+          {currentStep === 3 && !paymentSuccess && (
             <div className="space-y-8">
               {/* Step Header */}
               <div className="text-center space-y-2">
@@ -1131,7 +1217,7 @@ export default function CreateAdPage() {
           )}
 
           {/* Step 4: Pricing and Shipping */}
-          {currentStep === 4 && (
+          {currentStep === 4 && !paymentSuccess && (
             <div className="space-y-8">
               {/* Step Header */}
               <div className="text-center space-y-2">
@@ -1169,7 +1255,7 @@ export default function CreateAdPage() {
           )}
 
           {/* Step 5: Review and Features */}
-          {currentStep === 5 && (
+          {currentStep === 5 && !paymentSuccess && (
             <div className="space-y-8">
               {/* Step Header */}
               <div className="text-center space-y-2">
@@ -1222,7 +1308,7 @@ export default function CreateAdPage() {
             </div>
           )}
           {/* Navigation buttons - hide on step 1 until subcategory options appear */}
-          {!(currentStep === 1 && !selectedCategory) && (
+          {!(currentStep === 1 && !selectedCategory) && !paymentSuccess && (
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
@@ -1246,8 +1332,11 @@ export default function CreateAdPage() {
                   {currentStep === 4 ? t("review", { defaultValue: "Review" }) : t("next")}
                 </Button>
               ) : (
-                <Button onClick={() => handleSubmit("draft")}>
-                  {t("payAndPublish")}
+                <Button 
+                  onClick={() => handleSubmit("published")}
+                  disabled={paymentLoading}
+                >
+                  {paymentLoading ? "Processing..." : t("payAndPublish")}
                 </Button>
               )}
             </div>

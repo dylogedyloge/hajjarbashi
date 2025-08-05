@@ -579,4 +579,39 @@ export async function validateDiscountCode({
   return response.json();
 }
 
+export async function createTransaction({
+  receiptId,
+  paymentMethod,
+  currency,
+  locale,
+  token,
+}: {
+  receiptId: string;
+  paymentMethod: string;
+  currency: string;
+  locale: string;
+  token: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/transactions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-lang": locale,
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      receipt_id: receiptId,
+      payment_method: paymentMethod,
+      currency,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to create transaction: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
  

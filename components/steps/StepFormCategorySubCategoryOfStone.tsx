@@ -27,6 +27,7 @@ interface StepFormCategorySubCategoryOfStoneProps {
   setSelectedSubcategory: (subcategory: string) => void;
   t: any;
   locale: string;
+  errors?: Record<string, string>;
 }
 
 export default function StepFormCategorySubCategoryOfStone({ 
@@ -36,8 +37,9 @@ export default function StepFormCategorySubCategoryOfStone({
   setSelectedCategory,
   selectedSubcategory,
   setSelectedSubcategory,
-  
-  locale
+  t,
+  locale,
+  errors
 }: StepFormCategorySubCategoryOfStoneProps) {
   const [categoryOptions, setCategoryOptions] = useState<{ id: string; name: string }[]>([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
@@ -170,6 +172,13 @@ export default function StepFormCategorySubCategoryOfStone({
           );
         })}
       </div>
+      
+      {/* Form Error */}
+      {errors?.selectedForm && (
+        <div className="text-red-600 text-sm mt-2">
+          {errors.selectedForm}
+        </div>
+      )}
 
       {/* Category Selection - Always visible */}
       <AnimatePresence>
@@ -239,6 +248,13 @@ export default function StepFormCategorySubCategoryOfStone({
               </motion.div>
             )}
           </motion.div>
+          
+          {/* Category Error */}
+          {errors?.selectedCategory && (
+            <div className="text-red-600 text-sm mt-2">
+              {errors.selectedCategory}
+            </div>
+          )}
         </AnimatePresence>
 
       {/* Subcategory Selection - Show when a category is selected */}
@@ -354,6 +370,13 @@ export default function StepFormCategorySubCategoryOfStone({
               </motion.div>
             )}
           </motion.div>
+        )}
+        
+        {/* Subcategory Error */}
+        {errors?.selectedSubcategory && (
+          <div className="text-red-600 text-sm mt-2">
+            {errors.selectedSubcategory}
+          </div>
         )}
       </AnimatePresence>
     </div>

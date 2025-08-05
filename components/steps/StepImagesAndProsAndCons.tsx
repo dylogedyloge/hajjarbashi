@@ -116,6 +116,7 @@ interface StepImagesAndProsAndConsProps {
   defects: string[];
   setDefects: (value: string[]) => void;
   t: ReturnType<typeof useTranslations>;
+  errors?: Record<string, string>;
 }
 
 export default function StepImagesAndProsAndCons({
@@ -133,6 +134,7 @@ export default function StepImagesAndProsAndCons({
   defects,
   setDefects,
   t,
+  errors
 }: StepImagesAndProsAndConsProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -294,6 +296,13 @@ export default function StepImagesAndProsAndCons({
          {imageUrls.length >= 7 && (
            <div className="text-xs text-orange-500 mt-2">
              {t("maxImages", { count: 7 })}
+           </div>
+         )}
+         
+         {/* Images Error */}
+         {errors?.imageUrls && (
+           <div className="text-red-600 text-sm mt-2">
+             {errors.imageUrls}
            </div>
          )}
        </div>

@@ -80,6 +80,9 @@ interface StepReviewAndFeaturesProps {
   
   // Ad ID for API calls
   adId?: string;
+  
+  // Validation errors
+  errors?: Record<string, string>;
 }
 
 export default function StepReviewAndFeatures({
@@ -108,6 +111,7 @@ export default function StepReviewAndFeatures({
   locale,
   token,
   adId,
+  errors
 }: StepReviewAndFeaturesProps) {
   const t = useTranslations("CreateAd");
   
@@ -460,6 +464,13 @@ export default function StepReviewAndFeatures({
               Contact Info
             </Button>
           </div>
+          
+          {/* Features Error */}
+          {errors?.reviewFeatures && (
+            <div className="text-red-600 text-sm mt-2">
+              {errors.reviewFeatures}
+            </div>
+          )}
         </CardContent>
       </Card>
 

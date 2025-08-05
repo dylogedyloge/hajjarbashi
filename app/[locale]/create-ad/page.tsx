@@ -27,6 +27,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import type { DragEndEvent } from "@dnd-kit/core";
+import { z } from "zod";
 import Stepper from "@/components/Stepper";
 import StepFormCategorySubCategoryOfStone from "@/components/steps/StepFormCategorySubCategoryOfStone";
 import StepStoneSpecifications from "@/components/steps/StepStoneSpecifications";
@@ -198,6 +199,64 @@ export default function CreateAdPage() {
 
   // Pricing constants
   const BASE_PRICE = 10;
+
+  // Validation error states
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Validation schemas
+  const step1Schema = z.object({
+    selectedForm: z.string().min(1, "Form is required"),
+    selectedCategory: z.string().min(1, "Category is required"),
+    selectedSubcategory: z.string().min(1, "Subcategory is required"),
+  });
+
+  const step2Schema = z.object({
+    grade: z.string().min(1, "Grade is required"),
+    sizeH: z.string(),
+    sizeW: z.string(),
+    sizeL: z.string(),
+    weight: z.string(),
+  }).refine((data) => {
+    // Either size (all three dimensions) or weight must be filled
+    const hasSize = data.sizeH && data.sizeW && data.sizeL;
+    const hasWeight = data.weight;
+    return hasSize || hasWeight;
+  }, {
+    message: "Either size (width, height, length) or weight must be filled",
+    path: ["sizeH", "sizeW", "sizeL", "weight"]
+  }).refine((data) => {
+    // If any size field is filled, all three must be filled
+    const hasAnySize = data.sizeH || data.sizeW || data.sizeL;
+    const hasAllSize = data.sizeH && data.sizeW && data.sizeL;
+    return !hasAnySize || hasAllSize;
+  }, {
+    message: "If any size field is filled, all three size fields must be filled",
+    path: ["sizeH", "sizeW", "sizeL"]
+  });
+
+  const step3Schema = z.object({
+    imageUrls: z.array(z.any()).min(1, "At least one image is required"),
+  });
+
+  const step4Schema = z.object({
+    saleUnitType: z.string().min(1, "Sale unit type is required"),
+    price: z.string().min(1, "Price is required"),
+    minimumOrder: z.string().min(1, "Minimum order is required"),
+    selectedReceivingPorts: z.array(z.string()).min(1, "At least one receiving port is required"),
+    selectedExportPorts: z.array(z.string()).min(1, "At least one export port is required"),
+  });
+
+  const step5Schema = z.object({
+    reviewFeatures: z.object({
+      is_chat_enabled: z.boolean(),
+      contact_info_enabled: z.boolean(),
+    }),
+  }).refine((data) => {
+    return data.reviewFeatures.is_chat_enabled || data.reviewFeatures.contact_info_enabled;
+  }, {
+    message: "Either contact info or enable chat must be selected",
+    path: ["reviewFeatures"]
+  });
   const FEATURE_PRICE = 4;
 
   // Calculate total price
@@ -258,6 +317,66 @@ export default function CreateAdPage() {
   ];
 
   // Step navigation functions
+  const validateCurrentStep = () => {
+    setValidationErrors({});
+    
+    try {
+      switch (currentStep) {
+        case 1:
+          step1Schema.parse({
+            selectedForm,
+            selectedCategory,
+            selectedSubcategory,
+          });
+          break;
+        case 2:
+          step2Schema.parse({
+            grade,
+            sizeH,
+            sizeW,
+            sizeL,
+            weight,
+          });
+          break;
+        case 3:
+          step3Schema.parse({
+            imageUrls,
+          });
+          break;
+        case 4:
+          step4Schema.parse({
+            saleUnitType,
+            price,
+            minimumOrder,
+            selectedReceivingPorts,
+            selectedExportPorts,
+          });
+          break;
+        case 5:
+          step5Schema.parse({
+            reviewFeatures,
+          });
+          break;
+      }
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          const path = err.path.join('.');
+          errors[path] = err.message;
+        });
+        setValidationErrors(errors);
+      }
+      return false;
+    }
+  };
+
+  // Clear validation errors when user starts making changes
+  const clearValidationErrors = () => {
+    setValidationErrors({});
+  };
+
   const handleStepClick = (step: number) => {
     if (completedSteps.includes(step) || step < currentStep) {
       setCurrentStep(step);
@@ -270,6 +389,12 @@ export default function CreateAdPage() {
 
   const handleNextStep = async () => {
     if (currentStep < steps.length) {
+      // Validate current step before proceeding
+      if (!validateCurrentStep()) {
+        toast.error("Please fix the validation errors before proceeding");
+        return;
+      }
+
       const nextStep = currentStep + 1;
       
       // Save draft before moving to next step (except for the last step)
@@ -1333,6 +1458,7 @@ export default function CreateAdPage() {
                 setSelectedSubcategory={setSelectedSubcategory}
                 t={t}
                 locale={locale}
+                errors={validationErrors}
               />
             </div>
           )}
@@ -1367,6 +1493,7 @@ export default function CreateAdPage() {
                 surfaceLoading={surfaceLoading}
                 surfaceError={surfaceError}
                 t={t}
+                errors={validationErrors}
               />
             </div>
           )}
@@ -1396,6 +1523,7 @@ export default function CreateAdPage() {
                 defects={defects}
                 setDefects={setDefects}
                 t={t}
+                errors={validationErrors}
               />
             </div>
           )}
@@ -1434,6 +1562,7 @@ export default function CreateAdPage() {
                 sizeL={sizeL}
                 weight={weight}
                 t={t}
+                errors={validationErrors}
               />
             </div>
           )}
@@ -1488,6 +1617,7 @@ export default function CreateAdPage() {
                 locale={locale}
                 token={token || ""}
                 adId={adId || ""}
+                errors={validationErrors}
               />
             </div>
           )}

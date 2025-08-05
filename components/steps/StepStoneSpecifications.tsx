@@ -29,6 +29,7 @@ interface StepStoneSpecificationsProps {
   surfaceLoading: boolean;
   surfaceError: string | null;
   t: any;
+  errors?: Record<string, string>;
 }
 
 export default function StepStoneSpecifications({
@@ -47,7 +48,8 @@ export default function StepStoneSpecifications({
   surfaceOptions,
   surfaceLoading,
   surfaceError,
-  
+  t,
+  errors
 }: StepStoneSpecificationsProps) {
   // Grade options - you can make this dynamic if needed
   const gradeOptions = [
@@ -175,6 +177,13 @@ export default function StepStoneSpecifications({
           </div>
         </div>
 
+        {/* Size and Weight Error */}
+        {(errors?.sizeH || errors?.sizeW || errors?.sizeL || errors?.weight) && (
+          <div className="text-red-600 text-sm">
+            {errors.sizeH || errors.sizeW || errors.sizeL || errors.weight}
+          </div>
+        )}
+
         {/* Surface and Grade Row */}
         <div className="grid grid-cols-2 gap-6 mt-12">
           {/* Surface Section */}
@@ -222,6 +231,12 @@ export default function StepStoneSpecifications({
           </div>
         </div>
 
+        {/* Grade Error */}
+        {errors?.grade && (
+          <div className="text-red-600 text-sm mt-2">
+            {errors.grade}
+          </div>
+        )}
 
       </div>
     </div>

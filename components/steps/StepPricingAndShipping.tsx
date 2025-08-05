@@ -37,6 +37,7 @@ interface StepPricingAndShippingProps {
   sizeL: string;
   weight: string;
   t: ReturnType<typeof useTranslations>;
+  errors?: Record<string, string>;
 }
 
 export default function StepPricingAndShipping({
@@ -61,6 +62,7 @@ export default function StepPricingAndShipping({
   sizeL,
   weight,
   t,
+  errors
 }: StepPricingAndShippingProps) {
   
   // Logic to determine available sale unit type options
@@ -121,6 +123,11 @@ export default function StepPricingAndShipping({
               {t("usd")}
             </span>
           </div>
+          {errors?.price && (
+            <div className="text-red-600 text-sm mt-1">
+              {errors.price}
+            </div>
+          )}
         </div>
 
         {/* Minimum Order */}
@@ -132,6 +139,11 @@ export default function StepPricingAndShipping({
             value={minimumOrder}
             onChange={(e) => setMinimumOrder(e.target.value)}
           />
+          {errors?.minimumOrder && (
+            <div className="text-red-600 text-sm mt-1">
+              {errors.minimumOrder}
+            </div>
+          )}
         </div>
 
         {/* Sale Unit Type */}
@@ -175,6 +187,11 @@ export default function StepPricingAndShipping({
               ✓ Both Weight and Volume options are available since both size and weight are specified.
             </p>
           )}
+          {errors?.saleUnitType && (
+            <div className="text-red-600 text-sm mt-1">
+              {errors.saleUnitType}
+            </div>
+          )}
         </div>
 
         {/* Receiving Ports */}
@@ -192,6 +209,11 @@ export default function StepPricingAndShipping({
           {portError && (
             <span className="text-xs text-destructive">{portError}</span>
           )}
+          {errors?.selectedReceivingPorts && (
+            <div className="text-red-600 text-sm mt-1">
+              {errors.selectedReceivingPorts}
+            </div>
+          )}
         </div>
 
         {/* Export Ports */}
@@ -208,6 +230,11 @@ export default function StepPricingAndShipping({
           />
           {portError && (
             <span className="text-xs text-destructive">{portError}</span>
+          )}
+          {errors?.selectedExportPorts && (
+            <div className="text-red-600 text-sm mt-1">
+              {errors.selectedExportPorts}
+            </div>
           )}
         </div>
       </div>

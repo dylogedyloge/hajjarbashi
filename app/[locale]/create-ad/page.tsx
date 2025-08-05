@@ -16,6 +16,7 @@ import {
   fetchPorts,
   initAdvertisement,
   updateAd,
+  saveAdDraft,
   getPaymentReceipt,
   createTransaction,
   // updatePaymentReceipt,
@@ -63,6 +64,33 @@ const clearFormStorage = () => {
   }
 };
 
+// Helper function to migrate old imageUrls structure to new one
+const migrateImageUrls = (imageUrls: any[]): { url: string; mediaPath: string; mediaThumbPath: string }[] => {
+  if (!Array.isArray(imageUrls)) return [];
+  
+  console.log('migrateImageUrls - input:', imageUrls);
+  
+  const migrated = imageUrls.map(img => {
+    if (img.mediaThumbPath) {
+      // Already in new format
+      console.log('migrateImageUrls - already in new format:', img);
+      return img;
+    } else {
+      // Old format - migrate to new format
+      const migratedImg = {
+        url: img.url,
+        mediaPath: img.mediaPath,
+        mediaThumbPath: img.mediaPath, // Use mediaPath as fallback for thumb path
+      };
+      console.log('migrateImageUrls - migrated from old format:', migratedImg);
+      return migratedImg;
+    }
+  });
+  
+  console.log('migrateImageUrls - output:', migrated);
+  return migrated;
+};
+
 type UploadedFile = { path: string; thumb_path: string };
 
 export default function CreateAdPage() {
@@ -83,7 +111,7 @@ export default function CreateAdPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<
-    { url: string; mediaPath: string }[]
+    { url: string; mediaPath: string; mediaThumbPath: string }[]
   >([]);
 
   // Add state for left panel checkboxes
@@ -244,13 +272,168 @@ export default function CreateAdPage() {
     if (currentStep < steps.length) {
       const nextStep = currentStep + 1;
       
-      // Remove the direct API call logic from here
-      // The useEffect watching currentStep will handle receipt data fetching
+      // Save draft before moving to next step (except for the last step)
+      if (currentStep < steps.length) {
+        try {
+          let currentAdId = adId;
+          
+          // If no adId, create a new ad first
+          if (!currentAdId) {
+            const initRes = await initAdvertisement(locale, token!);
+            if (initRes?.success && initRes?.data?.id) {
+              currentAdId = initRes.data.id;
+              // Update the URL to include the new ad ID
+              window.history.replaceState(null, '', `?id=${currentAdId}&lang=${locale}`);
+            } else {
+              throw new Error(initRes?.message || "Failed to initialize advertisement");
+            }
+          }
+          
+          const draftPayload = buildDraftPayload(currentStep, currentAdId!);
+          if (draftPayload) {
+            await saveAdDraft({
+              payload: draftPayload,
+              locale,
+              token: token!,
+            });
+            console.log(`Draft saved for step ${currentStep}`);
+            // Show a subtle success message for draft saving
+            toast.success(t("draftSaved", { defaultValue: "Draft saved automatically" }));
+          }
+        } catch (error) {
+          console.error('Failed to save draft:', error);
+          // Don't block navigation on draft save failure
+        }
+      }
       
       setCurrentStep(nextStep);
       if (!completedSteps.includes(currentStep)) {
         setCompletedSteps([...completedSteps, currentStep]);
       }
+    }
+  };
+
+  // Helper function to build draft payload based on current step
+  const buildDraftPayload = (step: number, adId: string) => {
+    if (!adId) return null;
+
+    const basePayload = { id: adId };
+
+    // Helper function to transform form type
+    const transformForm = (form: string) => {
+      if (form === 'slabs') return 'slab';
+      if (form === 'blocks') return 'block';
+      if (form === 'tiles') return 'tile';
+      return form;
+    };
+
+    // Helper function to get effective category ID
+    const getEffectiveCategoryId = () => {
+      return selectedSubcategory || selectedCategory || categoryId;
+    };
+
+    // Helper function to transform grade to lowercase
+    const transformGrade = (gradeValue: string) => {
+      return gradeValue.toLowerCase();
+    };
+
+    switch (step) {
+      case 1: // StepFormCategorySubCategoryOfStone
+        const effectiveCategoryId = getEffectiveCategoryId();
+        return {
+          ...basePayload,
+          form: transformForm(selectedForm),
+          ...(effectiveCategoryId && { category_id: effectiveCategoryId }),
+        };
+
+      case 2: // StepStoneSpecifications
+        const effectiveCategoryIdStep2 = getEffectiveCategoryId();
+        return {
+          ...basePayload,
+          form: transformForm(selectedForm),
+          ...(effectiveCategoryIdStep2 && { category_id: effectiveCategoryIdStep2 }),
+          ...(grade && { grade: transformGrade(grade) }),
+          size: {
+            h: parseFloat(sizeH) || 0,
+            w: parseFloat(sizeW) || 0,
+            l: parseFloat(sizeL) || 0,
+          },
+          weight: parseFloat(weight) || 0,
+          ...(surfaceId && { surface_id: surfaceId }),
+        };
+
+      case 3: // StepImagesAndProsAndCons
+        const effectiveCategoryIdStep3 = getEffectiveCategoryId();
+        const media = imageUrls.map((img, index) => ({
+          index,
+          media_path: img.mediaPath,
+          media_thumb_path: img.mediaThumbPath,
+        }));
+
+        return {
+          ...basePayload,
+          form: transformForm(selectedForm),
+          ...(effectiveCategoryIdStep3 && { category_id: effectiveCategoryIdStep3 }),
+          ...(grade && { grade: transformGrade(grade) }),
+          size: {
+            h: parseFloat(sizeH) || 0,
+            w: parseFloat(sizeW) || 0,
+            l: parseFloat(sizeL) || 0,
+          },
+          weight: parseFloat(weight) || 0,
+          ...(surfaceId && { surface_id: surfaceId }),
+          media,
+          benefits,
+          defects,
+        };
+
+      case 4: // StepPricingAndShipping
+        const effectiveCategoryIdStep4 = getEffectiveCategoryId();
+        const mediaForPricing = imageUrls.map((img, index) => ({
+          index,
+          media_path: img.mediaPath,
+          media_thumb_path: img.mediaThumbPath,
+        }));
+
+        // Debug logging for media paths
+        console.log('Step 4 Draft - imageUrls:', imageUrls);
+        console.log('Step 4 Draft - mediaForPricing:', mediaForPricing);
+
+        const payload = {
+          ...basePayload,
+          form: transformForm(selectedForm),
+          ...(effectiveCategoryIdStep4 && { category_id: effectiveCategoryIdStep4 }),
+          ...(grade && { grade: transformGrade(grade) }),
+          size: {
+            h: parseFloat(sizeH) || 0,
+            w: parseFloat(sizeW) || 0,
+            l: parseFloat(sizeL) || 0,
+          },
+          weight: parseFloat(weight) || 0,
+          ...(surfaceId && { surface_id: surfaceId }),
+          media: mediaForPricing,
+          benefits,
+          defects,
+          sale_unit_type: saleUnitType,
+          price: parseFloat(price) || 0,
+          minimum_order: parseFloat(minimumOrder) || 0,
+          description,
+          receiving_ports: selectedReceivingPorts,
+          export_ports: selectedExportPorts,
+          colors: selectedColors,
+          ...(originCountryId && originCountryId.trim() !== '' && { origin_country_id: originCountryId }),
+          ...(originCityId && originCityId.trim() !== '' && { origin_city_id: originCityId }),
+          is_chat_enabled: reviewFeatures.is_chat_enabled,
+          contact_info_enabled: reviewFeatures.contact_info_enabled,
+          express: reviewFeatures.express,
+          auto_renew: reviewFeatures.auto_renew,
+        };
+
+        console.log('Step 4 Draft - Final payload:', payload);
+        return payload;
+
+      default:
+        return null;
     }
   };
 
@@ -275,7 +458,7 @@ export default function CreateAdPage() {
         if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
         if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
         if (cachedData.selectedSubcategory) setSelectedSubcategory(cachedData.selectedSubcategory);
-        if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
+        if (cachedData.imageUrls) setImageUrls(migrateImageUrls(cachedData.imageUrls));
         if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
         if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
         if (cachedData.expressReady !== undefined) setExpressReady(cachedData.expressReady);
@@ -357,7 +540,7 @@ export default function CreateAdPage() {
             if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
             if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
             if (cachedData.selectedSubcategory) setSelectedSubcategory(cachedData.selectedSubcategory);
-            if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
+            if (cachedData.imageUrls) setImageUrls(migrateImageUrls(cachedData.imageUrls));
             if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
             if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
             if (cachedData.expressReady !== undefined) setExpressReady(cachedData.expressReady);
@@ -415,7 +598,7 @@ export default function CreateAdPage() {
           // Restore form state from cache
           if (cachedData.selectedForm) setSelectedForm(cachedData.selectedForm);
           if (cachedData.selectedCategory) setSelectedCategory(cachedData.selectedCategory);
-          if (cachedData.imageUrls) setImageUrls(cachedData.imageUrls);
+          if (cachedData.imageUrls) setImageUrls(migrateImageUrls(cachedData.imageUrls));
           if (cachedData.featured !== undefined) setFeatured(cachedData.featured);
           if (cachedData.autoRenew !== undefined) setAutoRenew(cachedData.autoRenew);
           if (cachedData.expressReady !== undefined) setExpressReady(cachedData.expressReady);
@@ -512,6 +695,7 @@ export default function CreateAdPage() {
               adData.uploaded_files.map((file: UploadedFile) => ({
                 url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/${file.thumb_path}`,
                 mediaPath: file.path,
+                mediaThumbPath: file.thumb_path,
               }))
             );
           }
@@ -643,17 +827,19 @@ export default function CreateAdPage() {
         res?.data?.media_thumb_path &&
         res?.data?.media_path
       ) {
+        console.log('handleFileChange - API response:', res.data);
         setImageUrls((prev) => {
           // Prevent duplicate images
           if (prev.some((img) => img.mediaPath === res.data.media_path))
             return prev;
-          return [
-            ...prev,
-            {
-              url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/${res.data.media_thumb_path}`,
-              mediaPath: res.data.media_path,
-            },
-          ];
+          
+          const newImage = {
+            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/${res.data.media_thumb_path}`,
+            mediaPath: res.data.media_path,
+            mediaThumbPath: res.data.media_thumb_path,
+          };
+          console.log('handleFileChange - adding new image:', newImage);
+          return [...prev, newImage];
         });
         toast.success(t("uploadSuccess"));
       } else {
@@ -826,12 +1012,10 @@ export default function CreateAdPage() {
         price: Number(price),
         auto_renew: reviewFeatures.auto_renew,
         media: imageUrls.map((img, idx) => {
-          const url = new URL(img.url);
-          const media_thumb_path = url.pathname.replace(/^\//, "");
           return {
             index: idx,
             media_path: img.mediaPath,
-            media_thumb_path,
+            media_thumb_path: img.mediaThumbPath,
           };
         }),
         benefits: benefits,

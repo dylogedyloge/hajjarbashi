@@ -114,6 +114,22 @@ export async function updateAd({ payload, locale, token }: { payload: Record<str
   return response.json();
 }
 
+export async function saveAdDraft({ payload, locale, token }: { payload: Record<string, unknown>; locale: string; token: string }) {
+  const response = await fetch(`${API_BASE_URL}/ads/draft`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-lang': locale,
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to save ad draft: ${response.statusText}`);
+  }
+  return response.json();
+}
+
 export async function fetchCountries(lang: string) {
   const response = await fetch(`${API_BASE_URL}/countries/list`, {
     method: 'GET',

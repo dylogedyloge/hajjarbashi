@@ -28,7 +28,7 @@ import type { DragEndEvent } from "@dnd-kit/core";
 interface SortableImageProps {
   id: string;
   idx: number;
-  img: { url: string; mediaPath: string };
+  img: { url: string; mediaPath: string; mediaThumbPath: string };
   isCover: boolean;
   onDelete: (mediaPath: string) => void;
   t: ReturnType<typeof useTranslations>;
@@ -102,7 +102,7 @@ function SortableImage({
 }
 
 interface StepImagesAndProsAndConsProps {
-  imageUrls: { url: string; mediaPath: string }[];
+  imageUrls: { url: string; mediaPath: string; mediaThumbPath: string }[];
   videoUrl?: { url: string; mediaPath: string } | null;
   uploading: boolean;
   uploadError: string | null;

@@ -737,7 +737,14 @@
     "voiceMessage": "پیام صوتی",
     "recording": "در حال ضبط...",
     "blockUser": "مسدود کردن کاربر",
-    "unblockUser": "رفع مسدودی کاربر"
+    "unblockUser": "رفع مسدودی کاربر",
+    "userBlockedYou": "کاربر شما را مسدود کرده است",
+    "userUnblockedYou": "کاربر شما را آنبلاک کرده است",
+    "youBlockedUser": "شما این کاربر را مسدود کرده‌اید. برای ادامه گفتگو، مسدودی را رفع کنید.",
+    "image": "تصویر",
+    "file": "فایل",
+    "audio": "صوتی",
+    "stopRecording": "توقف ضبط"
   },
   "AdDetailPage": {
     "home": "خانه",

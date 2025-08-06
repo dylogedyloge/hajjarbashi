@@ -771,6 +771,13 @@
     "voiceMessage": "Voice message",
     "recording": "Recording...",
     "blockUser": "Block User",
-    "unblockUser": "Unblock User"
+    "unblockUser": "Unblock User",
+    "userBlockedYou": "User blocked you",
+    "userUnblockedYou": "User unblocked you",
+    "youBlockedUser": "You have blocked this user. Unblock to continue chatting.",
+    "image": "Image",
+    "file": "File",
+    "audio": "Audio",
+    "stopRecording": "Stop recording"
   }
 }

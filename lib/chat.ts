@@ -51,7 +51,7 @@ export async function getMessages({ chatId, token, lang = 'en', limit = 50, page
   });
   const data = await res.json();
   if (!data.success) throw new Error(data.message || 'Failed to fetch messages');
-  return data.data || [];
+  return data;
 }
 
 export async function uploadAttachment({ chatId, file, token, lang = 'en' }: { chatId: number; file: File; token: string; lang?: string }) {
@@ -97,7 +97,7 @@ export async function unblockUser({ userId, token, lang = 'en' }: { userId: stri
       'x-lang': lang,
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ user_id: userId }),
+    body: JSON.stringify({ blocked_id: userId }),
   });
   const data = await res.json();
   if (!data.success) throw new Error(data.message || 'Failed to unblock user');

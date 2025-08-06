@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl';
 import { Message } from "@/types/chat";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Image, File } from "lucide-react";
+import { File } from "lucide-react";
 
 interface MessageBubbleProps {
   message: Message;

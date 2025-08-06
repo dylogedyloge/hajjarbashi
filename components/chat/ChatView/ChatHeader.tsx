@@ -22,7 +22,7 @@ export default function ChatHeader({
   selected,
   isOnline,
   youBlockedUser,
-  userBlockedYou,
+  // userBlockedYou,
   onBackToList,
   onClose,
   onBlockUser,
@@ -87,7 +87,7 @@ export default function ChatHeader({
         </TooltipContent>
       </Tooltip>
       <Button variant="ghost" size="icon" onClick={onClose}>
-        ×
+        <X className="w-4 h-4" />
       </Button>
     </div>
   );

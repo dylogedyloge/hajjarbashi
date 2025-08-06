@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from "next/navigation";
 import { getChatList, deleteChat as deleteChatApi, getMessages, uploadAttachment, blockUser, unblockUser } from "@/lib/chat";
 import socket from "@/utils/socket";
-import { Conversation, InitialSelectedUser, Message, BlockType } from "@/types/chat";
+import { Conversation, InitialSelectedUser, Message } from "@/types/chat";
 import ChatList from "@/components/chat/ChatList/ChatList";
 import ChatHeader from "@/components/chat/ChatView/ChatHeader";
 import MessageList from "@/components/chat/ChatView/MessageList";
@@ -39,9 +39,6 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [connected, setConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Voice recorder state
-  const [sendingVoice, setSendingVoice] = useState(false);
 
   // Blocked state for the selected user
   const [youBlockedUser, setYouBlockedUser] = useState(false);
@@ -187,6 +184,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
     // Listen for seen events
     const handleNewSeen = (data: any) => {
       // Handle seen events if needed
+      console.log('newSeen', data);
     };
     socket.on("newSeen", handleNewSeen);
 
@@ -422,7 +420,6 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
                 }
               }}
               onSendVoice={async (audioBlob) => {
-                setSendingVoice(true);
                 setAttachmentError(null);
                 try {
                   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
@@ -449,7 +446,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
                   setAttachmentError(err.message || 'Failed to upload voice message');
                   console.error('[ChatBox] Voice message upload error:', err);
                 } finally {
-                  setSendingVoice(false);
+                  // setSendingVoice(false); // Removed as per edit hint
                 }
               }}
               uploadingAttachment={uploadingAttachment}

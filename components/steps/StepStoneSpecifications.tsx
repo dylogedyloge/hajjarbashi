@@ -48,7 +48,7 @@ export default function StepStoneSpecifications({
   surfaceOptions,
   surfaceLoading,
   surfaceError,
-  t,
+  // t,
   errors
 }: StepStoneSpecificationsProps) {
   // Grade options - you can make this dynamic if needed

@@ -37,7 +37,7 @@ export default function StepFormCategorySubCategoryOfStone({
   setSelectedCategory,
   selectedSubcategory,
   setSelectedSubcategory,
-  t,
+  // t,
   locale,
   errors
 }: StepFormCategorySubCategoryOfStoneProps) {

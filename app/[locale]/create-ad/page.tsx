@@ -373,9 +373,9 @@ export default function CreateAdPage() {
   };
 
   // Clear validation errors when user starts making changes
-  const clearValidationErrors = () => {
-    setValidationErrors({});
-  };
+  // const clearValidationErrors = () => {
+  //   setValidationErrors({});
+  // };
 
   const handleStepClick = (step: number) => {
     if (completedSteps.includes(step) || step < currentStep) {

@@ -82,9 +82,9 @@ function HomeContent({
 
   return (
     <div 
-    className="flex flex-col md:flex-row md:items-start w-full px-2 md:px-8 py-10">
+    className="flex flex-col md:flex-row md:items-start w-full px-2 md:px-8 py-10 min-h-screen">
       {/* Desktop: Category Sidebar */}
-      <div className="hidden md:block shrink-0">
+      <div className="hidden md:block shrink-0 sticky top-8 self-start">
         <DesktopCategoryFilters onFiltersChange={handleFiltersChange} />
       </div>
       {/* Main Content: Ads List */}

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import {  ArrowLeft, DollarSign } from "lucide-react";
+import { ArrowLeft, DollarSign } from "lucide-react";
 import Image from "next/image";
 import { StoneSvg, BlocksSvg, SlabsSvg, TilesSvg } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -170,8 +170,8 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
   ];
 
   const handleColorToggle = (colorId: string) => {
-    setSelectedColors(prev => 
-      prev.includes(colorId) 
+    setSelectedColors(prev =>
+      prev.includes(colorId)
         ? prev.filter(c => c !== colorId)
         : [...prev, colorId]
     );
@@ -182,8 +182,8 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
   };
 
   const handleSurfaceToggle = (surfaceId: string) => {
-    setSelectedSurfaces(prev => 
-      prev.includes(surfaceId) 
+    setSelectedSurfaces(prev =>
+      prev.includes(surfaceId)
         ? prev.filter(s => s !== surfaceId)
         : [...prev, surfaceId]
     );
@@ -207,7 +207,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
 
   const handleApplyFilters = () => {
     const filters: AdsFilters = {};
-    
+
     // Add price filters
     if (priceRange[0] > 0) {
       filters.min_price = priceRange[0];
@@ -215,37 +215,37 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
     if (priceRange[1] < 50000) {
       filters.max_price = priceRange[1];
     }
-    
+
     // Add form filter (skip "all")
     if (selectedFormStone !== "all") {
       filters.form = selectedFormStone;
       console.log('📦 Selected form for filter:', selectedFormStone);
     }
-    
+
     // Add category filter
     if (selectedCategories.length > 0) {
       filters.category_ids = selectedCategories;
       console.log('🎨 Selected categories for filter:', selectedCategories);
     }
-    
+
     // Add colors filter
     if (selectedColors.length > 0) {
       filters.colors = selectedColors;
       console.log('🎨 Selected colors for filter:', selectedColors);
     }
-    
+
     // Add surfaces filter
     if (selectedSurfaces.length > 0) {
       filters.surface_ids = selectedSurfaces;
       console.log('🏗️ Selected surfaces for filter:', selectedSurfaces);
     }
-    
+
     // Add size filter
     if (selectedSize) {
       filters.size_range_type = selectedSize;
       console.log('📏 Selected size for filter:', selectedSize);
     }
-    
+
     // Add port filter
     if (selectedReceivingPorts.length > 0) {
       filters.receiving_ports = selectedReceivingPorts;
@@ -256,19 +256,19 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
       filters.export_ports = selectedExportPorts;
       console.log('🚢 Selected export ports for filter:', selectedExportPorts);
     }
-    
+
     // Add origin filter
     if (selectedOriginCountries.length > 0) {
       filters.origin_country_ids = selectedOriginCountries;
       console.log('🌎 Selected origin countries for filter:', selectedOriginCountries);
     }
-    
+
     // Add grade filter
     if (selectedGrade) {
       filters.grade = selectedGrade;
       console.log('⭐ Selected grade for filter:', selectedGrade);
     }
-    
+
     console.log('🔍 Applying filters:', filters);
     console.log('🎨 Colors being sent:', filters.colors);
     console.log('📏 Size being sent:', filters.size_range_type);
@@ -295,8 +295,8 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                       variant="outline"
                       className={cn(
                         "h-20 flex flex-col gap-2 p-3",
-                        selectedFormStone === option.id 
-                          ? "border-orange-500" 
+                        selectedFormStone === option.id
+                          ? "border-orange-500"
                           : "border-muted"
                       )}
                       onClick={() => setSelectedFormStone(option.id)}
@@ -329,28 +329,30 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                     <div
                       key={category.id}
                       data-category-id={category.id}
-                      className={cn(
-                        "relative cursor-pointer rounded-lg border-1 transition-all",
-                        selectedCategories.includes(category.id) 
-                          ? "border-orange-500" 
-                          : "border-muted hover:border-orange-200"
-                      )}
-                      onClick={() => {
-                        setSelectedCategories(prev => 
-                          prev.includes(category.id) 
-                            ? prev.filter(c => c !== category.id)
-                            : [...prev, category.id]
-                        );
-                      }}
+                      className="relative cursor-pointer"
                     >
-                      <div className="aspect-square bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                      <div 
+                        className={cn(
+                          "aspect-[4/3]  rounded-md flex items-center justify-center overflow-hidden border-1 transition-all p-1",
+                          selectedCategories.includes(category.id)
+                            ? "border-orange-500"
+                            : "border-muted hover:border-orange-200"
+                        )}
+                        onClick={() => {
+                          setSelectedCategories(prev =>
+                            prev.includes(category.id)
+                              ? prev.filter(c => c !== category.id)
+                              : [...prev, category.id]
+                          );
+                        }}
+                      >
                         {category.image ? (
                           <Image
                             src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${category.image}`}
                             alt={category.name}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
+                            width={100}
+                            height={75}
+                            className="w-full h-full object-cover rounded-sm"
                             onError={() => {
                               // Fallback to placeholder if image fails to load
                               const imgElement = document.querySelector(`[data-category-id="${category.id}"] img`) as HTMLImageElement;
@@ -365,7 +367,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                           />
                         ) : null}
                         <div className={cn(
-                          "w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-sm",
+                          "w-12 h-9 bg-gradient-to-br from-gray-200 to-gray-300 rounded-sm",
                           category.image ? "hidden" : ""
                         )} />
                       </div>
@@ -386,19 +388,17 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   <div
                     key={color.id}
                     className={cn(
-                      "relative cursor-pointer rounded-sm border-1 transition-all p-1",
-                      selectedColors.includes(color.id) 
-                        ? "border-orange-500" 
+                      "relative cursor-pointer rounded-sm border-1 transition-all flex items-center justify-center w-12 h-10",
+                      selectedColors.includes(color.id)
+                        ? "border-orange-500"
                         : "border-white hover:border-orange-200"
                     )}
                     onClick={() => handleColorToggle(color.id)}
                   >
-                    <div className="flex flex-col items-center ">
-                      <div
-                        className="w-10 h-10 rounded-sm border"
-                        style={{ backgroundColor: color.color }}
-                      />
-                    </div>
+                    <div
+                      className="rounded-sm border w-10 h-8"
+                      style={{ backgroundColor: color.color }}
+                    />
                   </div>
                 ))}
               </div>
@@ -497,8 +497,8 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                       size="sm"
                       className={cn(
                         "text-xs",
-                        selectedSurfaces.includes(surface.id) 
-                          ? "border-orange-500" 
+                        selectedSurfaces.includes(surface.id)
+                          ? "border-orange-500"
                           : "border-muted"
                       )}
                       onClick={() => handleSurfaceToggle(surface.id)}
@@ -521,8 +521,8 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                     size="sm"
                     className={cn(
                       "flex-1",
-                      selectedSize === size 
-                        ? "border-orange-500" 
+                      selectedSize === size
+                        ? "border-orange-500"
                         : "border-muted"
                     )}
                     onClick={() => handleSizeToggle(size)}
@@ -545,30 +545,13 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {ports.map((port) => (
-                    <Button
-                      key={port.id}
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "text-xs",
-                        selectedReceivingPorts.includes(port.id) 
-                          ? "border-orange-500" 
-                          : "border-muted"
-                      )}
-                      onClick={() => {
-                        setSelectedReceivingPorts(prev => 
-                          prev.includes(port.id) 
-                            ? prev.filter(p => p !== port.id)
-                            : [...prev, port.id]
-                        );
-                      }}
-                    >
-                      {port.name}
-                    </Button>
-                  ))}
-                </div>
+                <DropdownMultiSelect
+                  options={ports.map(port => ({ label: port.name, value: port.id }))}
+                  value={selectedReceivingPorts}
+                  onChange={setSelectedReceivingPorts}
+                  placeholder={t("selectReceivingPorts")}
+                  disabled={loadingPorts}
+                />
               )}
             </div>
 
@@ -584,54 +567,37 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {ports.map((port) => (
-                    <Button
-                      key={port.id}
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "text-xs",
-                        selectedExportPorts.includes(port.id) 
-                          ? "border-orange-500" 
-                          : "border-muted"
-                      )}
-                      onClick={() => {
-                        setSelectedExportPorts(prev => 
-                          prev.includes(port.id) 
-                            ? prev.filter(p => p !== port.id)
-                            : [...prev, port.id]
-                        );
-                      }}
-                    >
-                      {port.name}
-                    </Button>
-                  ))}
-                </div>
+                <DropdownMultiSelect
+                  options={ports.map(port => ({ label: port.name, value: port.id }))}
+                  value={selectedExportPorts}
+                  onChange={setSelectedExportPorts}
+                  placeholder={t("selectExportPorts")}
+                  disabled={loadingPorts}
+                />
               )}
             </div>
 
-                         {/* Origin Section */}
-             <div className="space-y-3">
-               <h3 className="font-bold text-foreground text-sm">{t("origin")}</h3>
-               {loadingCountries ? (
-                 <div className="grid grid-cols-2 gap-2">
-                   {[...Array(4)].map((_, index) => (
-                     <div key={index} className="animate-pulse">
-                       <div className="h-10 bg-muted rounded-md" />
-                     </div>
-                   ))}
-                 </div>
-               ) : (
-                 <DropdownMultiSelect
-                   options={countries.map(country => ({ label: country.name, value: country.id }))}
-                   value={selectedOriginCountries}
-                   onChange={setSelectedOriginCountries}
-                   placeholder={t("selectOriginCountries")}
-                   disabled={loadingCountries}
-                 />
-               )}
-             </div>
+            {/* Origin Section */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-foreground text-sm">{t("origin")}</h3>
+              {loadingCountries ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {[...Array(4)].map((_, index) => (
+                    <div key={index} className="animate-pulse">
+                      <div className="h-10 bg-muted rounded-md" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <DropdownMultiSelect
+                  options={countries.map(country => ({ label: country.name, value: country.id }))}
+                  value={selectedOriginCountries}
+                  onChange={setSelectedOriginCountries}
+                  placeholder={t("selectOriginCountries")}
+                  disabled={loadingCountries}
+                />
+              )}
+            </div>
 
             {/* Grade Section */}
             <div className="space-y-3 mb-10">
@@ -644,8 +610,8 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                     size="sm"
                     className={cn(
                       "flex-1",
-                      selectedGrade === grade 
-                        ? "border-orange-500" 
+                      selectedGrade === grade
+                        ? "border-orange-500"
                         : "border-muted"
                     )}
                     onClick={() => handleGradeToggle(grade)}
@@ -659,14 +625,14 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
         )}
 
         {/* Fade Out Effect - Bottom Gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </div>
 
       {/* Bottom Actions */}
       <div className="flex items-center justify-between pt-4 border-t border-border gap-2">
         {showAdvanced ? (
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="flex-1"
             onClick={() => setShowAdvanced(false)}
           >
@@ -674,27 +640,27 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
             {t("back")}
           </Button>
         ) : (
-          
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setShowAdvanced(true)}
-              className="flex-1"
-            >
-              {t("advanced")}
-            </Button>
-          
-        )}
-        
-          <Button 
-            variant="default"
-            size="default"
-            className="bg-gray-700 hover:bg-gray-800 text-white rounded-lg px-4 py-2 flex items-center gap-2 font-medium flex-1"
-            onClick={handleApplyFilters}
-           
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowAdvanced(true)}
+            className="flex-1"
           >
-            {t("apply")}
+            {t("advanced")}
           </Button>
+
+        )}
+
+        <Button
+          variant="default"
+          size="default"
+          className="bg-gray-700 hover:bg-gray-800 text-white rounded-lg px-4 py-2 flex items-center gap-2 font-medium flex-1"
+          onClick={handleApplyFilters}
+
+        >
+          {t("apply")}
+        </Button>
       </div>
     </aside>
   );

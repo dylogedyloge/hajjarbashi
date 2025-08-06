@@ -272,7 +272,9 @@
     "typeCode": "وارد کردن کد",
     "payAndPublish": "پرداخت و انتشار",
     "saveAsDraft": "ذخیره پیش‌نویس",
-    "selectOriginCountries": "انتخاب کشورهای مبدا"
+    "selectOriginCountries": "انتخاب کشورهای مبدا",
+    "selectReceivingPorts": "انتخاب بنادر دریافت",
+    "selectExportPorts": "انتخاب بنادر صادرات"
   },
   "MobileBottomNav": {
     "home": "خانه",

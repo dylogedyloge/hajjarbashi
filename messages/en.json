@@ -272,7 +272,9 @@
     "typeCode": "Type Code",
     "payAndPublish": "Pay & Publish",
     "saveAsDraft": "Save as Draft",
-    "selectOriginCountries": "Select Origin Countries"
+    "selectOriginCountries": "Select Origin Countries",
+    "selectReceivingPorts": "Select Receiving Ports",
+    "selectExportPorts": "Select Export Ports"
   },
   "AdDetailPage": {
     "home": "Home",

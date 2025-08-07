@@ -27,6 +27,16 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    // Add better error handling for production
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Increase timeout for image optimization
+    minimumCacheTTL: 60,
+  },
+  // Add experimental features for better image handling
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
   },
   webpack: (config) => {
     config.module.rules.push({

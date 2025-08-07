@@ -67,6 +67,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
   const [loadingSurfaces, setLoadingSurfaces] = useState(true);
   const [loadingPorts, setLoadingPorts] = useState(true);
   const [loadingCountries, setLoadingCountries] = useState(true);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -346,30 +347,29 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                           );
                         }}
                       >
-                        {category.image ? (
+                        {category.image && !failedImages.has(category.id) ? (
                           <Image
                             src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${category.image}`}
                             alt={category.name}
                             width={100}
                             height={75}
                             className="w-full h-full object-cover rounded-sm"
+                            unoptimized
                             onError={() => {
-                              // Fallback to placeholder if image fails to load
-                              const imgElement = document.querySelector(`[data-category-id="${category.id}"] img`) as HTMLImageElement;
-                              if (imgElement) {
-                                imgElement.style.display = 'none';
-                                const placeholder = imgElement.nextElementSibling as HTMLElement;
-                                if (placeholder) {
-                                  placeholder.classList.remove('hidden');
-                                }
-                              }
+                              console.log('❌ Image failed to load:', `${process.env.NEXT_PUBLIC_API_BASE_URL}/${category.image}`);
+                              setFailedImages(prev => new Set([...prev, category.id]));
+                            }}
+                            onLoad={() => {
+                              console.log('✅ Image loaded successfully:', `${process.env.NEXT_PUBLIC_API_BASE_URL}/${category.image}`);
                             }}
                           />
-                        ) : null}
-                        <div className={cn(
-                          "w-12 h-9 bg-gradient-to-br from-gray-200 to-gray-300 rounded-sm",
-                          category.image ? "hidden" : ""
-                        )} />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 rounded-sm flex items-center justify-center">
+                            <span className="text-xs text-gray-600 font-medium">
+                              {category.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="p-1 text-center">
                         <span className="text-xs font-medium text-foreground">{category.name}</span>

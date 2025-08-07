@@ -88,11 +88,18 @@ const AdCard = ({ ad,
   const mediaImage = mediaArray.length > 0
     ? mediaArray[0].media_thumb_path || mediaArray[0].media_path
     : null;
-  const imageSrc = ad.cover_thumb || ad.cover || mediaImage || ad.image
-    ? (ad.cover_thumb || ad.cover || mediaImage || ad.image)?.startsWith("http") 
-      ? (ad.cover_thumb || ad.cover || mediaImage || ad.image)
-      : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${ad.cover_thumb || ad.cover || mediaImage || ad.image}`
-    : null;
+  const rawImage = ad.cover_thumb || ad.cover || mediaImage || ad.image;
+  let imageSrc = null;
+  if (rawImage) {
+    if (rawImage.startsWith('http')) {
+      imageSrc = rawImage;
+    } else if (rawImage.startsWith('/files/')) {
+      imageSrc = `${process.env.NEXT_PUBLIC_API_BASE_URL}${rawImage}`;
+    } else {
+      imageSrc = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${rawImage}`;
+    }
+    console.log('AdCard image src:', imageSrc, 'raw:', rawImage, 'ad id:', ad.id, 'starts with http:', imageSrc?.startsWith('http'));
+  }
 
   // Get the appropriate date to display
   const getDisplayDate = () => {
@@ -113,6 +120,12 @@ const AdCard = ({ ad,
 
   const handleImageError = () => { 
     setImageError(true);
+    // Try fallback to original image if thumbnail fails
+    if (imageSrc && imageSrc.includes('-thumb')) {
+      const originalImage = imageSrc.replace('-thumb', '');
+      console.log('Trying fallback image:', originalImage);
+      // You could implement a retry mechanism here if needed
+    }
   };
 
   return (
@@ -120,17 +133,29 @@ const AdCard = ({ ad,
 
       <div className="flex flex-col md:flex-row">
         {/* Left Section - Image */}
-        <div className="relative md:w-48 w-full h-full min-h-50 flex-shrink-0">
-          {imageSrc && imageSrc !== "" && !imageError ? (
-            <Image
-              src={imageSrc}
-              alt={ad.stone_type || ad.category?.name || "Ad image"}
-              fill
-              className="object-cover w-full h-full md:static md:w-48 md:h-36"
-              onError={handleImageError}
-              unoptimized // Add this to bypass Next.js image optimization for external URLs
-            />
-          ) : (
+                 <div className="relative md:w-48 w-full h-full min-h-50 flex-shrink-0">
+           {imageSrc && imageSrc !== "" && !imageError ? (
+             (() => {
+               console.log('Rendering image for ad', ad.id, 'imageSrc:', imageSrc, 'starts with http:', imageSrc?.startsWith('http'));
+               return imageSrc.startsWith('http') ? (
+                 <img
+                   src={imageSrc}
+                   alt={ad.stone_type || ad.category?.name || "Ad image"}
+                   className="object-cover w-full h-full md:static md:w-48 md:h-36"
+                   onError={handleImageError}
+                 />
+               ) : (
+                 <Image
+                   src={imageSrc}
+                   alt={ad.stone_type || ad.category?.name || "Ad image"}
+                   fill
+                   className="object-cover w-full h-full md:static md:w-48 md:h-36"
+                   onError={handleImageError}
+                   unoptimized
+                 />
+               );
+             })()
+           ) : (
             <Image
               src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins"
               alt="Placeholder"

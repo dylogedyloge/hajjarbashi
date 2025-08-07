@@ -110,7 +110,12 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
                 <Avatar className="w-20 h-20">
                   {user?.avatar_thumb ? (
                     <AvatarImage
-                      src={user.avatar_thumb}
+                      src={user.avatar_thumb.startsWith('http') 
+                        ? user.avatar_thumb 
+                        : user.avatar_thumb.startsWith('/files/')
+                          ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${user.avatar_thumb}`
+                          : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${user.avatar_thumb}`
+                      }
                       alt={user.name || user.email || "User"}
                     />
                   ) : null}

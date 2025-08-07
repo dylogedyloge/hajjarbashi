@@ -309,25 +309,36 @@ export default function ViewYourAdsPage() {
                       {/* Image */}
                       {getMainImage(ad) && (
                         <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative">
-                          <Image 
-                            src={getMainImage(ad)!.startsWith('http') 
-                              ? getMainImage(ad)! 
-                              : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${getMainImage(ad)!}`
-                            }
-                            alt={ad.title || 'Advertisement'}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 1280px) 100vw, 50vw"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const parent = target.parentElement;
-                              if (parent) {
-                                parent.innerHTML = '<img src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins" alt="Placeholder" class="w-full h-full object-cover" />';
-                              }
-                            }}
-                            unoptimized
-                          />
+                                                     {(() => {
+                             const imagePath = getMainImage(ad)!;
+                             const imageSrc = imagePath.startsWith('http') 
+                               ? imagePath 
+                               : imagePath.startsWith('/files/')
+                                 ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${imagePath}`
+                                 : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${imagePath}`;
+                            console.log('Image src for ad', ad.id, ':', imageSrc);
+                            console.log('Original image path:', getMainImage(ad));
+                            console.log('API base URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+                            return (
+                              <Image 
+                                src={imageSrc}
+                                alt={ad.title || 'Advertisement'}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 1280px) 100vw, 50vw"
+                                onError={(e) => {
+                                  console.log('Image failed to load:', imageSrc);
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = '<img src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins" alt="Placeholder" class="w-full h-full object-cover" />';
+                                  }
+                                }}
+                                unoptimized
+                              />
+                            );
+                          })()}
                         </div>
                       )}
 

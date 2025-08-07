@@ -16,6 +16,8 @@ deploy:
   stage: deploy
   tags:
     - shell
+  only:
+    - main
   script:
     - echo "📦 Starting Docker Compose...."
     - docker compose down || true

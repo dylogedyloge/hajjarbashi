@@ -781,12 +781,12 @@
     "stopRecording": "Stop recording"
   },
   "AdsList": {
-    "showingResults": "Showing {count} of {total} results",
-    "allAdsLoaded": "All ads loaded",
-    "noMatchingAds": "No matching ads found",
+    "showingResults": "Showing {current} of {total} results",
+    "allAdsLoaded": "✓ All ads loaded",
+    "noMatchingAds": "No ads match your current filters",
     "noAdsAvailable": "No ads available",
-    "tryAdjustingFilters": "Try adjusting your filters or search criteria to find more results.",
-    "checkBackLater": "Check back later for new advertisements.",
+    "tryAdjustingFilters": "Try adjusting your filters or check back later",
+    "checkBackLater": "Check back later for new listings",
     "clearAllFilters": "Clear all filters",
     "previous": "Previous",
     "next": "Next",
@@ -796,5 +796,8 @@
     "previous": "Previous",
     "next": "Next",
     "morePages": "More pages"
+  },
+  "CategoryHeader": {
+    "subcategories": "Subcategories"
   }
 }

@@ -784,12 +784,12 @@
     "cons": "معایب"
   },
   "AdsList": {
-    "showingResults": "نمایش {count} از {total} نتیجه",
-    "allAdsLoaded": "همه آگهی‌ها بارگذاری شدند",
-    "noMatchingAds": "هیچ آگهی مطابقی یافت نشد",
+    "showingResults": "نمایش {current} از {total} نتیجه",
+    "allAdsLoaded": "✓ تمام آگهی‌ها بارگذاری شدند",
+    "noMatchingAds": "هیچ آگهی‌ای با فیلترهای فعلی شما مطابقت ندارد",
     "noAdsAvailable": "هیچ آگهی‌ای موجود نیست",
-    "tryAdjustingFilters": "برای یافتن نتایج بیشتر، فیلترها یا معیار جستجو را تغییر دهید.",
-    "checkBackLater": "بعداً برای آگهی‌های جدید دوباره بررسی کنید.",
+    "tryAdjustingFilters": "فیلترهای خود را تنظیم کنید یا بعداً بررسی کنید",
+    "checkBackLater": "بعداً برای لیست‌های جدید بررسی کنید",
     "clearAllFilters": "پاک کردن همه فیلترها",
     "previous": "قبلی",
     "next": "بعدی",
@@ -799,5 +799,8 @@
     "previous": "قبلی",
     "next": "بعدی",
     "morePages": "صفحات بیشتر"
+  },
+  "CategoryHeader": {
+    "subcategories": "زیر دسته‌ها"
   }
 }

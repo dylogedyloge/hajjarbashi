@@ -461,7 +461,7 @@ const AdsList = ({
                      {/* Results Info */}
            {paginationData && (
              <div className="text-center text-sm text-muted-foreground mt-4">
-               {t("showingResults", { count: ads.length, total: paginationData.total_items })}
+               {t("showingResults", { current: ads.length, total: paginationData.total_items })}
                {!hasMore && paginationData.total_items > ads.length && (
                  <span className="ml-2 text-green-600">{t("allAdsLoaded")}</span>
                )}

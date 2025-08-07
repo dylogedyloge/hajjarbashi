@@ -13,7 +13,7 @@ import { AdsFilters } from "@/components/ads-list";
 import { fetchCategories, fetchSurfaces, fetchPorts, fetchCountries, fetchAds } from "@/lib/advertisements";
 
 interface DesktopCategoryFiltersProps {
-  onFiltersChange?: (filters: AdsFilters) => void;
+  onFiltersChange?: (filters: AdsFilters, selectedCategoryInfo?: Category) => void;
 }
 
 interface Category {
@@ -274,7 +274,13 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
     console.log('🎨 Colors being sent:', filters.colors);
     console.log('📏 Size being sent:', filters.size_range_type);
     console.log('⭐ Grade being sent:', filters.grade);
-    onFiltersChange?.(filters);
+    
+    // Find the selected category information
+    const selectedCategoryInfo = selectedCategories.length > 0 
+      ? categories.find(cat => cat.id === selectedCategories[0])
+      : undefined;
+    
+    onFiltersChange?.(filters, selectedCategoryInfo);
   };
 
   return (

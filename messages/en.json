@@ -779,5 +779,22 @@
     "file": "File",
     "audio": "Audio",
     "stopRecording": "Stop recording"
+  },
+  "AdsList": {
+    "showingResults": "Showing {count} of {total} results",
+    "allAdsLoaded": "All ads loaded",
+    "noMatchingAds": "No matching ads found",
+    "noAdsAvailable": "No ads available",
+    "tryAdjustingFilters": "Try adjusting your filters or search criteria to find more results.",
+    "checkBackLater": "Check back later for new advertisements.",
+    "clearAllFilters": "Clear all filters",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}"
+  },
+  "Pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "morePages": "More pages"
   }
 }

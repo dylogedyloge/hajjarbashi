@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { Zap, Bookmark, Star} from "lucide-react";
+import { Zap, Bookmark, Star } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "./ui/badge";
@@ -17,9 +17,9 @@ interface AdCardProps {
     sale_unit_type?: string;
     price: number;
     colors?: string[];
-    category?: { 
-      id: string; 
-      name: string; 
+    category?: {
+      id: string;
+      name: string;
       description?: string;
       image?: string;
       colors?: string[];
@@ -35,10 +35,10 @@ interface AdCardProps {
     origin_country?: { id: string; name: string };
     origin_city?: { id: string; name: string };
     size?: { h?: number; w?: number; l?: number };
-    media?: Array<{ 
+    media?: Array<{
       index: number;
-      media_path?: string; 
-      media_thumb_path?: string 
+      media_path?: string;
+      media_thumb_path?: string
     }>;
     cover?: string;
     cover_thumb?: string;
@@ -77,12 +77,12 @@ interface AdCardProps {
 
 const AdCard = ({ ad,
   //  onBookmarkChange, isFromBookmarksPage = false
-   isGrid = false
-   }: AdCardProps) => {
+  isGrid = false
+}: AdCardProps) => {
   const t = useTranslations("AdCard");
   const locale = useLocale();
   const [imageError, setImageError] = useState(false);
-  
+
   // Get image from cover_thumb, media array, or legacy image field
   const mediaArray = Array.isArray(ad.media) ? ad.media : [];
   const mediaImage = mediaArray.length > 0
@@ -118,7 +118,7 @@ const AdCard = ({ ad,
     return getCountryFlag(ad.origin_country?.name);
   };
 
-  const handleImageError = () => { 
+  const handleImageError = () => {
     setImageError(true);
     // Try fallback to original image if thumbnail fails
     if (imageSrc && imageSrc.includes('-thumb')) {
@@ -133,40 +133,40 @@ const AdCard = ({ ad,
 
       <div className="flex flex-col md:flex-row">
         {/* Left Section - Image */}
-                 <div className="relative md:w-48 w-full h-full min-h-50 flex-shrink-0">
-           {imageSrc && imageSrc !== "" && !imageError ? (
-             (() => {
-               console.log('Rendering image for ad', ad.id, 'imageSrc:', imageSrc, 'starts with http:', imageSrc?.startsWith('http'));
-               return imageSrc.startsWith('http') ? (
-                 <img
-                   src={imageSrc}
-                   alt={ad.stone_type || ad.category?.name || "Ad image"}
-                   className="object-cover w-full h-full md:static md:w-48 md:h-36"
-                   onError={handleImageError}
-                 />
-               ) : (
-                 <Image
-                   src={imageSrc}
-                   alt={ad.stone_type || ad.category?.name || "Ad image"}
-                   fill
-                   className="object-cover w-full h-full md:static md:w-48 md:h-36"
-                   onError={handleImageError}
-                   unoptimized
-                 />
-               );
-             })()
-           ) : (
+        <div className="relative md:w-48 w-full h-full min-h-50 flex-shrink-0">
+          {imageSrc && imageSrc !== "" && !imageError ? (
+            (() => {
+              //  console.log('Rendering image for ad', ad.id, 'imageSrc:', imageSrc, 'starts with http:', imageSrc?.startsWith('http'));
+              return imageSrc.startsWith('http') ? (
+                <img
+                  src={imageSrc}
+                  alt={ad.stone_type || ad.category?.name || "Ad image"}
+                  className="object-cover w-full h-full absolute inset-0"
+                  onError={handleImageError}
+                />
+              ) : (
+                <Image
+                  src={imageSrc}
+                  alt={ad.stone_type || ad.category?.name || "Ad image"}
+                  fill
+                  className="object-cover w-full h-full"
+                  onError={handleImageError}
+                  unoptimized
+                />
+              );
+            })()
+          ) : (
             <Image
               src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins"
               alt="Placeholder"
               fill
-              className="object-cover w-full h-full md:static md:w-48 md:h-36"
+              className="object-cover w-full h-full"
               unoptimized
             />
           )}
-          
+
           {/* Overlay Icons */}
-          <div className="absolute bottom-2 left-2 flex gap-1">
+          <div className="absolute bottom-2 left-2 flex gap-1 z-10">
             {ad.express && (
               <TooltipProvider>
                 <Tooltip>
@@ -223,10 +223,10 @@ const AdCard = ({ ad,
                 </div>
               )}
               <span className="text-sm text-muted-foreground font-medium">
-               {ad.origin_country?.name}
+                {ad.origin_country?.name}
               </span>
             </div>
-            
+
             {/* Status Indicators */}
             <div className="flex -space-x-1">
               {(ad.colors || ad.category?.colors || []).map((color, index) => {
@@ -248,9 +248,9 @@ const AdCard = ({ ad,
                   silver: { bg: "bg-gray-400", name: t("silver") },
                   bronze: { bg: "bg-orange-700", name: t("bronze") }
                 };
-                
+
                 const colorInfo = colorMap[color.toLowerCase()] || { bg: "bg-gray-400", name: color };
-                
+
                 return (
                   <TooltipProvider key={index}>
                     <Tooltip>
@@ -303,7 +303,7 @@ const AdCard = ({ ad,
                 /{getPriceUnit()?.toLowerCase?.()}
               </span>
             </div>
-            
+
             <span className="text-xs text-muted-foreground">
               {getDisplayDate()}
             </span>

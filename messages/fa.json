@@ -782,5 +782,22 @@
     "otherSellers": "تامین کنندگان دیگر",
     "pros": "مزایا",
     "cons": "معایب"
+  },
+  "AdsList": {
+    "showingResults": "نمایش {count} از {total} نتیجه",
+    "allAdsLoaded": "همه آگهی‌ها بارگذاری شدند",
+    "noMatchingAds": "هیچ آگهی مطابقی یافت نشد",
+    "noAdsAvailable": "هیچ آگهی‌ای موجود نیست",
+    "tryAdjustingFilters": "برای یافتن نتایج بیشتر، فیلترها یا معیار جستجو را تغییر دهید.",
+    "checkBackLater": "بعداً برای آگهی‌های جدید دوباره بررسی کنید.",
+    "clearAllFilters": "پاک کردن همه فیلترها",
+    "previous": "قبلی",
+    "next": "بعدی",
+    "page": "صفحه {page}"
+  },
+  "Pagination": {
+    "previous": "قبلی",
+    "next": "بعدی",
+    "morePages": "صفحات بیشتر"
   }
 }

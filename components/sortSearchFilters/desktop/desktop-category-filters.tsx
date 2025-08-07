@@ -47,7 +47,7 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
   const t = useTranslations("DesktopCategoryFilters");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedFormStone, setSelectedFormStone] = useState<string>("all");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string>("");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
@@ -224,9 +224,9 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
     }
 
     // Add category filter
-    if (selectedCategories.length > 0) {
-      filters.category_ids = selectedCategories;
-      console.log('🎨 Selected categories for filter:', selectedCategories);
+    if (selectedCategories) {
+      filters.category_ids = [selectedCategories];
+      console.log('🎨 Selected category for filter:', selectedCategories);
     }
 
     // Add colors filter
@@ -276,8 +276,8 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
     console.log('⭐ Grade being sent:', filters.grade);
     
     // Find the selected category information
-    const selectedCategoryInfo = selectedCategories.length > 0 
-      ? categories.find(cat => cat.id === selectedCategories[0])
+    const selectedCategoryInfo = selectedCategories 
+      ? categories.find(cat => cat.id === selectedCategories)
       : undefined;
     
     onFiltersChange?.(filters, selectedCategoryInfo);
@@ -341,16 +341,12 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
                       <div 
                         className={cn(
                           "aspect-[4/3]  rounded-md flex items-center justify-center overflow-hidden border-1 transition-all p-1",
-                          selectedCategories.includes(category.id)
+                          selectedCategories === category.id
                             ? "border-orange-500"
                             : "border-muted hover:border-orange-200"
                         )}
                         onClick={() => {
-                          setSelectedCategories(prev =>
-                            prev.includes(category.id)
-                              ? prev.filter(c => c !== category.id)
-                              : [...prev, category.id]
-                          );
+                          setSelectedCategories(category.id);
                         }}
                       >
                         {category.image && !failedImages.has(category.id) ? (

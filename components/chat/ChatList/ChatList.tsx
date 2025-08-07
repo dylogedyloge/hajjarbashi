@@ -24,7 +24,7 @@ export default function ChatList({
   const t = useTranslations('ChatBox');
 
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className="flex-1 h-full max-h-full">
       {loadingChats ? (
         <div className="text-center text-muted-foreground py-8">{t('loading')}</div>
       ) : chatListError ? (
@@ -33,7 +33,13 @@ export default function ChatList({
         <div className="text-center text-muted-foreground py-8">{t('noMessages')}</div>
       ) : (
         <div className="divide-y">
-          {chatList.map((conv) => (
+          {chatList
+            .sort((a, b) => {
+              const dateA = a.last_message_created_at ? new Date(a.last_message_created_at).getTime() : 0;
+              const dateB = b.last_message_created_at ? new Date(b.last_message_created_at).getTime() : 0;
+              return dateB - dateA; // Sort newest first
+            })
+            .map((conv) => (
             <ChatListItem
               key={conv.id}
               conv={conv}

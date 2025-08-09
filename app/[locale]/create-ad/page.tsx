@@ -27,6 +27,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import type { DragEndEvent } from "@dnd-kit/core";
+import type { Category, Port, Surface } from "@/types/ads";
 import { z } from "zod";
 import Stepper from "@/components/Stepper";
 import StepFormCategorySubCategoryOfStone from "@/components/steps/StepFormCategorySubCategoryOfStone";
@@ -141,35 +142,12 @@ export default function CreateAdPage() {
   const [description, setDescription] = useState<string>("");
 
 
-  const [surfaceOptions, setSurfaceOptions] = useState<
-    { id: string; name: string }[]
-  >([]);
+  const [surfaceOptions, setSurfaceOptions] = useState<Surface[]>([]);
   const [surfaceLoading, setSurfaceLoading] = useState(false);
   const [surfaceError, setSurfaceError] = useState<string | null>(null);
-  const [categoryOptions, setCategoryOptions] = useState<
-    {
-      id: string;
-      name: string;
-      colors: string[];
-      origin_city_id?: string;
-      origin_country_id?: string;
-      origin_city_name?: string;
-      origin_country_name?: string;
-      children?: {
-        id: string;
-        name: string;
-        colors: string[];
-        origin_city_id?: string;
-        origin_country_id?: string;
-        origin_city_name?: string;
-        origin_country_name?: string;
-      }[];
-    }[]
-  >([]);
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [portOptions, setPortOptions] = useState<
-    { id: string; name: string }[]
-  >([]);
+  const [portOptions, setPortOptions] = useState<Port[]>([]);
   const [portLoading, setPortLoading] = useState(false);
   const [portError, setPortError] = useState<string | null>(null);
   const [selectedReceivingPorts, setSelectedReceivingPorts] = useState<

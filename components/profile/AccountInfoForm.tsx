@@ -5,7 +5,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import React from "react";
-import { UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
+import type { Country, City } from "@/types/common";
 
 export interface AccountInfoFormValues {
   name: string;
@@ -19,10 +20,10 @@ export interface AccountInfoFormValues {
 
 interface AccountInfoFormProps {
   form: UseFormReturn<AccountInfoFormValues>;
-  countries: { id: string; name: string }[];
+  countries: Country[];
   countriesLoading: boolean;
   countriesError: string | null;
-  cities: { id: string; name: string }[];
+  cities: City[];
   citiesLoading: boolean;
   citiesError: string | null;
   accountInfoLoading: boolean;

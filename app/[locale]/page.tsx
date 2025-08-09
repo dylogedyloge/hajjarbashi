@@ -2,18 +2,11 @@
 import React, { useState, useCallback } from "react";
 import AdsList from "@/components/ads-list";
 import DesktopCategoryFilters from "@/components/sortSearchFilters/desktop/desktop-category-filters";
-import { AdsFilters } from "@/components/ads-list";
+import type { AdsFilters, Category } from "@/types/ads";
 import { useSearch } from "@/lib/search-context";
 import { useTranslations } from "next-intl";
 
-interface Category {
-  id: string;
-  name: string;
-  description?: string;
-  image?: string;
-  colors?: string[];
-  children?: Category[];
-}
+// Category type centralized in types/ads
 
 export default function Home() {
   const [filters, setFilters] = useState<AdsFilters>({});

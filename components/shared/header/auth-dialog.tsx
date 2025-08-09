@@ -16,12 +16,8 @@ import {
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import {
-  authService,
-  SignupRequest,
-  LoginRequest,
-  SendVerificationSmsRequest,
-} from "@/lib/auth";
+import { authService } from "@/lib/auth";
+import type { SignupRequest, LoginRequest, SendVerificationSmsRequest } from "@/types/auth";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { z } from "zod";

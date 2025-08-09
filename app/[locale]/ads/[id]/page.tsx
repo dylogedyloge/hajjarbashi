@@ -22,9 +22,10 @@ import BookmarkButton from "@/components/BookmarkButton";
 import { useTranslations } from "next-intl";
 import { formatRelativeTime } from "@/utils/time";
 import OtherSellersCarousel from "@/components/OtherSellersCarousel";
+import type { Media } from "@/types/ads";
 
 
-type Media = { media_thumb_path?: string; media_path?: string };
+// centralized in types/ads
 // Get the appropriate date to display
 
 function AdStoneInfoSection({ ad }: { ad: any }) {

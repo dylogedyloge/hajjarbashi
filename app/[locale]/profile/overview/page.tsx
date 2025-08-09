@@ -9,11 +9,10 @@ import {
   fetchCities,
   updateProfile,
   getMyProfile,
-  Country,
-  City,
   saveContactInfo,
-  ContactInfoItem,
 } from "@/lib/profile";
+import type { Country, City } from "@/types/common";
+import type { ContactInfoItem } from "@/types/user";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { AccountInfoForm } from "@/components/profile/AccountInfoForm";
 import { ContactInfoForm } from "@/components/profile/ContactInfoForm";

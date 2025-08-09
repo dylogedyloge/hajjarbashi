@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User } from "@/lib/auth-context";
+import type { User } from "@/types/user";
 import { Upload, Loader2 } from "lucide-react";
 import { ImageCropper } from "@/components/profile/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";

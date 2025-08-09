@@ -2,7 +2,7 @@
  * Profile-related utilities
  */
 
-import type { User } from './auth-context';
+import type { User } from '@/types/user';
 
 export interface ProfileFormData {
   firstName: string;

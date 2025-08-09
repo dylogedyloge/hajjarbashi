@@ -9,8 +9,9 @@ import { Slider } from "@/components/ui/slider";
 import DropdownMultiSelect from "@/components/ui/dropdown-multiselect";
 import { useTranslations } from "next-intl";
 import { cn } from "@/utils/cn";
-import { AdsFilters } from "@/components/ads-list";
+import type { AdsFilters } from "@/types/ads";
 import { fetchCategories, fetchSurfaces, fetchPorts, fetchCountries, fetchAds } from "@/lib/advertisements";
+import type { Country } from "@/types/common";
 
 interface DesktopCategoryFiltersProps {
   onFiltersChange?: (filters: AdsFilters, selectedCategoryInfo?: Category) => void;
@@ -38,10 +39,7 @@ interface Port {
   mtpa?: string;
 }
 
-interface Country {
-  id: string;
-  name: string;
-}
+// use centralized Country if/when needed in future
 
 const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps) => {
   const t = useTranslations("DesktopCategoryFilters");

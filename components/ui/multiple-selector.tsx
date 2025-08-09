@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-export type Option = { label: string; value: string };
+import type { Option } from "@/types/ui";
 
 interface MultipleSelectorProps {
   options: Option[];

@@ -5,7 +5,7 @@ import { Checkbox } from "./checkbox";
 import { Button } from "./button";
 import { ChevronDownIcon } from "lucide-react";
 
-export type DropdownMultiSelectOption = { label: string; value: string };
+import type { DropdownMultiSelectOption } from "@/types/ui";
 
 interface DropdownMultiSelectProps {
   options: DropdownMultiSelectOption[];

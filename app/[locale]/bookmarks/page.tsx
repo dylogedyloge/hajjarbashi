@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useAuth } from "@/lib/auth-context";
 import { fetchBookmarkedAds } from "@/lib/advertisements";
 import AdCard from "@/components/ad-card";
-import { Ad } from "@/components/ads-list";
+import type { Ad } from "@/types/ads";
 import { Button } from "@/components/ui/button";
 import { Bookmark, Loader2 } from "lucide-react";
 import Link from "next/link";

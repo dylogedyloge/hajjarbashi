@@ -381,7 +381,7 @@ const Header = () => {
                   {isValidUrl(user.avatar_thumb) ? (
                     <Image
                       src={user.avatar_thumb!}
-                      alt={user.name || user.email}
+                      alt={(user.name || user.email || "User").toString()}
                       width={32}
                       height={32}
                       className="w-8 h-8 rounded-full"
@@ -406,9 +406,7 @@ const Header = () => {
                       display: isValidUrl(user.avatar_thumb) ? "none" : "flex",
                     }}
                   >
-                    {user.name
-                      ? user.name.charAt(0).toUpperCase()
-                      : user.email.charAt(0).toUpperCase()}
+                    {(user.name || user.email || "U").charAt(0).toUpperCase()}
                   </div>
                 </div>
               </PopoverTrigger>

@@ -1,10 +1,11 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import AdsList from "@/components/ads-list";
 import DesktopCategoryFilters from "@/components/sortSearchFilters/desktop/desktop-category-filters";
 import type { AdsFilters, Category } from "@/types/ads";
 import { useSearch } from "@/lib/search-context";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 
 // Category type centralized in types/ads
 
@@ -18,7 +19,7 @@ export default function Home() {
     console.log('🔄 Updating filters:', newFilters);
     console.log('📋 Selected category info:', selectedCategoryInfo);
     setFilters(newFilters);
-    
+
     // Update selected category if category information is provided
     if (selectedCategoryInfo) {
       console.log('✅ Setting selected category:', selectedCategoryInfo);
@@ -67,7 +68,7 @@ export default function Home() {
   }, []);
 
   return (
-    <HomeContent 
+    <HomeContent
       filters={filters}
       selectedCategory={selectedCategory}
       handleFiltersChange={handleFiltersChange}
@@ -81,7 +82,7 @@ export default function Home() {
 }
 
 // Separate component to use the search context
-function HomeContent({ 
+function HomeContent({
   filters,
   selectedCategory,
   handleFiltersChange,
@@ -103,14 +104,21 @@ function HomeContent({
   const { setSearchHandler } = useSearch();
   const t = useTranslations("CategoryHeader");
 
+  const [imageError, setImageError] = useState(false);
+
+  // Reset fallback state when category image changes
+  useEffect(() => {
+    setImageError(false);
+  }, [selectedCategory?.image]);
+
   // Register the search handler with the global context
   setSearchHandler(handleSearchChange);
 
   console.log('🎨 Current selectedCategory state:', selectedCategory);
 
   return (
-    <div 
-    className="flex flex-col md:flex-row md:items-start w-full px-2 md:px-8 py-10 min-h-screen">
+    <div
+      className="flex flex-col md:flex-row md:items-start w-full px-2 md:px-8 py-10 min-h-screen">
       {/* Desktop: Category Sidebar */}
       <div className="hidden md:block shrink-0 sticky top-8 self-start">
         <DesktopCategoryFilters onFiltersChange={handleFiltersChange} />
@@ -121,7 +129,7 @@ function HomeContent({
         {selectedCategory && (
           <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             {/* Large Banner Image */}
-            {selectedCategory.image && (
+            {/* {selectedCategory.image && (
               <div className="w-full h-48 relative">
                 <img
                   src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${selectedCategory.image}`}
@@ -133,8 +141,8 @@ function HomeContent({
                   }}
                 />
               </div>
-            )}
-            
+            )} */}
+
             {/* Category Details Section */}
             <div className="p-6">
               {/* Category Tag */}
@@ -143,21 +151,28 @@ function HomeContent({
                   <span className="text-xs text-orange-600">×</span>
                   <span className="text-sm font-medium text-orange-600">{selectedCategory.name}</span>
                 </div>
-                
-                {/* Additional Details */}
-                {/* <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <span>Texture:</span>
-                    <span className="font-medium">Lorem ipsum</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>Lorem:</span>
-                    <span className="font-medium">Lorem ipsum</span>
-                  </div>
-                  <div className="w-6 h-6 rounded border border-gray-300 bg-gray-200"></div>
-                </div> */}
+                {/* if image is not null show it else show a default image */}
+                {selectedCategory.image && !imageError ? (
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${selectedCategory.image}`}
+                    alt={selectedCategory.name}
+                    width={100}
+                    height={100}
+                    className="w-32 h-16 rounded-md overflow-hidden flex-shrink-0 object-cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <Image
+                    src="https://placehold.co/800x400.png?text=Hajjar+Bashi&font=poppins"
+                    alt="Placeholder"
+                    width={100}
+                    height={100}
+                    className="w-32 h-16 rounded-md overflow-hidden flex-shrink-0 object-cover"
+                    unoptimized
+                  />
+                )}
               </div>
-              
+
               {/* Category Name and Description */}
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">
@@ -166,7 +181,6 @@ function HomeContent({
                 {selectedCategory.description ? (
                   <div className="text-gray-600 leading-relaxed space-y-2">
                     <p>{selectedCategory.description}</p>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
                   </div>
                 ) : (
                   <div className="text-gray-600 leading-relaxed space-y-2">
@@ -175,7 +189,7 @@ function HomeContent({
                   </div>
                 )}
               </div>
-              
+
               {/* Subcategories Section */}
               {selectedCategory.children && selectedCategory.children.length > 0 && (
                 <div className="border-t border-gray-200 pt-6">
@@ -186,7 +200,7 @@ function HomeContent({
                     {selectedCategory.children.map((subcategory) => (
                       <div
                         key={subcategory.id}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors cursor-pointer"
+                        className="flex items-center gap-3 p-3 rounded-full border border-gray-200 hover:border-orange-300 transition-colors cursor-pointer"
                       >
                         <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                           {subcategory.image ? (
@@ -218,9 +232,9 @@ function HomeContent({
             </div>
           </div>
         )}
-        
-        <AdsList 
-          filters={filters} 
+
+        <AdsList
+          filters={filters}
           onExpressFilterChange={handleExpressFilterChange}
           onFeaturedFilterChange={handleFeaturedFilterChange}
           expressFilter={expressFilter}

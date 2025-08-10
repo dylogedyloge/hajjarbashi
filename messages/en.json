@@ -799,5 +799,23 @@
   },
   "CategoryHeader": {
     "subcategories": "Subcategories"
+  },
+  "HomePage": {
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "clearCategoryFilter": "Clear category filter",
+    "clearSubcategoryFilter": "Clear subcategory filter",
+    "placeholder": "Placeholder",
+    "defaultCategoryDescription": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "defaultCategoryDescription2": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "defaultSubcategoryDescription": "This subcategory contains specialized products and materials related to {name}.",
+    "exploreCollection": "Explore our collection of high-quality items in this category.",
+    "moreAbout": "More about {name}",
+    "loadingSubcategory": "Loading subcategory...",
+    "subcategoryNotFound": "Subcategory not found",
+    "failedToLoadSubcategory": "Failed to load subcategory",
+    "backToCategories": "Back to Categories",
+    "backToHome": "Back to Home",
+    "home": "Home"
   }
 }

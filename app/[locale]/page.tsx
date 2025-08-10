@@ -158,7 +158,7 @@ function HomeContent({
   handleClearSubcategoryFilter: (subcategoryId: string) => void;
 }) {
   const { setSearchHandler } = useSearch();
-  const t = useTranslations("CategoryHeader");
+  const t = useTranslations("HomePage");
 
   const [imageError, setImageError] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
@@ -200,7 +200,7 @@ function HomeContent({
             className="p-0 h-auto text-orange-600 hover:text-orange-800 font-medium"
             onClick={() => toggleDescription(id)}
           >
-            Show less
+            {t("showLess")}
           </Button>
         </div>
       );
@@ -219,7 +219,7 @@ function HomeContent({
           className="p-0 h-auto text-orange-600 hover:text-orange-800 font-medium"
           onClick={() => toggleDescription(id)}
         >
-          Show more
+          {t("showMore")}
         </Button>
       </div>
     );
@@ -266,8 +266,8 @@ function HomeContent({
                         size="icon"
                         onClick={handleClearCategoryFilter}
                         className="h-4 w-4 p-4 hover:bg-orange-200 rounded-full text-orange-600 hover:text-orange-800"
-                        aria-label="Clear category filter"
-                        title="Clear category filter"
+                        aria-label={t("clearCategoryFilter")}
+                        title={t("clearCategoryFilter")}
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -286,7 +286,7 @@ function HomeContent({
                     ) : (
                       <Image
                         src="https://placehold.co/800x400.png?text=Hajjar+Bashi&font=poppins"
-                        alt="Placeholder"
+                        alt={t("placeholder")}
                         width={100}
                         height={100}
                         className="w-32 h-16 rounded-md overflow-hidden flex-shrink-0 object-cover"
@@ -304,8 +304,8 @@ function HomeContent({
                       renderDescription(selectedCategory.description, `category-${selectedCategory.id}`)
                     ) : (
                       <div className="text-gray-600 leading-relaxed space-y-2">
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                        <p>{t("defaultCategoryDescription")}</p>
+                        <p>{t("defaultCategoryDescription2")}</p>
                       </div>
                     )}
                   </div>
@@ -368,8 +368,8 @@ function HomeContent({
                             size="icon"
                             onClick={() => handleClearSubcategoryFilter(subcategory.id)}
                             className="h-4 w-4 p-4 hover:bg-orange-200 rounded-full text-orange-600 hover:text-orange-800"
-                            aria-label="Clear subcategory filter"
-                            title="Clear subcategory filter"
+                            aria-label={t("clearSubcategoryFilter")}
+                            title={t("clearSubcategoryFilter")}
                           >
                             <X className="h-3 w-3" />
                           </Button>
@@ -391,7 +391,7 @@ function HomeContent({
                         ) : (
                           <Image
                             src="https://placehold.co/800x400.png?text=Subcategory&font=poppins"
-                            alt="Placeholder"
+                            alt={t("placeholder")}
                             width={100}
                             height={100}
                             className="w-32 h-16 rounded-md overflow-hidden flex-shrink-0 object-cover"
@@ -409,8 +409,8 @@ function HomeContent({
                           renderDescription(subcategory.description, `subcategory-${subcategory.id}`)
                         ) : (
                           <div className="text-gray-600 leading-relaxed space-y-2">
-                            <p>This subcategory contains specialized products and materials related to {subcategory.name}.</p>
-                            <p>Explore our collection of high-quality items in this category.</p>
+                            <p>{t("defaultSubcategoryDescription", { name: subcategory.name })}</p>
+                            <p>{t("exploreCollection")}</p>
                           </div>
                         )}
                       </div>
@@ -423,7 +423,7 @@ function HomeContent({
                             className="rounded-full hover:bg-orange-50"
                           >
                             <Plus className="w-4 h-4" />
-                            More about {subcategory.name}
+                            {t("moreAbout", { name: subcategory.name })}
                           </Button>
                         </Link>
                       </div>

@@ -1,16 +1,13 @@
 "use client";
-import { notFound } from "next/navigation";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Category } from "@/types/ads";
-import AdsList from "@/components/ads-list";
 import { useEffect, useState } from "react";
-import { slugToText } from "@/utils/slug";
 import { fetchCategories } from "@/lib/advertisements";
+import { useTranslations } from "next-intl";
 
 // Function to fetch subcategory data by slug
 async function fetchSubcategoryBySlug(slug: string, locale: string) {
@@ -52,6 +49,7 @@ async function fetchSubcategoryBySlug(slug: string, locale: string) {
 }
 
 function SubcategoryHeader({ subcategory }: { subcategory: Category }) {
+  const t = useTranslations("HomePage");
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-8">
       <div className="p-6">
@@ -75,7 +73,7 @@ function SubcategoryHeader({ subcategory }: { subcategory: Category }) {
           ) : (
             <Image
               src="https://placehold.co/800x400.png?text=Subcategory&font=poppins"
-              alt="Placeholder"
+              alt={t("placeholder")}
               width={100}
               height={100}
               className="w-32 h-16 rounded-md overflow-hidden flex-shrink-0 object-cover"
@@ -97,8 +95,8 @@ function SubcategoryHeader({ subcategory }: { subcategory: Category }) {
             </div>
           ) : (
             <div className="text-gray-600 leading-relaxed space-y-2">
-              <p>This subcategory contains specialized products and materials related to {subcategory.name}.</p>
-              <p>Explore our collection of high-quality items in this category.</p>
+              <p>{t("defaultSubcategoryDescription", { name: subcategory.name })}</p>
+              <p>{t("exploreCollection")}</p>
             </div>
           )}
         </div>
@@ -112,7 +110,7 @@ function SubcategoryHeader({ subcategory }: { subcategory: Category }) {
                   href="/"
                   className="text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  Home
+                  {t("home")}
                 </Link>
               </li>
               <li className="flex items-center">
@@ -128,6 +126,7 @@ function SubcategoryHeader({ subcategory }: { subcategory: Category }) {
 }
 
 function SubcategoryContent({ subcategory }: { subcategory: Category }) {
+  const t = useTranslations("HomePage");
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -139,7 +138,7 @@ function SubcategoryContent({ subcategory }: { subcategory: Category }) {
               className="text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Categories
+              {t("backToCategories")}
             </Button>
           </Link>
         </div>
@@ -158,6 +157,7 @@ export default function Page({
   params: Promise<{ slug: string; locale: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const t = useTranslations("HomePage");
   const [subcategory, setSubcategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -186,7 +186,7 @@ export default function Page({
         const foundSubcategory = await fetchSubcategoryBySlug(resolvedParams.slug, locale);
         
         if (!foundSubcategory) {
-          setError('Subcategory not found');
+          setError(t('subcategoryNotFound'));
           return;
         }
         
@@ -194,7 +194,7 @@ export default function Page({
         setSubcategory(foundSubcategory);
       } catch (err) {
         console.error('❌ Error loading subcategory:', err);
-        setError('Failed to load subcategory');
+        setError(t('failedToLoadSubcategory'));
       } finally {
         setLoading(false);
       }
@@ -208,7 +208,7 @@ export default function Page({
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading subcategory...</p>
+          <p className="mt-4 text-gray-600">{t("loadingSubcategory")}</p>
         </div>
       </div>
     );
@@ -219,12 +219,12 @@ export default function Page({
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            {error || "Subcategory not found"}
+            {error || t("subcategoryNotFound")}
           </h1>
           <Link href="/">
             <Button variant="outline" className="mt-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t("backToHome")}
             </Button>
           </Link>
         </div>

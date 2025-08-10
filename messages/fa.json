@@ -802,5 +802,23 @@
   },
   "CategoryHeader": {
     "subcategories": "زیر دسته‌ها"
+  },
+  "HomePage": {
+    "showMore": "نمایش بیشتر",
+    "showLess": "نمایش کمتر",
+    "clearCategoryFilter": "پاک کردن فیلتر دسته‌بندی",
+    "clearSubcategoryFilter": "پاک کردن فیلتر زیردسته",
+    "placeholder": "تصویر نمونه",
+    "defaultCategoryDescription": "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.",
+    "defaultCategoryDescription2": "چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است.",
+    "defaultSubcategoryDescription": "این زیردسته شامل محصولات و مواد تخصصی مربوط به {name} است.",
+    "exploreCollection": "مجموعه محصولات با کیفیت بالا ما را در این دسته‌بندی کاوش کنید.",
+    "moreAbout": "اطلاعات بیشتر درباره {name}",
+    "loadingSubcategory": "در حال بارگذاری زیردسته...",
+    "subcategoryNotFound": "زیردسته یافت نشد",
+    "failedToLoadSubcategory": "بارگذاری زیردسته ناموفق بود",
+    "backToCategories": "بازگشت به دسته‌بندی‌ها",
+    "backToHome": "بازگشت به خانه",
+    "home": "خانه"
   }
 }

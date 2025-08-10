@@ -3,11 +3,13 @@ import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { X } from "lucide-react";
-import React from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { X, ChevronDown } from "lucide-react";
+import React, { useState } from "react";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export interface ContactInfoItemForm {
   title: string;
@@ -40,133 +42,145 @@ export function ContactInfoForm({
     control: form.control,
     name: "contactInfos",
   });
+
+  const handleAddContact = (type: "phone" | "email") => {
+    append({ title: "", type, value: "" });
+  };
+
+  const handleRemoveContact = (index: number) => {
+    remove(index);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardHeader className="pb-4">
-            <div className="text-base font-semibold">
-              {t("contactInformation.title")}
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-semibold">
+                Contact Information
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="bg-gray-800 text-white hover:bg-gray-700">
+                    + Add
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-32">
+                  <DropdownMenuItem onClick={() => handleAddContact("phone")}>
+                    Phone
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAddContact("email")}>
+                    Email
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-6">
             {fields.map((field, idx) => {
               const watchedType = form.watch(`contactInfos.${idx}.type`);
               return (
-                <div key={field.id} className="relative border rounded-lg p-4 mb-2 flex flex-col gap-4">
-                  <FormField
-                    control={form.control}
-                    name={`contactInfos.${idx}.title` as const}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("contactInformation.contactTitle")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder={t("contactInformation.contactTitlePlaceholder")} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`contactInfos.${idx}.type` as const}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("contactInformation.contactType")}</FormLabel>
-                        <FormControl>
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder={t("contactInformation.selectType")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="phone">{t("contactInformation.phoneNumber")}</SelectItem>
-                              <SelectItem value="email">{t("contactInformation.email")}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`contactInfos.${idx}.value` as const}
-                    render={({ field: valueField }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {watchedType === "phone"
-                            ? t("contactInformation.phoneNumber")
-                            : t("contactInformation.email")}
-                        </FormLabel>
-                        <FormControl>
-                          {watchedType === "phone" ? (
-                            <PhoneInput
-                              {...valueField}
-                              value={valueField.value}
-                              onChange={valueField.onChange}
-                              placeholder={t("contactInformation.phonePlaceholder")}
-                            />
-                          ) : (
-                            <Input
-                              {...valueField}
-                              type="email"
-                              placeholder={t("contactInformation.emailPlaceholder")}
-                            />
-                          )}
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {/* Remove button for all but the first entry */}
+                <div key={field.id} className="relative border border-gray-200 rounded-lg p-4">
+                  {/* Close button for all fields except the first one */}
                   {idx > 0 && (
                     <Button
                       type="button"
                       size="icon"
                       variant="ghost"
-                      className={`absolute top-2 ${dir === 'rtl' ? 'left-2' : 'right-2'} text-destructive hover:bg-destructive/10`}
-                      onClick={() => remove(idx)}
+                      className="absolute top-2 right-2 text-gray-500 hover:text-red-500 hover:bg-red-50"
+                      onClick={() => handleRemoveContact(idx)}
+                      title="Remove this contact"
                     >
                       <X className="w-4 h-4" />
                     </Button>
                   )}
+                  
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name={`contactInfos.${idx}.title` as const}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-semibold">Title Name</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Enter your Name"
+                              className="border-gray-300 rounded-lg"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`contactInfos.${idx}.value` as const}
+                      render={({ field: valueField }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-semibold">
+                            {watchedType === "phone" ? "Phone Nubmer" : "Email Address"}
+                          </FormLabel>
+                          <FormControl>
+                            {watchedType === "phone" ? (
+                              <PhoneInput
+                                {...valueField}
+                                value={valueField.value}
+                                onChange={valueField.onChange}
+                                placeholder="--- --- ----"
+                                className="border-gray-300 rounded-lg"
+                              />
+                            ) : (
+                              <Input
+                                {...valueField}
+                                type="email"
+                                placeholder="Enter your email"
+                                className="border-gray-300 rounded-lg"
+                              />
+                            )}
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               );
             })}
-            {/* Plus button to add new entry */}
-            <button
-              type="button"
-              className="w-full border border-dashed rounded-lg p-2 text-primary hover:bg-primary/10 flex items-center justify-center gap-2"
-              onClick={() => append({ title: "", type: "phone", value: "" })}
-            >
-              <span className="text-xl font-bold">+</span> {t("contactInformation.addAnother") || "Add another"}
-            </button>
+            
             <FormField
               control={form.control}
               name="showContactInfo"
               render={({ field }) => (
-                <div className="flex items-center gap-2 md:col-span-2 mt-2">
-                  <input
-                    type="checkbox"
+                <div className="flex items-center gap-3">
+                  <Checkbox
                     id="show-contact-info"
                     checked={field.value}
-                    onChange={e => field.onChange(e.target.checked)}
-                    className="accent-primary w-4 h-4"
+                    onCheckedChange={field.onChange}
+                    className="border-red-500 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
                   />
                   <label htmlFor="show-contact-info" className="text-sm font-medium cursor-pointer">
-                    {t("contactInformation.showContactInfo")}
+                    Show my contact information to others
                   </label>
                 </div>
               )}
             />
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex justify-end gap-3 pt-6">
+            {/* <Button
+              type="button"
+              variant="outline"
+              className="bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg"
+            >
+              Cancle
+            </Button> */}
             <Button
               type="submit"
-              className="w-full h-12 rounded-full text-lg"
+              className="bg-gray-800 text-white hover:bg-gray-700 rounded-lg"
               disabled={contactInfoLoading}
             >
-              {contactInfoLoading ? t('loading') : t('contactInformation.save')}
+              {contactInfoLoading ? 'Loading...' : 'Save'}
             </Button>
             {contactInfoError && <div className="text-destructive text-sm text-center">{contactInfoError}</div>}
           </CardFooter>

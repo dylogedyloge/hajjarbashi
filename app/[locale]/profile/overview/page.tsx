@@ -184,7 +184,7 @@ const Profile = () => {
         </div>
       ) : (
         <Form {...accountInfoForm}>
-          <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12">
+          <div className="w-full  flex flex-col gap-8 mb-12">
             {/* Change Avatar */}
             <AvatarUploader
               user={user}

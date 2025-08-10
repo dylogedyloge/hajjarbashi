@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { User } from "@/types/user";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, User as UserIcon } from "lucide-react";
 import { ImageCropper } from "@/components/profile/image-cropper";
 import { getUserInitials } from "@/lib/profile-utils";
 import { profileService } from "@/lib/profile";
@@ -150,55 +150,73 @@ export function AvatarUploader({ user, token, login, t }: AvatarUploaderProps) {
         cropSource={t("cropModal.cropSource")}
         className=""
       />
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative">
-          <Avatar className="w-20 h-20">
-            {user?.avatar_thumb && user.avatar_thumb.startsWith('http') ? (
+      
+      {/* Upload Area */}
+      <div
+        className={`w-full  rounded-lg p-6 cursor-pointer transition-colors ${
+          dragActive 
+            ? 'border-primary bg-primary/5' 
+            : 'border-muted-foreground/25 hover:border-primary/50'
+        }`}
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+        onClick={handleUploadClick}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/svg+xml,image/jpeg,image/jpg,image/png"
+          onChange={handleFileInputChange}
+          className="hidden"
+        />
+        
+        {isUploading ? (
+          <div className="flex items-center gap-4">
+            <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
+            <div className="text-sm text-muted-foreground">Uploading...</div>
+          </div>
+        ) : user?.avatar_thumb ? (
+          <div className="flex items-center gap-4">
+            <Avatar className="w-16 h-16">
               <AvatarImage
-                src={user.avatar_thumb}
+                src={user.avatar_thumb.startsWith('http') 
+                  ? user.avatar_thumb 
+                  : user.avatar_thumb.startsWith('/files/')
+                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${user.avatar_thumb}`
+                    : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${user.avatar_thumb}`
+                }
                 alt={t("avatar.alt")}
               />
-            ) : null}
-            <AvatarFallback className="text-2xl font-semibold">
-              {getUserInitials(user)}
-            </AvatarFallback>
-          </Avatar>
-          {isUploading && (
-            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-              <Loader2 className="w-6 h-6 text-white animate-spin" />
-            </div>
-          )}
-        </div>
-        {/* Upload Area */}
-        <div
-          className={`w-full max-w-xs border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
-            dragActive 
-              ? 'border-primary bg-primary/5' 
-              : 'border-muted-foreground/25 hover:border-primary/50'
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={handleUploadClick}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/svg+xml,image/jpeg,image/jpg,image/png"
-            onChange={handleFileInputChange}
-            className="hidden"
-          />
-          <div className="flex flex-col items-center gap-2">
-            <Upload className="w-6 h-6 text-muted-foreground" />
-            <div className="text-sm">
-              <span className="text-primary font-medium">{t("avatar.upload.clickHere")}</span> {t("avatar.upload.orDrag")}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {t("avatar.upload.supportedFormats")}
+              <AvatarFallback className="text-xl font-semibold">
+                {getUserInitials(user)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <div className="text-sm">
+                <span className="text-orange-500 font-medium">Click here</span> to upload your file or drag.
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Supported Format: SVG, JPG, PNG (10mb each)
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+              <UserIcon className="w-8 h-8 text-gray-400" />
+            </div>
+            <div className="flex flex-col">
+              <div className="text-sm">
+                <span className="text-orange-500 font-medium">Click here</span> to upload your file or drag.
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Supported Format: SVG, JPG, PNG (10mb each)
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -48,7 +48,7 @@ export function AccountInfoForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card>
+        <div>
           <CardHeader className="pb-4">
             <div className="text-base font-semibold">
               {t("accountInformation.title")}
@@ -199,19 +199,19 @@ export function AccountInfoForm({
               />
             </div>
           </CardContent>
-          <CardFooter>
-            <div className="flex flex-col w-full gap-2">
+          <CardFooter className="flex justify-end gap-3 pt-6">
+            {/* <div className="flex flex-col w-full gap-2"> */}
               <Button
                 type="submit"
-                className="w-full h-12 rounded-full text-lg"
+                className="bg-gray-800 text-white hover:bg-gray-700 rounded-lg"
                 disabled={accountInfoLoading}
               >
-                {accountInfoLoading ? t('loading') : t('accountInformation.save')}
+                {accountInfoLoading ? t('loading') : t('actions.save')}
               </Button>
               {accountInfoError && <div className="text-destructive text-sm text-center">{accountInfoError}</div>}
-            </div>
+            {/* </div> */}
           </CardFooter>
-        </Card>
+        </div>
       </form>
     </Form>
   );

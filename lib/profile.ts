@@ -5,6 +5,42 @@ import type { ContactInfoItem } from "@/types/user";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '${process.env.NEXT_PUBLIC_API_BASE_URL}';
 // const API_BASE_URL = 'http://192.168.10.6:3001';
 
+// Payment Receipts Types
+export interface Payable {
+  type: string;
+  amount?: number;
+}
+
+export interface PaymentReceipt {
+  id: string;
+  ad_id: string;
+  payables: Payable[];
+  transaction_id: string | null;
+  receipt_status: number;
+  total_amount: number;
+  total_payable_amount: number;
+  created_at: number;
+  expires_at: number;
+  currency_amount: number | null;
+  usd_amount: number | null;
+  currency: string | null;
+  payment_method: string | null;
+  transaction_code: string | null;
+  transaction_status: number | null;
+}
+
+export interface PaymentReceiptsResponse {
+  success: boolean;
+  message: string;
+  data: PaymentReceipt[];
+  timestamp: string;
+  pagination?: {
+    current_page: number;
+    total_pages: number;
+    total_items: number;
+    items_per_page: number;
+  };
+}
 
 
 export const profileService = {
@@ -200,4 +236,31 @@ export async function updateLanguage({ language, token }: { language: string; to
   const result = await response.json();
   console.log('✅ Update language success:', result);
   return result;
+} 
+
+export async function fetchPaymentReceipts(
+  token: string,
+  lang: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<PaymentReceiptsResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/payment_receipts?limit=${limit}&page=${page}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'x-lang': lang,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Failed to fetch payment receipts: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
 } 

@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";

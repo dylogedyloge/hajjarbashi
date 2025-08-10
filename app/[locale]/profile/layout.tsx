@@ -2,12 +2,12 @@
 import { ReactNode, Suspense } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
-  SidebarMenu,
-  SidebarMenuItem,
+  // SidebarMenu,
+  // SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import {
-  LayoutDashboard,
+  // LayoutDashboard,
   List,
   CreditCard,
   Headphones,
@@ -71,7 +71,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const t = useTranslations("Profile.Sidebar");
+  // const t = useTranslations("Profile.Sidebar");
 
   // Create form instances for the completion card
   const accountInfoForm = useForm<AccountInfoFormValues>({

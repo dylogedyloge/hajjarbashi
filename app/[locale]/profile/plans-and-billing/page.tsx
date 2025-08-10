@@ -124,8 +124,11 @@ export default function PlansAndBillingPage() {
   };
 
   const getProcessAction = (receiptStatus: number, transactionStatus: number | null) => {
+    console.log("receiptStatus", receiptStatus);
+    console.log("transactionStatus", transactionStatus);
     if (receiptStatus === 0) {
       return "Payment";
+      
     }
     return "-";
   };

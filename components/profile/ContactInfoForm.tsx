@@ -2,10 +2,10 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+// import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, ChevronDown } from "lucide-react";
-import React, { useState } from "react";
+import { X } from "lucide-react";
+// import React, { useState } from "react";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
@@ -35,9 +35,9 @@ export function ContactInfoForm({
   contactInfoLoading,
   contactInfoError,
   onSubmit,
-  t,
+  // t,
 }: ContactInfoFormProps) {
-  const { dir } = useLocaleDirection();
+  // const { dir } = useLocaleDirection();
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "contactInfos",

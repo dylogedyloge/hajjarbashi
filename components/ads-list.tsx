@@ -73,18 +73,7 @@ const AdsList = ({
       setLoading(true);
       setError(null);
     }
-    
-    console.log('📋 AdsList received filters:', filters);
-    console.log('🎨 Color filters:', filters.colors);
-    console.log('📦 Form filters:', filters.form);
-    console.log('📏 Size filters:', filters.size_range_type);
-    console.log('🏷️ Category filters:', filters.category_ids);
-    console.log('🏗️ Surface filters:', filters.surface_ids);
-    console.log('⭐ Grade filters:', filters.grade);
-    console.log('🚢 Receiving Ports filters:', filters.receiving_ports);
-    console.log('🚢 Export Ports filters:', filters.export_ports);
-    console.log('🌎 Origin Country filters:', filters.origin_country_ids);
-    console.log('📄 Current page:', page);
+
     
     try {
       const res = await fetchAds({ 
@@ -96,14 +85,10 @@ const AdsList = ({
         ...filters
       });
       
-      console.log('📊 API Response:', res);
-      console.log('📊 API Response data:', res.data);
-      console.log('📊 API Response list:', res.data?.list);
+
       
       // Handle new API response structure with data.list
       const adsList = res.data?.list || res.data || [];
-      console.log('📋 Ads list:', adsList);
-      console.log('📋 Number of ads found:', adsList.length);
       
              if (isLoadMore) {
          setAds(prev => [...prev, ...adsList]);
@@ -142,12 +127,10 @@ const AdsList = ({
          // For initial load, check if there are more items than what we loaded
          const hasMoreItems = totalItems > adsList.length;
          setHasMore(hasMoreItems);
-         console.log('📋 Initial Load - Total Items:', totalItems, 'Loaded:', adsList.length, 'Items Per Page:', ITEMS_PER_PAGE, 'Has More:', hasMoreItems);
        }
       
     } catch (err) {
-      console.error('❌ Error fetching ads:', err);
-      console.error('❌ Error details:', err instanceof Error ? err.message : 'Unknown error');
+
       setError(err instanceof Error ? err.message : "Failed to load ads");
     } finally {
       if (isLoadMore) {
@@ -165,7 +148,7 @@ const AdsList = ({
         (entries) => {
           const [entry] = entries;
           if (entry.isIntersecting && hasMore && !loadingMore) {
-            console.log('🔄 Intersection detected, loading more ads...');
+
             handleLoadMore();
           }
         },
@@ -216,7 +199,6 @@ const AdsList = ({
   // Generate pagination items
   const generatePaginationItems = () => {
     if (!paginationData) {
-      console.log('❌ No pagination data available');
       return [];
     }
     
@@ -224,7 +206,6 @@ const AdsList = ({
     const totalPages = paginationData.total_pages;
     const currentPageNum = paginationData.current_page;
     
-    console.log('🔢 Generating pagination items:', { totalPages, currentPageNum });
     
     // Always show first page
     items.push(1);
@@ -250,8 +231,6 @@ const AdsList = ({
     if (totalPages > 1) {
       items.push(totalPages);
     }
-    
-    console.log('📄 Generated pagination items:', items);
     return items;
   };
 

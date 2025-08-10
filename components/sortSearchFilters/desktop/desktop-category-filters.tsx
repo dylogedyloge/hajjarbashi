@@ -15,6 +15,7 @@ import type { Country } from "@/types/common";
 
 interface DesktopCategoryFiltersProps {
   onFiltersChange?: (filters: AdsFilters, selectedCategoryInfo?: Category) => void;
+  onClearCategory?: () => void;
 }
 
 interface Category {
@@ -41,7 +42,7 @@ interface Port {
 
 // use centralized Country if/when needed in future
 
-const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps) => {
+const DesktopCategoryFilters = ({ onFiltersChange, onClearCategory }: DesktopCategoryFiltersProps) => {
   const t = useTranslations("DesktopCategoryFilters");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedFormStone, setSelectedFormStone] = useState<string>("all");
@@ -66,6 +67,26 @@ const DesktopCategoryFilters = ({ onFiltersChange }: DesktopCategoryFiltersProps
   const [loadingPorts, setLoadingPorts] = useState(true);
   const [loadingCountries, setLoadingCountries] = useState(true);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  // Listen for clear category event
+  useEffect(() => {
+    if (onClearCategory) {
+      const handleClearCategory = () => {
+        setSelectedCategories("");
+      };
+      
+      // We'll use a custom event to communicate between components
+      const eventListener = () => {
+        setSelectedCategories("");
+      };
+      
+      window.addEventListener('clearCategoryFilter', eventListener);
+      
+      return () => {
+        window.removeEventListener('clearCategoryFilter', eventListener);
+      };
+    }
+  }, [onClearCategory]);
 
   useEffect(() => {
     const loadCategories = async () => {

@@ -71,9 +71,9 @@ const DesktopCategoryFilters = ({ onFiltersChange, onClearCategory }: DesktopCat
   // Listen for clear category event
   useEffect(() => {
     if (onClearCategory) {
-      const handleClearCategory = () => {
-        setSelectedCategories("");
-      };
+      // const handleClearCategory = () => {
+      //   setSelectedCategories("");
+      // };
       
       // We'll use a custom event to communicate between components
       const eventListener = () => {

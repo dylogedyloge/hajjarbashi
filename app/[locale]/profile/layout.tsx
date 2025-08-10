@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
 import { useForm } from "react-hook-form";

@@ -263,4 +263,198 @@ export async function fetchPaymentReceipts(
   }
 
   return response.json();
+}
+
+// Support Ticket Types
+export interface Ticket {
+  id: string;
+  reported_user_id: string | null;
+  ad_id: string | null;
+  subject: string;
+  status: number;
+  priority: number;
+  assigned_to: string | null;
+  category_id: number;
+  topic_id: number | null;
+  created_at: number;
+  ad_code: string | null;
+  category_name: string;
+  topic_name: string | null;
+  assigned_to_name: string | null;
+  assigned_to_avatar: string | null;
+  reported_name: string | null;
+  reported_avatar: string | null;
+}
+
+export interface TicketsResponse {
+  success: boolean;
+  message: string;
+  data: Ticket[];
+  timestamp: string;
+}
+
+export interface TicketCategory {
+  id: number;
+  name: string;
+}
+
+export interface TicketTopic {
+  id: number;
+  name: string;
+}
+
+export interface TicketCategoriesResponse {
+  success: boolean;
+  message: string;
+  data: TicketCategory[];
+  timestamp: string;
+}
+
+export interface TicketTopicsResponse {
+  success: boolean;
+  message: string;
+  data: TicketTopic[];
+  timestamp: string;
+}
+
+// Support Ticket API Functions
+export async function fetchTickets(
+  token: string,
+  lang: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<TicketsResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/tickets?limit=${limit}&page=${page}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'x-lang': lang,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Failed to fetch tickets: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
+}
+
+export async function fetchTicketCategories(
+  token: string,
+  lang: string
+): Promise<TicketCategoriesResponse> {
+  const response = await fetch(`${API_BASE_URL}/ticket_categories/list`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'x-lang': lang,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Failed to fetch ticket categories: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
+}
+
+export async function fetchTicketTopics(
+  token: string,
+  lang: string,
+  categoryId: number
+): Promise<TicketTopicsResponse> {
+  const response = await fetch(`${API_BASE_URL}/ticket_categories/topics/${categoryId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'x-lang': lang,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Failed to fetch ticket topics: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
+}
+
+// Create Ticket Types
+export interface CreateTicketRequest {
+  subject: string;
+  priority: number;
+  category_id: number;
+  topic_id: number;
+  message: string;
+  attachments?: File[];
+}
+
+export interface CreateTicketResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user_id: string;
+    subject: string;
+    priority: number;
+    category_id: string;
+    topic_id: string;
+    ad_id: string | null;
+    reported_user_id: string | null;
+    assigned_to: string | null;
+    updated_at: string | null;
+    id: string;
+    status: number;
+    rate: number;
+    created_at: number;
+    deleted_at: string | null;
+  };
+  timestamp: string;
+}
+
+export async function createTicket(
+  data: CreateTicketRequest,
+  token: string,
+  lang: string
+): Promise<CreateTicketResponse> {
+  const formData = new FormData();
+  formData.append('subject', data.subject);
+  formData.append('priority', data.priority.toString());
+  formData.append('category_id', data.category_id.toString());
+  formData.append('topic_id', data.topic_id.toString());
+  formData.append('message', data.message);
+  
+  // Add attachments if provided
+  if (data.attachments && data.attachments.length > 0) {
+    data.attachments.forEach((file, index) => {
+      formData.append('attachments', file);
+    });
+  }
+
+  const response = await fetch(`${API_BASE_URL}/tickets`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'x-lang': lang,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Failed to create ticket: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
 } 

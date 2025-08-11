@@ -883,5 +883,20 @@
     "loading": "Loading...",
     "error": "Error loading data",
     "retry": "Retry"
+  },
+  "Support": {
+    "createTicket": {
+      "title": "Create Ticket",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Egestas purus viverra accumsan.",
+      "button": "Create Ticket"
+    },
+    "ticketHistory": {
+      "title": "Ticket History",
+      "ticket": "Ticket",
+      "date": "Date",
+      "topic": "Topic",
+      "category": "Category",
+      "status": "Status"
+    }
   }
 }

@@ -48,7 +48,7 @@ export default function PlansAndBillingPage() {
   const [selectedPayment, setSelectedPayment] = useState<"wallet" | "paypal">("paypal");
   const [promoCode, setPromoCode] = useState<string>("");
   const [discount, setDiscount] = useState<number>(24.25);
-  const walletBalance = 24.25;
+  // const walletBalance = 24.25;
 
   // Fetch payment receipts data
   const fetchData = async (page: number = 1) => {

@@ -32,7 +32,6 @@ const Support = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage] = useState(10);
   
   // Form state
@@ -106,15 +105,12 @@ const Support = () => {
           // If we get a full page, there might be more
           if (data.data.length === itemsPerPage) {
             setTotalPages(Math.max(page + 1, totalPages));
-            setTotalItems((page * itemsPerPage) + data.data.length);
           } else {
             // This is likely the last page
             setTotalPages(page);
-            setTotalItems((page - 1) * itemsPerPage + data.data.length);
           }
         } else {
           setTotalPages(1);
-          setTotalItems(0);
         }
       } else {
         throw new Error(data.message || 'Failed to fetch tickets');
@@ -133,9 +129,9 @@ const Support = () => {
   }, [token, isAuthenticated, locale]);
 
   // Handle page change
-  const handlePageChange = (page: number) => {
-    fetchTicketsData(page);
-  };
+  // const handlePageChange = (page: number) => {
+  //   fetchTicketsData(page);
+  // };
 
   // Handle ticket selection
   const handleTicketClick = (ticket: Ticket) => {
@@ -154,6 +150,7 @@ const Support = () => {
     // Here you would typically send the message to the API
     // For now, we'll just show a toast
     toast.success('Message sent successfully!');
+    console.log(message);
   };
 
   // Handle form submission

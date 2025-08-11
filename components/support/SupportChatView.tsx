@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,7 +101,7 @@ const SupportChatView: React.FC<SupportChatViewProps> = ({
             {/* User Message */}
             <div className="flex justify-end mb-4">
               <div className="bg-gray-800 text-white p-3 rounded-lg shadow-sm max-w-md">
-                <p className="text-sm">Hey, I'm having trouble with my account.</p>
+                <p className="text-sm">Hey, I&apos;m having trouble with my account.</p>
                 <div className="flex justify-end items-center gap-2 mt-2 text-xs text-gray-300">
                   <span>✓</span>
                   <span>1h</span>
@@ -124,7 +124,7 @@ const SupportChatView: React.FC<SupportChatViewProps> = ({
             {/* Latest User Message */}
             <div className="flex justify-end mb-4">
               <div className="bg-gray-800 text-white p-3 rounded-lg shadow-sm max-w-md">
-                <p className="text-sm">I can't log in.</p>
+                <p className="text-sm">I can&apos;t log in.</p>
                 <div className="flex justify-end items-center gap-2 mt-2 text-xs text-gray-300">
                   <span>✓</span>
                   <span>Now</span>

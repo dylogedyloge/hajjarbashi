@@ -6,7 +6,7 @@ import { fetchUserAds } from "@/lib/advertisements";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Card } from "@/components/ui/card";
+// import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

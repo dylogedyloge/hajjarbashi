@@ -436,8 +436,9 @@ export async function createTicket(
   
   // Add attachments if provided
   if (data.attachments && data.attachments.length > 0) {
-    data.attachments.forEach((file, index) => {
+    data.attachments.forEach((file) => {
       formData.append('attachments', file);
+
     });
   }
 

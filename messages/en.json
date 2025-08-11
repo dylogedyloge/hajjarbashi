@@ -475,6 +475,16 @@
       "accountSetting": "Account Setting",
       "settings": "Settings",
       "signOut": "Sign Out"
+    },
+    "profileCompletion": {
+      "title": "Complete Profile",
+      "description": "Lorem ipsum dolor",
+      "setupAccount": "Setup account",
+      "uploadPhoto": "Upload Your photo",
+      "personalInfo": "Personal Info",
+      "biography": "Biography",
+      "expressReady": "Express Ready",
+      "percentage": "+10%"
     }
   },
   "CreateAd": {
@@ -817,5 +827,61 @@
     "backToCategories": "Back to Categories",
     "backToHome": "Back to Home",
     "home": "Home"
+  },
+  "PlansAndBilling": {
+    "walletBalance": "Wallet Balance",
+    "addBalance": "Add Balance",
+    "bonus": "Bonus",
+    "itemAvailable": "Item Available",
+    "selectBonus": "Select Bonus",
+    "transactionHistory": "Transaction History",
+    "addBalanceDialog": {
+      "title": "Add Balance",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit,",
+      "bonusText": "Lorem ipsum dolor Bonus consectetur adipiscing",
+      "payment": "Payment",
+      "cancel": "Cancel"
+    },
+    "previewDialog": {
+      "title": "Preview & Publish",
+      "description": "Confirm your details and choose a payment method to go live.",
+      "addBalance": "Add Balance",
+      "promoCode": "Promo Code",
+      "total": "Total",
+      "bonus": "Bonus",
+      "paymentMethod": "Payment Method",
+      "wallet": "Wallet",
+      "paypal": "Paypal",
+      "promoCodeSection": "Promo Code",
+      "typeCode": "Type Code",
+      "apply": "Apply"
+    },
+    "bonusDialog": {
+      "title": "Select Bonus",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor",
+      "plane1": "Plane 1",
+      "plane2": "Plane 2", 
+      "plane3": "Plane 3",
+      "ads": "Ads",
+      "buyBonus": "Buy Bonus"
+    },
+    "table": {
+      "number": "#",
+      "item": "Item",
+      "date": "Date",
+      "total": "Total",
+      "status": "Status",
+      "processes": "Processes",
+      "published": "Published",
+      "pending": "Pending",
+      "unpublished": "Unpublished"
+    },
+    "pagination": {
+      "showingPage": "Showing page {current} of {total}",
+      "totalItems": "Total items: {count}"
+    },
+    "loading": "Loading...",
+    "error": "Error loading data",
+    "retry": "Retry"
   }
 }

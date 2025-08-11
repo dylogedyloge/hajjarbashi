@@ -1,13 +1,11 @@
 "use client";
+
 import { ReactNode, Suspense } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
-  // SidebarMenu,
-  // SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import {
-  // LayoutDashboard,
   List,
   CreditCard,
   Headphones,
@@ -23,37 +21,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "@/lib/auth-context";
-// import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
-import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import type { AccountInfoFormValues } from "@/components/profile/AccountInfoForm";
-import type { ContactInfoFormValues } from "@/components/profile/ContactInfoForm";
-
-// Zod schemas for form validation
-const accountInfoSchema = z.object({
-  name: z.string().min(1),
-  preferredLanguage: z.string(),
-  company: z.string(),
-  position: z.string(),
-  country: z.string().min(1),
-  city: z.string().min(1),
-  bio: z.string().max(300),
-});
-
-const contactInfoItemSchema = z.object({
-  title: z.string().min(1),
-  type: z.enum(["phone", "email"]),
-  value: z.string().min(1),
-});
-
-const contactInfoSchema = z.object({
-  contactInfos: z.array(contactInfoItemSchema),
-  showContactInfo: z.boolean(),
-});
+import { useAuth } from "@/lib/auth-context";
 
 // Loading component for better UX
 const ContentSkeleton = () => (
@@ -71,29 +40,6 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  // const t = useTranslations("Profile.Sidebar");
-
-  // Create form instances for the completion card
-  const accountInfoForm = useForm<AccountInfoFormValues>({
-    resolver: zodResolver(accountInfoSchema),
-    defaultValues: {
-      name: user?.name || "",
-      preferredLanguage: "English",
-      company: user?.company_name || "",
-      position: user?.position || "",
-      country: "iran",
-      city: "",
-      bio: user?.bio || "",
-    },
-  });
-
-  const contactInfoForm = useForm<ContactInfoFormValues>({
-    resolver: zodResolver(contactInfoSchema),
-    defaultValues: {
-      contactInfos: [{ title: "", type: "phone", value: "" }],
-      showContactInfo: true,
-    },
-  });
 
   const sidebarLinks = [
     { label: "Profile & Account", href: "/profile/overview", icon: User },
@@ -117,8 +63,6 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
     logout();
     router.push("/");
   };
-
-  // No need for getActiveContent since we're rendering children directly
 
   return (
     <SidebarProvider>
@@ -234,13 +178,6 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
           {/* Main Content */}
           <Card className="flex-1 flex flex-col items-center w-full px-0 sm:px-4 md:px-4 ">
             <Suspense fallback={<ContentSkeleton />}>{children}</Suspense>
-          </Card>
-          {/* Right Sidebar */}
-          <Card className="w-80 bg-card border flex-col justify-between min-h-[700px] rounded-xl shadow-sm p-6">
-            <ProfileCompletionCard 
-              accountInfoForm={accountInfoForm}
-              contactInfoForm={contactInfoForm}
-            />
           </Card>
         </div>
       </div>

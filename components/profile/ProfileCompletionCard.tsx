@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import type { AccountInfoFormValues } from "./AccountInfoForm";
 import type { ContactInfoFormValues } from "./ContactInfoForm";
 
@@ -16,6 +17,7 @@ export function ProfileCompletionCard({
   contactInfoForm 
 }: ProfileCompletionCardProps) {
   const { user } = useAuth();
+  const t = useTranslations("Profile.profileCompletion");
 
   // Calculate profile completion percentage
   const calculateProfileCompletion = () => {
@@ -57,8 +59,8 @@ export function ProfileCompletionCard({
         <div className="space-y-6">
           {/* Header */}
           <div>
-            <h3 className="text-lg font-semibold">Complete Profile</h3>
-            <p className="text-sm text-muted-foreground">Lorem ipsum dolor</p>
+            <h3 className="text-lg font-semibold">{t("title")}</h3>
+            <p className="text-sm text-muted-foreground">{t("description")}</p>
           </div>
           
           {/* Circular Progress */}
@@ -107,10 +109,10 @@ export function ProfileCompletionCard({
                   {isAccountSetup && <Check className="w-3 h-3 text-white" />}
                 </div>
                 <span className={`text-sm ${isAccountSetup ? 'text-gray-900' : 'text-gray-500'}`}>
-                  Setup account
+                  {t("setupAccount")}
                 </span>
               </div>
-              <span className="text-xs text-gray-400">+10%</span>
+              <span className="text-xs text-gray-400">{t("percentage")}</span>
             </div>
             
             <div className="flex items-center justify-between">
@@ -123,10 +125,10 @@ export function ProfileCompletionCard({
                   {isPhotoUploaded && <Check className="w-3 h-3 text-white" />}
                 </div>
                 <span className={`text-sm ${isPhotoUploaded ? 'text-gray-900' : 'text-gray-500'}`}>
-                  Upload Your photo
+                  {t("uploadPhoto")}
                 </span>
               </div>
-              <span className="text-xs text-gray-400">+10%</span>
+              <span className="text-xs text-gray-400">{t("percentage")}</span>
             </div>
             
             <div className="flex items-center justify-between">
@@ -139,10 +141,10 @@ export function ProfileCompletionCard({
                   {isPersonalInfoComplete && <Check className="w-3 h-3 text-white" />}
                 </div>
                 <span className={`text-sm ${isPersonalInfoComplete ? 'text-gray-900' : 'text-gray-500'}`}>
-                  Personal Info
+                  {t("personalInfo")}
                 </span>
               </div>
-              <span className="text-xs text-gray-400">+10%</span>
+              <span className="text-xs text-gray-400">{t("percentage")}</span>
             </div>
             
             <div className="flex items-center justify-between">
@@ -155,10 +157,10 @@ export function ProfileCompletionCard({
                   {isBiographyComplete && <Check className="w-3 h-3 text-white" />}
                 </div>
                 <span className={`text-sm ${isBiographyComplete ? 'text-gray-900' : 'text-gray-500'}`}>
-                  Biography
+                  {t("biography")}
                 </span>
               </div>
-              <span className="text-xs text-gray-400">+10%</span>
+              <span className="text-xs text-gray-400">{t("percentage")}</span>
             </div>
             
             <div className="flex items-center justify-between">
@@ -171,10 +173,10 @@ export function ProfileCompletionCard({
                   {isContactInfoComplete && <Check className="w-3 h-3 text-white" />}
                 </div>
                 <span className={`text-sm ${isContactInfoComplete ? 'text-gray-900' : 'text-gray-500'}`}>
-                  Express Ready
+                  {t("expressReady")}
                 </span>
               </div>
-              <span className="text-xs text-gray-400">+10%</span>
+              <span className="text-xs text-gray-400">{t("percentage")}</span>
             </div>
           </div>
         </div>

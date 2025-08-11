@@ -22,6 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { AccountInfoFormValues } from "@/components/profile/AccountInfoForm";
 import type { ContactInfoFormValues } from "@/components/profile/ContactInfoForm";
 import { Form } from "@/components/ui/form";
+import { Card } from "@/components/ui/card";
+import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
 
 // Zod schemas
 const accountInfoSchema = z.object({
@@ -183,121 +185,146 @@ const Profile = () => {
           {profileError}
         </div>
       ) : (
-        <Form {...accountInfoForm}>
-          <div className="w-full  flex flex-col gap-8 mb-12">
-            {/* Change Avatar */}
-            <AvatarUploader
-              user={user}
-              token={token ?? ""}
-              login={login}
-              t={t}
-            />
-            {/* Account Information */}
-            <AccountInfoForm
-              form={accountInfoForm}
-              countries={countries}
-              countriesLoading={countriesLoading}
-              countriesError={countriesError}
-              cities={cities}
-              citiesLoading={citiesLoading}
-              citiesError={citiesError}
-              accountInfoLoading={accountInfoLoading}
-              accountInfoError={accountInfoError}
-              onSubmit={async (values) => {
-                setAccountInfoLoading(true);
-                setAccountInfoError(null);
-                try {
-                  // Find country and city IDs
-                  const countryObj = countries.find(
-                    (c) => c.name === values.country
-                  );
-                  const cityObj = cities.find((c) => c.name === values.city);
-                  if (!countryObj || !cityObj)
-                    throw new Error("Please select a valid country and city");
-                  // Map preferredLanguage to language code
-                  let languageCode = "en";
-                  if (values.preferredLanguage === "Persian")
-                    languageCode = "fa";
-                  else if (values.preferredLanguage === "Chinese")
-                    languageCode = "zh";
-                  const req = {
-                    country_id: countryObj.id,
-                    bio: values.bio,
-                    position: values.position,
-                    name: values.name,
-                    company_name: values.company,
-                    city_id: cityObj.id,
-                    show_contact_info:
-                      contactInfoForm.getValues("showContactInfo"),
-                    language: languageCode,
-                  };
-                  if (!token) throw new Error("Not authenticated");
-                  const resp = await updateProfile(req, token, locale);
-                  if (resp.success) {
-                    toast.success(t("profileUpdated") || "Profile updated!");
-                  } else {
-                    throw new Error(resp.message || "Failed to update profile");
-                  }
-                } catch (err: unknown) {
-                  setAccountInfoError(
-                    err instanceof Error
-                      ? err.message
-                      : "Failed to update profile"
-                  );
-                } finally {
-                  setAccountInfoLoading(false);
-                }
-              }}
-              t={t}
-            />
-            {/* Contact Information */}
-            <ContactInfoForm
-              form={contactInfoForm}
-              contactInfoLoading={contactInfoLoading}
-              contactInfoError={contactInfoError}
-              onSubmit={async (values) => {
-                setContactInfoLoading(true);
-                setContactInfoError(null);
-                try {
-                  if (
-                    values.contactInfos.some(
-                      (info) => !info.title || !info.value
-                    )
-                  )
-                    throw new Error(t("errors.fillAllFields"));
-                  if (!token) throw new Error("Not authenticated");
-                  const resp = await saveContactInfo(
-                    values.contactInfos.map((info) => ({
-                      title: info.title,
-                      value: info.value,
-                    })),
-                    token,
-                    values.showContactInfo
-                  );
-                  if (resp.success) {
-                    toast.success(
-                      t("contactInformationUpdated") ||
-                        "Contact information updated!"
-                    );
-                  } else {
-                    throw new Error(
-                      resp.message || "Failed to update contact info"
-                    );
-                  }
-                } catch (err: unknown) {
-                  setContactInfoError(
-                    err instanceof Error
-                      ? err.message
-                      : "Failed to update contact info"
-                  );
-                } finally {
-                  setContactInfoLoading(false);
-                }
-              }}
-              t={t}
-            />
+        <div className="w-full flex flex-col lg:flex-row gap-6">
+          {/* Main Content */}
+          <div className="flex-1">
+            <Form {...accountInfoForm}>
+              <div className="w-full flex flex-col gap-8 mb-12">
+                {/* Change Avatar */}
+                <AvatarUploader
+                  user={user}
+                  token={token ?? ""}
+                  login={login}
+                  t={t}
+                />
+                {/* Account Information */}
+                <AccountInfoForm
+                  form={accountInfoForm}
+                  countries={countries}
+                  countriesLoading={countriesLoading}
+                  countriesError={countriesError}
+                  cities={cities}
+                  citiesLoading={citiesLoading}
+                  citiesError={citiesError}
+                  accountInfoLoading={accountInfoLoading}
+                  accountInfoError={accountInfoError}
+                  onSubmit={async (values) => {
+                    setAccountInfoLoading(true);
+                    setAccountInfoError(null);
+                    try {
+                      // Find country and city IDs
+                      const countryObj = countries.find(
+                        (c) => c.name === values.country
+                      );
+                      const cityObj = cities.find((c) => c.name === values.city);
+                      if (!countryObj || !cityObj)
+                        throw new Error("Please select a valid country and city");
+                      // Map preferredLanguage to language code
+                      let languageCode = "en";
+                      if (values.preferredLanguage === "Persian")
+                        languageCode = "fa";
+                      else if (values.preferredLanguage === "Chinese")
+                        languageCode = "zh";
+                      const req = {
+                        country_id: countryObj.id,
+                        bio: values.bio,
+                        position: values.position,
+                        name: values.name,
+                        company_name: values.company,
+                        city_id: cityObj.id,
+                        show_contact_info:
+                          contactInfoForm.getValues("showContactInfo"),
+                        language: languageCode,
+                      };
+                      if (!token) throw new Error("Not authenticated");
+                      const resp = await updateProfile(req, token, locale);
+                      if (resp.success) {
+                        toast.success(t("profileUpdated") || "Profile updated!");
+                      } else {
+                        throw new Error(resp.message || "Failed to update profile");
+                      }
+                    } catch (err: unknown) {
+                      setAccountInfoError(
+                        err instanceof Error
+                          ? err.message
+                          : "Failed to update profile"
+                      );
+                    } finally {
+                      setAccountInfoLoading(false);
+                    }
+                  }}
+                  t={t}
+                />
+                {/* Contact Information */}
+                <ContactInfoForm
+                  form={contactInfoForm}
+                  contactInfoLoading={contactInfoLoading}
+                  contactInfoError={contactInfoError}
+                  onSubmit={async (values) => {
+                    setContactInfoLoading(true);
+                    setContactInfoError(null);
+                    try {
+                      if (
+                        values.contactInfos.some(
+                          (info) => !info.title || !info.value
+                        )
+                      )
+                        throw new Error(t("errors.fillAllFields"));
+                      if (!token) throw new Error("Not authenticated");
+                      const resp = await saveContactInfo(
+                        values.contactInfos.map((info) => ({
+                          title: info.title,
+                          value: info.value,
+                        })),
+                        token,
+                        values.showContactInfo
+                      );
+                      if (resp.success) {
+                        toast.success(
+                          t("contactInformationUpdated") ||
+                            "Contact information updated!"
+                        );
+                      } else {
+                        throw new Error(
+                          resp.message || "Failed to update contact info"
+                        );
+                      }
+                    } catch (err: unknown) {
+                      setContactInfoError(
+                        err instanceof Error
+                          ? err.message
+                          : "Failed to update contact info"
+                      );
+                    } finally {
+                      setContactInfoLoading(false);
+                    }
+                  }}
+                  t={t}
+                />
+              </div>
+            </Form>
           </div>
-        </Form>
+
+          {/* Right Sidebar - Profile Completion Card (Hidden on mobile) */}
+          <div className="hidden lg:block w-80">
+            <Card className="bg-card border flex-col justify-between min-h-[700px] rounded-xl shadow-sm p-6">
+              <ProfileCompletionCard 
+                accountInfoForm={accountInfoForm}
+                contactInfoForm={contactInfoForm}
+              />
+            </Card>
+          </div>
+
+          {/* Mobile Profile Completion Card (Shown below main content) */}
+          <div className="lg:hidden mt-6">
+            <Card className="bg-card border rounded-xl shadow-sm p-6">
+              <ProfileCompletionCard 
+                accountInfoForm={accountInfoForm}
+                contactInfoForm={contactInfoForm}
+              />
+            </Card>
+          </div>
+        </div>
       )}
     </>
   );

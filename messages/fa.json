@@ -435,6 +435,16 @@
       "settings": "تنظیمات",
       "signOut": "خروج"
     },
+    "profileCompletion": {
+      "title": "تکمیل پروفایل",
+      "description": "لورم ایپسوم متن ساختگی",
+      "setupAccount": "راه‌اندازی حساب",
+      "uploadPhoto": "آپلود عکس شما",
+      "personalInfo": "اطلاعات شخصی",
+      "biography": "بیوگرافی",
+      "expressReady": "آماده ارسال فوری",
+      "percentage": "+۱۰٪"
+    },
     "profileUpdated": "پروفایل با موفقیت به‌روزرسانی شد!",
     "contactInformationUpdated": "اطلاعات تماس با موفقیت به‌روزرسانی شد!"
   },
@@ -820,5 +830,61 @@
     "backToCategories": "بازگشت به دسته‌بندی‌ها",
     "backToHome": "بازگشت به خانه",
     "home": "خانه"
+  },
+  "PlansAndBilling": {
+    "walletBalance": "موجودی کیف پول:",
+    "addBalance": "افزودن موجودی",
+    "bonus": "پاداش",
+    "itemAvailable": "مورد موجود",
+    "selectBonus": "انتخاب پاداش",
+    "transactionHistory": "تاریخچه تراکنش‌ها",
+    "addBalanceDialog": {
+      "title": "افزودن موجودی",
+      "description": "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ",
+      "bonusText": "لورم ایپسوم پاداش متن ساختگی",
+      "payment": "پرداخت",
+      "cancel": "لغو"
+    },
+    "previewDialog": {
+      "title": "پیش‌نمایش و انتشار",
+      "description": "جزئیات خود را تایید کنید و روش پرداخت را انتخاب کنید.",
+      "addBalance": "افزودن موجودی",
+      "promoCode": "کد تخفیف",
+      "total": "مجموع",
+      "bonus": "پاداش",
+      "paymentMethod": "روش پرداخت",
+      "wallet": "کیف پول",
+      "paypal": "پی‌پال",
+      "promoCodeSection": "کد تخفیف",
+      "typeCode": "وارد کردن کد",
+      "apply": "اعمال"
+    },
+    "bonusDialog": {
+      "title": "انتخاب پاداش",
+      "description": "لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ",
+      "plane1": "پلن ۱",
+      "plane2": "پلن ۲",
+      "plane3": "پلن ۳",
+      "ads": "آگهی",
+      "buyBonus": "خرید پاداش"
+    },
+    "table": {
+      "number": "شماره",
+      "item": "مورد",
+      "date": "تاریخ",
+      "total": "مجموع",
+      "status": "وضعیت",
+      "processes": "فرآیندها",
+      "published": "منتشر شده",
+      "pending": "در انتظار",
+      "unpublished": "منتشر نشده"
+    },
+    "pagination": {
+      "showingPage": "نمایش صفحه {current} از {total}",
+      "totalItems": "تعداد کل موارد: {count}"
+    },
+    "loading": "در حال بارگذاری...",
+    "error": "خطا در بارگذاری اطلاعات",
+    "retry": "تلاش مجدد"
   }
 }

@@ -6,24 +6,17 @@ import { fetchUserAds } from "@/lib/advertisements";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-// import { Button } from "@/components/ui/button";
-// import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { 
-  // Calendar, 
-  DollarSign, 
-  // MapPin, 
-  Package, 
-  // Eye, 
-  // Edit, 
-  // Trash2,
-  TrendingUp,
+  // TrendingUp,
   Clock,
   CheckCircle,
   AlertCircle,
-  // XCircle
+  Grid,
+  List
 } from "lucide-react";
 
 type UserAd = {
@@ -93,6 +86,8 @@ export default function ViewYourAdsPage() {
   const [ads, setAds] = useState<UserAd[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     if (!isAuthenticated || !token) {
@@ -192,15 +187,6 @@ export default function ViewYourAdsPage() {
     return `$${price.toLocaleString()}${unit ? `/${unit}` : ''}`;
   };
 
-  // const formatDate = (dateString?: string) => {
-  //   if (!dateString) return null;
-  //   return new Date(dateString).toLocaleDateString('en-US', {
-  //     year: 'numeric',
-  //     month: 'short',
-  //     day: 'numeric'
-  //   });
-  // };
-
   const getMainImage = (ad: UserAd) => {
     if (ad.media && ad.media.length > 0) {
       const firstMedia = ad.media[0];
@@ -209,35 +195,98 @@ export default function ViewYourAdsPage() {
     return null;
   };
 
+  const getTimeAgo = (timestamp?: number) => {
+    if (!timestamp) return "Unknown";
+    const now = Date.now();
+    const diff = now - timestamp;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    
+    if (days > 0) {
+      return `${days} ${days === 1 ? 'Day' : 'Days'} Ago`;
+    } else if (hours > 0) {
+      return `${hours} ${hours === 1 ? 'Hour' : 'Hours'} Ago`;
+    } else {
+      return "Just Now";
+    }
+  };
+
+  const getSizeText = (ad: UserAd) => {
+    if (ad.size) {
+      if (typeof ad.size === 'string') {
+        return ad.size;
+      } else {
+        return `${ad.size.w || 0}*${ad.size.l || 0}*${ad.size.h || 0} cm`;
+      }
+    }
+    return null;
+  };
+
+  const getSurfaceText = (ad: UserAd) => {
+    if (ad.surface) {
+      if (typeof ad.surface === 'string') {
+        return ad.surface;
+      } else {
+        return ad.surface.name;
+      }
+    }
+    return null;
+  };
+
+  const getColorSwatches = (ad: UserAd) => {
+    if (ad.colors && ad.colors.length > 0) {
+      return ad.colors.slice(0, 3).map((color, index) => (
+        <div
+          key={index}
+          className="w-3 h-3 rounded-full border border-gray-200"
+          style={{ backgroundColor: color.toLowerCase() }}
+        />
+      ));
+    }
+    return null;
+  };
+
+  const filteredAds = ads.filter(ad => {
+    if (selectedFilter === "all") return true;
+    return String(ad.status) === selectedFilter;
+  });
+
   if (!isAuthenticated) {
     return (
-      <div className="w-full max-w-6xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
-        <h2 className="text-2xl font-semibold">{t("title")}</h2>
-        <p className="text-muted-foreground">{t("signInRequired")}</p>
+      <div className="w-full space-y-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold">{t("title")}</h2>
+          <p className="text-muted-foreground">{t("signInRequired")}</p>
+        </div>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="w-full max-w-6xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
-        <h2 className="text-2xl font-semibold">{t("title")}</h2>
-        <p className="text-muted-foreground">{t("loading")}</p>
+      <div className="w-full space-y-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold">{t("title")}</h2>
+          <p className="text-muted-foreground">{t("loading")}</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="w-full max-w-6xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
-        <h2 className="text-2xl font-semibold">{t("title")}</h2>
-        <p className="text-destructive">{t("error", { message: error })}</p>
+      <div className="w-full space-y-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold">{t("title")}</h2>
+          <p className="text-destructive">{t("error", { message: error })}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-6xl bg-card rounded-xl border p-8 flex flex-col gap-8 shadow-sm mb-12">
+    <div className="w-full space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold">{t("title")}</h2>
@@ -248,318 +297,173 @@ export default function ViewYourAdsPage() {
             }
           </p>
         </div>
-        {/* <Button className="bg-primary hover:bg-primary/90">
-          <Package className="w-4 h-4 mr-2" />
-          {t("createNewAd")}
-        </Button> */}
       </div>
-      
-      {ads.length > 0 && (
-        <div className="grid gap-6">
-          {ads.map((ad) => {
+
+      {/* Filters and View Toggle */}
+      <div className="flex items-center justify-between">
+        {/* Status Filters */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant={selectedFilter === "all" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedFilter("all")}
+          >
+            All
+          </Button>
+          <Button
+            variant={selectedFilter === "1" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedFilter("1")}
+          >
+            Published
+          </Button>
+          <Button
+            variant={selectedFilter === "2" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedFilter("2")}
+          >
+            Rejected
+          </Button>
+          <Button
+            variant={selectedFilter === "3" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedFilter("3")}
+          >
+            Review
+          </Button>
+          <Button
+            variant={selectedFilter === "0" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedFilter("0")}
+          >
+            Draft
+          </Button>
+        </div>
+
+        {/* View Toggle */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">View:</span>
+          <Button
+            variant={viewMode === "grid" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("grid")}
+          >
+            <Grid className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={viewMode === "list" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("list")}
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Ads Grid */}
+      {filteredAds.length > 0 && (
+        <div className={`grid gap-6 ${
+          viewMode === "grid" 
+            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+            : "grid-cols-1"
+        }`}>
+          {filteredAds.map((ad) => {
             const isPublished = String(ad.status) === "1";
             
             const cardContent = (
               <Card 
                 key={ad.id} 
-                className={`overflow-hidden transition-shadow ${
+                className={`overflow-hidden transition-shadow h-full w-full ${
                   isPublished 
                     ? "hover:shadow-lg cursor-pointer" 
                     : "hover:shadow-md"
                 }`}
               >
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <CardTitle className="text-lg">
-                          {ad.title || ad.stone_type || `Advertisement #${ad.id}`}
-                        </CardTitle>
-                        <div className="flex items-center gap-2">
-                          {ad.is_featured && (
-                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                              <TrendingUp className="w-3 h-3 mr-1" />
-                              Featured
-                            </Badge>
-                          )}
-                          {ad.is_express && (
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                              Express
-                            </Badge>
-                          )}
-                          <Badge className={`${getStatusColor(ad.status)} flex items-center gap-1`}>
-                            {getStatusIcon(ad.status)}
-                            {getStatusText(ad.status)}
-                          </Badge>
-                        </div>
+                <div className="flex h-full">
+                  {/* Left Section - Image */}
+                  <div className="relative w-32 flex-shrink-0 h-full">
+                    {getMainImage(ad) ? (
+                      <Image 
+                        src={getMainImage(ad)!}
+                        alt={ad.title || 'Advertisement'}
+                        fill
+                        className="object-cover w-full h-full"
+                        sizes="128px"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-500 text-xs">No Image</span></div>';
+                          }
+                        }}
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500 text-xs">No Image</span>
                       </div>
-                      {ad.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {ad.description}
-                        </p>
-                      )}
+                    )}
+                    
+                    {/* Status Badge */}
+                    <div className="absolute bottom-2 left-2">
+                      <Badge className={`${getStatusColor(ad.status)} flex items-center gap-1 text-xs px-2 py-1`}>
+                        {getStatusIcon(ad.status)}
+                        {getStatusText(ad.status)}
+                      </Badge>
                     </div>
                   </div>
-                </CardHeader>
-                
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    {/* Left Column - Image and Primary Info */}
-                    <div className="space-y-6">
-                      {/* Image */}
-                      {getMainImage(ad) && (
-                        <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative">
-                                                     {(() => {
-                             const imagePath = getMainImage(ad)!;
-                             const imageSrc = imagePath.startsWith('http') 
-                               ? imagePath 
-                               : imagePath.startsWith('/files/')
-                                 ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${imagePath}`
-                                 : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${imagePath}`;
-                            console.log('Image src for ad', ad.id, ':', imageSrc);
-                            console.log('Original image path:', getMainImage(ad));
-                            console.log('API base URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
-                            return (
-                              <Image 
-                                src={imageSrc}
-                                alt={ad.title || 'Advertisement'}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 1280px) 100vw, 50vw"
-                                onError={(e) => {
-                                  console.log('Image failed to load:', imageSrc);
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  const parent = target.parentElement;
-                                  if (parent) {
-                                    parent.innerHTML = '<img src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins" alt="Placeholder" class="w-full h-full object-cover" />';
-                                  }
-                                }}
-                                unoptimized
-                              />
-                            );
-                          })()}
-                        </div>
-                      )}
 
-                      {/* Primary Information */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            <span className="text-sm font-medium">{t("price")}</span>
-                          </div>
-                          <div className="text-lg font-semibold text-green-600">
-                            {formatPrice(ad.price, ad.sale_unit_type) || t("notSpecified")}
-                          </div>
+                  {/* Right Section - Content */}
+                  <div className="flex-1 p-4 flex flex-col justify-between h-full">
+                    {/* Header with Seller Info and Colors */}
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">UK</span>
                         </div>
-
-                        {ad.weight && (
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <Package className="w-4 h-4" />
-                              <span className="text-sm font-medium">{t("weight")}</span>
-                            </div>
-                            <div className="text-lg font-semibold">
-                              {ad.weight.toLocaleString()} kg
-                            </div>
-                          </div>
-                        )}
+                        <span className="text-sm font-medium text-gray-700">Grand Stone Enterprise</span>
                       </div>
-
-                      {/* Colors */}
-                      {ad.colors && ad.colors.length > 0 && (
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <Package className="w-4 h-4" />
-                            <span className="text-sm font-medium">{t("colors")}</span>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {ad.colors.map((color, index) => (
-                              <Badge key={index} variant="outline" className="text-xs capitalize">
-                                {color}
-                              </Badge>
-                            ))}
-                          </div>
+                      {getColorSwatches(ad) && (
+                        <div className="flex gap-1">
+                          {getColorSwatches(ad)}
                         </div>
                       )}
                     </div>
 
-                    {/* Right Column - Details */}
-                    <div className="space-y-6">
-                      {/* Specifications Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {ad.category && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("category")}</span>
-                            <div className="text-sm font-medium capitalize">{ad.category.name}</div>
-                          </div>
-                        )}
+                    {/* Product Title */}
+                    <div className="mb-2">
+                      <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
+                        {ad.title || ad.stone_type || `Advertisement #${ad.id}`}
+                      </h3>
+                      <p className="text-xs text-gray-600">Blocks</p>
+                    </div>
 
-                        {ad.surface && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("surface")}</span>
-                            <div className="text-sm font-medium capitalize">
-                              {typeof ad.surface === 'string' ? ad.surface : ad.surface.name}
-                            </div>
-                          </div>
-                        )}
+                    {/* Specifications */}
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {getSizeText(ad) && (
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-gray-300">
+                          {getSizeText(ad)}
+                        </Badge>
+                      )}
+                      {getSurfaceText(ad) && (
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-gray-300">
+                          {getSurfaceText(ad)}
+                        </Badge>
+                      )}
+                    </div>
 
-                        {ad.grade && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("grade")}</span>
-                            <div className="text-sm font-medium uppercase">{ad.grade}</div>
-                          </div>
-                        )}
-
-                        {ad.form && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("form")}</span>
-                            <div className="text-sm font-medium capitalize">{ad.form}</div>
-                          </div>
-                        )}
-
-                        {(ad.origin_country || ad.origin_city) && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("origin")}</span>
-                            <div className="text-sm font-medium capitalize">
-                              {ad.origin_city?.name && ad.origin_country?.name 
-                                ? `${ad.origin_city.name}, ${ad.origin_country.name}`
-                                : ad.origin_country?.name || ad.origin_city?.name || t("notSpecified")
-                              }
-                            </div>
-                          </div>
-                        )}
-
-                        {ad.size && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("size")}</span>
-                            <div className="text-sm font-medium">
-                              {typeof ad.size === 'string' 
-                                ? ad.size 
-                                : `${ad.size.w || 0}×${ad.size.l || 0}×${ad.size.h || 0} cm`
-                              }
-                            </div>
-                          </div>
-                        )}
-
-                        {ad.weight_range_type && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("weightRange")}</span>
-                            <div className="text-sm font-medium capitalize">{ad.weight_range_type}</div>
-                          </div>
-                        )}
-
-                        {ad.size_range_type && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("sizeRange")}</span>
-                            <div className="text-sm font-medium capitalize">{ad.size_range_type}</div>
-                          </div>
-                        )}
-
-                        {ad.minimum_order && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("minOrder")}</span>
-                            <div className="text-sm font-medium">{ad.minimum_order.toLocaleString()} kg</div>
-                          </div>
-                        )}
-
-                        <div className="space-y-1">
-                          <span className="text-xs text-muted-foreground">{t("created")}</span>
-                          <div className="text-sm font-medium">
-                            {ad.created_at ? new Date(ad.created_at).toLocaleDateString() : t("notSpecified")}
-                          </div>
-                        </div>
-
-                        {ad.views !== undefined && (
-                          <div className="space-y-1">
-                            <span className="text-xs text-muted-foreground">{t("views")}</span>
-                            <div className="text-sm font-medium">{ad.views.toLocaleString()}</div>
-                          </div>
-                        )}
+                    {/* Price and Time */}
+                    <div className="flex items-center justify-between mt-auto">
+                      <div className="text-sm font-bold text-gray-900">
+                        {formatPrice(ad.price, ad.sale_unit_type) || "Price not set"}
                       </div>
-
-                      {/* Features */}
-                      {(ad.is_chat_enabled || ad.contact_info_enabled || ad.express) && (
-                        <div className="space-y-3">
-                          <h4 className="text-sm font-medium">{t("features")}</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {ad.is_chat_enabled && (
-                              <Badge variant="secondary" className="text-xs">
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                {t("chatEnabled")}
-                              </Badge>
-                            )}
-                            {ad.contact_info_enabled && (
-                              <Badge variant="secondary" className="text-xs">
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                {t("contactInfo")}
-                              </Badge>
-                            )}
-                            {ad.express && (
-                              <Badge variant="secondary" className="text-xs">
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                {t("express")}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Ports Information */}
-                      {((ad.receiving_ports_details && ad.receiving_ports_details.length > 0) || (ad.export_ports_details && ad.export_ports_details.length > 0)) && (
-                        <div className="space-y-3">
-                          <h4 className="text-sm font-medium">{t("ports")}</h4>
-                          <div className="space-y-2">
-                            {ad.receiving_ports_details && ad.receiving_ports_details.length > 0 && (
-                              <div className="text-xs">
-                                <span className="text-muted-foreground">{t("receiving")}: </span>
-                                <span className="font-medium">
-                                  {ad.receiving_ports_details.map(port => `${port.name} (${port.city_name})`).join(', ')}
-                                </span>
-                              </div>
-                            )}
-                            {ad.export_ports_details && ad.export_ports_details.length > 0 && (
-                              <div className="text-xs">
-                                <span className="text-muted-foreground">{t("export")}: </span>
-                                <span className="font-medium">
-                                  {ad.export_ports_details.map(port => `${port.name} (${port.city_name})`).join(', ')}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Benefits and Defects */}
-                      {(ad.benefits && ad.benefits.length > 0 || ad.defects && ad.defects.length > 0) && (
-                        <div className="space-y-3">
-                          {ad.benefits && ad.benefits.length > 0 && (
-                            <div className="space-y-2">
-                              <h4 className="text-sm font-medium text-green-700">{t("benefits")}</h4>
-                              <div className="text-xs text-green-600 space-y-1">
-                                {ad.benefits.map((benefit, index) => (
-                                  <div key={index}>• {benefit}</div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {ad.defects && ad.defects.length > 0 && (
-                            <div className="space-y-2">
-                              <h4 className="text-sm font-medium text-red-700">{t("defects")}</h4>
-                              <div className="text-xs text-red-600 space-y-1">
-                                {ad.defects.map((defect, index) => (
-                                  <div key={index}>• {defect}</div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500">
+                        {getTimeAgo(ad.created_at)}
+                      </div>
                     </div>
                   </div>
-                </CardContent>
+                </div>
               </Card>
             );
 
@@ -573,6 +477,18 @@ export default function ViewYourAdsPage() {
               </Link>
             );
           })}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {filteredAds.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            {selectedFilter === "all" 
+              ? "No ads found" 
+              : `No ${getStatusText(selectedFilter).toLowerCase()} ads found`
+            }
+          </p>
         </div>
       )}
     </div>

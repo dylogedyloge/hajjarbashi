@@ -549,7 +549,7 @@ export async function sendTicketMessage(
     });
     
     // Debug: Log FormData contents
-    for (let [key, value] of formData.entries()) {
+    for (const [key, value] of formData.entries()) {
       console.log('FormData entry:', key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
     }
   }

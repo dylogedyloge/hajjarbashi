@@ -3,8 +3,7 @@ import AdCard from "./ad-card";
 // import DesktopFilters from "./sortSearchFilters/desktop/desktop-filters";
 import DesktopSortAndCheckboxFilters from "./sortSearchFilters/desktop/desktop-sort-and-checkbox-filters";
 import { useLocale } from "next-intl";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { fetchAds } from "@/lib/advertisements";
+import { useState } from "react";
 import MobileSearchAndFilter from "./sortSearchFilters/mobile/mobile-search-and-filter";
 import MobileCategoryFilters from "./sortSearchFilters/mobile/mobile-category-filters";
 import Link from "next/link";
@@ -20,6 +19,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useTranslations } from "next-intl";
+import { useAds } from "@/hooks/useAds";
 
 import type { Ad, AdsFilters } from "@/types/ads";
 
@@ -31,8 +31,6 @@ interface AdsListProps {
   featuredFilter?: boolean;
 }
 
-import type { PaginationData } from "@/types/common";
-
 const AdsList = ({ 
   filters = {}, 
   onExpressFilterChange,
@@ -43,187 +41,81 @@ const AdsList = ({
   const t = useTranslations("AdsList");
   const locale = useLocale();
   const { token } = useAuth();
-  const [ads, setAds] = useState<Ad[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [layout, setLayout] = useState<'list' | 'grid'>('grid');
   const [sort, setSort] = useState<string>("latest");
-  
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [paginationData, setPaginationData] = useState<PaginationData | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [paginationMode, setPaginationMode] = useState<'pagination' | 'infinite'>('pagination');
   
-  // Use limit 2 for testing as requested
-  const ITEMS_PER_PAGE = 2;
+  // Use React Query for fetching ads
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useAds({
+    filters,
+    sort,
+    locale,
+    token: token || undefined,
+    itemsPerPage: 2
+  });
+
+  // Flatten all pages data into a single array for infinite scroll
+  const allAds = data?.pages.flatMap(page => page.data?.list || page.data || []) || [];
   
-  // Ref for scroll detection
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadingRef = useRef<HTMLDivElement>(null);
+  // Get current page data for pagination mode
+  const currentPageData = data?.pages[currentPage - 1];
+  const ads = paginationMode === 'pagination' ? (currentPageData?.data?.list || currentPageData?.data || []) : allAds;
 
   const handleSortChange = (newSort: string) => {
     setSort(newSort);
+    setCurrentPage(1); // Reset to first page when sorting changes
   };
-
-  const fetchAdsData = useCallback(async (page: number, isLoadMore: boolean = false) => {
-    if (isLoadMore) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-      setError(null);
-    }
-
-    
-    try {
-      const res = await fetchAds({ 
-        limit: ITEMS_PER_PAGE, 
-        page, 
-        locale, 
-        token: token || undefined,
-        sort,
-        ...filters
-      });
-      
-
-      
-      // Handle new API response structure with data.list
-      const adsList = res.data?.list || res.data || [];
-      
-             if (isLoadMore) {
-         setAds(prev => [...prev, ...adsList]);
-       } else {
-         setAds(adsList as Ad[]);
-       }
-       
-       // Set pagination data if available
-       if (res.data?.pagination) {
-         setPaginationData(res.data.pagination);
-         console.log('📊 Pagination data set:', res.data.pagination);
-       } else {
-         // If no pagination data from API, create it based on the response
-         const totalItems = res.data?.total || 0;
-         const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-         const paginationInfo = {
-           current_page: page,
-           total_pages: totalPages,
-           total_items: totalItems,
-           items_per_page: ITEMS_PER_PAGE
-         };
-         setPaginationData(paginationInfo);
-         console.log('📊 Created pagination data:', paginationInfo);
-       }
-       
-       // Update hasMore state using the total from API response
-       const totalItems = res.data?.total || 0;
-       
-       if (isLoadMore) {
-         // For load more, check if we have more items to load
-         const currentTotalLoaded = ads.length + adsList.length;
-         const hasMoreItems = currentTotalLoaded < totalItems;
-         setHasMore(hasMoreItems);
-         console.log('🔄 Load More - Total Items:', totalItems, 'Loaded:', currentTotalLoaded, 'Has More:', hasMoreItems);
-       } else {
-         // For initial load, check if there are more items than what we loaded
-         const hasMoreItems = totalItems > adsList.length;
-         setHasMore(hasMoreItems);
-       }
-      
-    } catch (err) {
-
-      setError(err instanceof Error ? err.message : "Failed to load ads");
-    } finally {
-      if (isLoadMore) {
-        setLoadingMore(false);
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [locale, token, filters, sort, ITEMS_PER_PAGE]);
-
-  // Setup intersection observer for infinite scroll
-  useEffect(() => {
-    if (loadingRef.current && hasMore && !loadingMore) {
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          const [entry] = entries;
-          if (entry.isIntersecting && hasMore && !loadingMore) {
-
-            handleLoadMore();
-          }
-        },
-        {
-          root: null,
-          rootMargin: '100px', // Start loading 100px before reaching the bottom
-          threshold: 0.1,
-        }
-      );
-
-      observerRef.current.observe(loadingRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [hasMore, loadingMore]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-    setHasMore(true);
-    fetchAdsData(1);
-  }, [fetchAdsData]);
-
-  if (loading) return <div className="text-center py-8">Loading ads...</div>;
-  if (error) return <div className="text-center text-destructive py-8">{error}</div>;
 
   // Check if there are any active filters
   const hasActiveFilters = Object.keys(filters).length > 0;
 
-  // Handle page change
+  // Handle page change for pagination mode
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchAdsData(page);
-  };
-
-  // Handle load more (lazy loading)
-  const handleLoadMore = () => {
-    if (hasMore && !loadingMore) {
-      const nextPage = currentPage + 1;
-      setCurrentPage(nextPage);
-      fetchAdsData(nextPage, true);
+    // Fetch the specific page if it doesn't exist in cache
+    if (!data?.pages[page - 1]) {
+      // This will trigger React Query to fetch the missing page
+      refetch();
     }
   };
 
   // Generate pagination items
   const generatePaginationItems = () => {
-    if (!paginationData) {
+    if (!data?.pages[0]?.data?.total) {
       return [];
     }
     
     const items = [];
-    const totalPages = paginationData.total_pages;
-    const currentPageNum = paginationData.current_page;
-    
+    const totalItems = data.pages[0].data.total;
+    const totalPages = Math.ceil(totalItems / 2); // itemsPerPage = 2
     
     // Always show first page
     items.push(1);
     
     // Show ellipsis if there's a gap
-    if (currentPageNum > 3) {
+    if (currentPage > 3) {
       items.push('ellipsis1');
     }
     
     // Show pages around current page
-    for (let i = Math.max(2, currentPageNum - 1); i <= Math.min(totalPages - 1, currentPageNum + 1); i++) {
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
       if (!items.includes(i)) {
         items.push(i);
       }
     }
     
     // Show ellipsis if there's a gap
-    if (currentPageNum < totalPages - 2) {
+    if (currentPage < totalPages - 2) {
       items.push('ellipsis2');
     }
     
@@ -233,6 +125,9 @@ const AdsList = ({
     }
     return items;
   };
+
+  if (isLoading) return <div className="text-center py-8">Loading ads...</div>;
+  if (isError) return <div className="text-center text-destructive py-8">{(error as Error)?.message || "Failed to load ads"}</div>;
 
   return (
     <div className="flex flex-col gap-8 w-full px-4">
@@ -258,134 +153,143 @@ const AdsList = ({
         />
       </div>
       
+      {/* Pagination Mode Toggle */}
+      <div className="flex justify-center gap-2">
+        <button
+          onClick={() => setPaginationMode('pagination')}
+          className={`px-3 py-1 text-sm rounded-md ${
+            paginationMode === 'pagination' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'bg-muted text-muted-foreground'
+          }`}
+        >
+          Pagination
+        </button>
+        <button
+          onClick={() => setPaginationMode('infinite')}
+          className={`px-3 py-1 text-sm rounded-md ${
+            paginationMode === 'infinite' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'bg-muted text-muted-foreground'
+          }`}
+        >
+          Infinite Scroll
+        </button>
+      </div>
 
       {/* Ads Container */}
       {ads.length > 0 ? (
         <>
           <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'flex flex-col gap-8'}>
-            {ads.map((ad) => (
+            {ads.map((ad: Ad) => (
               <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
                 <AdCard ad={ad} isGrid={layout === 'grid'} />
               </Link>
             ))}
           </div>
           
-                     {/* Infinite Scroll Loading Indicator */}
-           {hasMore && (
-             <div 
-               ref={loadingRef}
-               className="flex justify-center mt-8 py-4"
-             >
-               {loadingMore ? (
-                 <div className="flex items-center gap-2 text-muted-foreground">
-                   <Loader2 className="w-4 h-4 animate-spin" />
-                   Loading more ads...
-                 </div>
-               ) : (
-                 <div className="h-4" /> // Invisible element for intersection observer
-               )}
-             </div>
-           )}
-          
-          {/* Pagination */}
-          {(paginationData && paginationData.total_pages > 1) && (
-            <div className="flex justify-center mt-8">
-              <div className="flex flex-col items-center gap-4">
-                {/* Debug info */}
-                {/* <div className="text-xs text-muted-foreground">
-                  Debug: Current Page: {currentPage}, Total Pages: {paginationData.total_pages}, Total Items: {paginationData.total_items}
-                </div> */}
-                
-                <Pagination>
-                  <PaginationContent>
-                    {/* Previous Button */}
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (currentPage > 1) {
-                            handlePageChange(currentPage - 1);
-                          }
-                        }}
-                        className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                      />
-                    </PaginationItem>
-                    
-                    {/* Page Numbers */}
-                    {generatePaginationItems().map((item, index) => (
-                      <PaginationItem key={index}>
-                        {item === 'ellipsis1' || item === 'ellipsis2' ? (
-                          <PaginationEllipsis />
-                        ) : (
-                          <PaginationLink
+          {/* Pagination Mode */}
+          {paginationMode === 'pagination' && data?.pages[0]?.data?.total && (
+            <>
+              {/* Pagination Controls */}
+              {generatePaginationItems().length > 1 && (
+                <div className="flex justify-center mt-8">
+                  <div className="flex flex-col items-center gap-4">
+                    <Pagination>
+                      <PaginationContent>
+                        {/* Previous Button */}
+                        <PaginationItem>
+                          <PaginationPrevious 
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              handlePageChange(item as number);
+                              if (currentPage > 1) {
+                                handlePageChange(currentPage - 1);
+                              }
                             }}
-                            isActive={currentPage === item}
-                            className="cursor-pointer"
-                          >
-                            {item}
-                          </PaginationLink>
-                        )}
-                      </PaginationItem>
-                    ))}
-                    
-                                         {/* Next Button */}
-                     <PaginationItem>
-                       <PaginationNext 
-                         href="#"
-                         onClick={(e) => {
-                           e.preventDefault();
-                           if (paginationData && currentPage < paginationData.total_pages && hasMore) {
-                             handlePageChange(currentPage + 1);
-                           }
-                         }}
-                         className={paginationData && (currentPage >= paginationData.total_pages || !hasMore) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                       />
-                     </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
+                            className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          />
+                        </PaginationItem>
+                        
+                        {/* Page Numbers */}
+                        {generatePaginationItems().map((item, index) => (
+                          <PaginationItem key={index}>
+                            {item === 'ellipsis1' || item === 'ellipsis2' ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handlePageChange(item as number);
+                                }}
+                                isActive={currentPage === item}
+                                className="cursor-pointer"
+                              >
+                                {item}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ))}
+                        
+                        {/* Next Button */}
+                        <PaginationItem>
+                          <PaginationNext 
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const totalPages = Math.ceil((data.pages[0].data.total || 0) / 2);
+                              if (currentPage < totalPages) {
+                                handlePageChange(currentPage + 1);
+                              }
+                            }}
+                            className={currentPage >= Math.ceil((data.pages[0].data.total || 0) / 2) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          
+          {/* Infinite Scroll Mode */}
+          {paginationMode === 'infinite' && hasNextPage && (
+            <div className="flex justify-center mt-8 py-4">
+              {isFetchingNextPage ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading more ads...
+                </div>
+              ) : (
+                <button
+                  onClick={() => fetchNextPage()}
+                  className="px-4 py-2 text-sm border rounded-md hover:bg-muted"
+                >
+                  Load More
+                </button>
+              )}
             </div>
           )}
           
-                     {/* Results Info */}
-           {paginationData && (
-             <div className="text-center text-sm text-muted-foreground mt-4">
-               {t("showingResults", { current: ads.length, total: paginationData.total_items })}
-               {!hasMore && paginationData.total_items > ads.length && (
-                 <span className="ml-2 text-green-600">{t("allAdsLoaded")}</span>
-               )}
-             </div>
-           )}
-          
-          {/* Simple Pagination Fallback */}
-          {(!paginationData || paginationData.total_pages <= 1) && ads.length > 0 && (
-            <div className="flex justify-center mt-8">
-              <div className="flex flex-col items-center gap-4">
-                {/* <div className="text-xs text-muted-foreground">
-                  Debug: No pagination data or only 1 page. Ads count: {ads.length}
-                </div> */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage <= 1}
-                    className="px-3 py-2 text-sm border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {t("previous")}
-                  </button>
-                  <span className="px-3 py-2 text-sm">{t("page", { page: currentPage })}</span>
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    className="px-3 py-2 text-sm border rounded-md"
-                  >
-                    {t("next")}
-                  </button>
-                </div>
-              </div>
+          {/* Results Info */}
+          {data?.pages[0]?.data?.total && (
+            <div className="text-center text-sm text-muted-foreground mt-4">
+              {paginationMode === 'pagination' ? (
+                t("showingResults", { 
+                  current: ads.length, 
+                  total: data.pages[0].data.total 
+                })
+              ) : (
+                t("showingResults", { 
+                  current: allAds.length, 
+                  total: data.pages[0].data.total 
+                })
+              )}
+              {paginationMode === 'infinite' && !hasNextPage && data.pages[0].data.total > allAds.length && (
+                <span className="ml-2 text-green-600">{t("allAdsLoaded")}</span>
+              )}
             </div>
           )}
         </>
@@ -409,7 +313,7 @@ const AdsList = ({
           </p>
           {hasActiveFilters && (
             <button 
-              onClick={() => window.location.reload()}
+              onClick={() => refetch()}
               className="mt-4 text-sm text-primary hover:text-primary/80 underline"
             >
               {t("clearAllFilters")}

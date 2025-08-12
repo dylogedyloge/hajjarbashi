@@ -16,7 +16,15 @@ import {
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { authService } from "@/lib/auth";
+import { 
+  useSignup, 
+  useLogin, 
+  useVerifyEmail, 
+  useVerifyPhone, 
+  useSendVerificationSms, 
+  useSendResetPasswordVerificationCode, 
+  useResetPassword 
+} from "@/hooks/useAuth";
 import type { SignupRequest, LoginRequest, SendVerificationSmsRequest } from "@/types/auth";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -63,7 +71,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     password: "",
   });
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
   // const [error, setError] = useState<string>("");
   const [signupValidationErrors, setSignupValidationErrors] = useState<
     string[]
@@ -90,7 +97,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // OTP state for email verification
   const [emailForOtp, setEmailForOtp] = useState<string>("");
   const [otpInputValue, setOtpInputValue] = useState<string>("");
-  const [isOtpLoading, setIsOtpLoading] = useState(false);
 
   // OTP state for phone verification
   const [phoneForOtp, setPhoneForOtp] = useState<string>("");
@@ -98,6 +104,15 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   // Password visibility state for sign in and sign up
   const [showSigninPassword, setShowSigninPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
+
+  // React Query hooks
+  const signupMutation = useSignup();
+  const loginMutation = useLogin();
+  const verifyEmailMutation = useVerifyEmail();
+  const verifyPhoneMutation = useVerifyPhone();
+  const sendVerificationSmsMutation = useSendVerificationSms();
+  const sendResetPasswordVerificationCodeMutation = useSendResetPasswordVerificationCode();
+  const resetPasswordMutation = useResetPassword();
   const [showSignupPasswordConfirmation, setShowSignupPasswordConfirmation] =
     useState(false);
 
@@ -106,7 +121,7 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [resetOtp, setResetOtp] = useState("");
   const [resetNewPassword, setResetNewPassword] = useState("");
   const [resetConfirmPassword, setResetConfirmPassword] = useState("");
-  const [resetLoading, setResetLoading] = useState(false);
+
   const [resetError, setResetError] = useState("");
   const [resetShowPassword, setResetShowPassword] = useState(false);
   const [resetShowPasswordConfirmation, setResetShowPasswordConfirmation] =
@@ -204,7 +219,6 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     e.preventDefault();
     // setError("");
     setSignupValidationErrors([]);
-    setIsLoading(true);
 
     // Zod validation
     const result = signupSchema.safeParse({
@@ -214,32 +228,33 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     });
     if (!result.success) {
       setSignupValidationErrors(result.error.errors.map((err) => err.message));
-      setIsLoading(false);
       return;
     }
 
-    try {
-      const response = await authService.signup(signupData, locale);
-      console.log("Signup successful:", response);
-      // Store the verification code and email for OTP verification
-      setEmailForOtp(signupData.email);
-      // Show success message
-      toast.success(
-        `${t("signupSuccessful")} ${t("verificationCode", {
-          code: response.data.code,
-        })}`
-      );
-      // Switch to OTP view for email verification
-      setView("otp");
-    } catch (err) {
-      console.error("Signup error:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : t("signupFailed");
-      // setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    signupMutation.mutate(
+      { data: signupData, lang: locale },
+      {
+        onSuccess: (response) => {
+          console.log("Signup successful:", response);
+          // Store the verification code and email for OTP verification
+          setEmailForOtp(signupData.email);
+          // Show success message
+          toast.success(
+            `${t("signupSuccessful")} ${t("verificationCode", {
+              code: response.data.code,
+            })}`
+          );
+          // Switch to OTP view for email verification
+          setView("otp");
+        },
+        onError: (err) => {
+          console.error("Signup error:", err);
+          const errorMessage =
+            err instanceof Error ? err.message : t("signupFailed");
+          toast.error(errorMessage);
+        },
+      }
+    );
   };
 
   // Handle input changes for signup form
@@ -263,49 +278,56 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       return;
     }
 
-    setIsOtpLoading(true);
-
-    try {
-      if (emailForOtp) {
-        // Email verification
-        const verificationData = {
-          email: emailForOtp,
-          verification_code: otpInputValue,
-        };
-        const response = await authService.verifyEmail(
-          verificationData,
-          locale
-        );
-        // Ensure email is a string for context
-        const userData = { ...response.data, email: response.data.email || "" };
-        login(userData, response.data.token);
-        toast.success(t("emailVerifiedSuccessfully"));
-        handleDialogChange(false);
-      } else if (phoneForOtp) {
-        // Phone verification
-        const verificationData = {
-          phone: phoneForOtp,
-          otp_code: otpInputValue,
-        };
-        const response = await authService.verifyPhone(
-          verificationData,
-          locale
-        );
-        // Ensure email is a string for context
-        const userData = { ...response.data, email: response.data.email || "" };
-        login(userData, response.data.token);
-        toast.success(t("phoneVerifiedSuccessfully"));
-        handleDialogChange(false);
-      } else {
-        toast.error(t("pleaseEnterOtpCode"));
-      }
-    } catch (err) {
-      console.error("OTP verificatio error:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : t("otpVerificationFailed");
-      toast.error(errorMessage);
-    } finally {
-      setIsOtpLoading(false);
+    if (emailForOtp) {
+      // Email verification
+      const verificationData = {
+        email: emailForOtp,
+        verification_code: otpInputValue,
+      };
+      verifyEmailMutation.mutate(
+        { data: verificationData, lang: locale },
+        {
+          onSuccess: (response) => {
+            // Ensure email is a string for context
+            const userData = { ...response.data, email: response.data.email || "" };
+            login(userData, response.data.token);
+            toast.success(t("emailVerifiedSuccessfully"));
+            handleDialogChange(false);
+          },
+          onError: (err) => {
+            console.error("OTP verification error:", err);
+            const errorMessage =
+              err instanceof Error ? err.message : t("otpVerificationFailed");
+            toast.error(errorMessage);
+          },
+        }
+      );
+    } else if (phoneForOtp) {
+      // Phone verification
+      const verificationData = {
+        phone: phoneForOtp,
+        otp_code: otpInputValue,
+      };
+      verifyPhoneMutation.mutate(
+        { data: verificationData, lang: locale },
+        {
+          onSuccess: (response) => {
+            // Ensure email is a string for context
+            const userData = { ...response.data, email: response.data.email || "" };
+            login(userData, response.data.token);
+            toast.success(t("phoneVerifiedSuccessfully"));
+            handleDialogChange(false);
+          },
+          onError: (err) => {
+            console.error("OTP verification error:", err);
+            const errorMessage =
+              err instanceof Error ? err.message : t("otpVerificationFailed");
+            toast.error(errorMessage);
+          },
+        }
+      );
+    } else {
+      toast.error(t("pleaseEnterOtpCode"));
     }
   };
 
@@ -313,35 +335,33 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     // setError("");
-    setIsLoading(true);
 
     if (!signinData.email || !signinData.password) {
       const errorMsg = t("fillAllFields");
       // setError(errorMsg);
       toast.error(errorMsg);
-      setIsLoading(false);
       return;
     }
 
-    try {
-      const response = await authService.login(
-        signinData as LoginRequest,
-        locale
-      );
-      login(response.data, response.data.token);
-      // Store login method
-      localStorage.setItem('login_method', 'email');
-      toast.success(t("loginSuccessful"));
-      handleDialogChange(false);
-    } catch (err) {
-      console.error("Login error:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : t("loginFailed");
-      // setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation.mutate(
+      { data: signinData as LoginRequest, lang: locale },
+      {
+        onSuccess: (response) => {
+          login(response.data, response.data.token);
+          // Store login method
+          localStorage.setItem('login_method', 'email');
+          toast.success(t("loginSuccessful"));
+          handleDialogChange(false);
+        },
+        onError: (err) => {
+          console.error("Login error:", err);
+          const errorMessage =
+            err instanceof Error ? err.message : t("loginFailed");
+          // setError(errorMessage);
+          toast.error(errorMessage);
+        },
+      }
+    );
   };
 
   // Helper: Validate phone on blur
@@ -357,13 +377,11 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     // setError("");
-    setIsLoading(true);
     setPhoneTouched(true);
     // Zod validation
     const result = phoneSchema.safeParse(phone);
     if (!result.success) {
       setPhoneValidationError(result.error.errors[0].message);
-      setIsLoading(false);
       return;
     } else {
       setPhoneValidationError("");
@@ -373,42 +391,41 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
       const errorMsg = t("fillAllFields");
       // setError(errorMsg);
       toast.error(errorMsg);
-      setIsLoading(false);
       return;
     }
     if (!isValidPhone(phone)) {
       const errorMsg = t("invalidPhone");
       // setError(errorMsg);
       toast.error(errorMsg);
-      setIsLoading(false);
       return;
     }
 
-    try {
-      const response = await authService.sendVerificationSms(
-        {
-          phone,
-        } as SendVerificationSmsRequest,
-        locale
-      );
-      setPhoneForOtp(phone);
-      toast.success(
-        `${t("smsSentSuccessfully")} ${t("verificationCode", {
-          code: response.data.code,
-        })}`
-      );
-      setView("otp");
-      // Store login method for phone
-      localStorage.setItem('login_method', 'phone');
-    } catch (err) {
-      console.error("Send SMS error:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : t("smsSendFailed");
-      // setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    sendVerificationSmsMutation.mutate(
+      {
+        data: { phone } as SendVerificationSmsRequest,
+        lang: locale,
+      },
+      {
+        onSuccess: (response) => {
+          setPhoneForOtp(phone);
+          toast.success(
+            `${t("smsSentSuccessfully")} ${t("verificationCode", {
+              code: response.data.code,
+            })}`
+          );
+          setView("otp");
+          // Store login method for phone
+          localStorage.setItem('login_method', 'phone');
+        },
+        onError: (err) => {
+          console.error("Send SMS error:", err);
+          const errorMessage =
+            err instanceof Error ? err.message : t("smsSendFailed");
+          // setError(errorMessage);
+          toast.error(errorMessage);
+        },
+      }
+    );
   };
 
   useEffect(() => {
@@ -513,9 +530,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               <Button
                 type="submit"
                 className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
-                disabled={isLoading}
+                disabled={sendVerificationSmsMutation.isPending}
               >
-                {isLoading ? (
+                {sendVerificationSmsMutation.isPending ? (
                   <div className="flex items-center gap-2">
                     <svg
                       className="animate-spin h-4 w-4"
@@ -687,9 +704,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
             <Button
               type="submit"
               className="w-full rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12 mt-2"
-              disabled={isLoading}
+              disabled={loginMutation.isPending}
             >
-              {isLoading ? (
+              {loginMutation.isPending ? (
                 <div className="flex items-center gap-2">
                   <svg
                     className="animate-spin h-4 w-4"
@@ -853,9 +870,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               <Button
                 type="submit"
                 className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
-                disabled={isLoading}
+                disabled={signupMutation.isPending}
               >
-                {isLoading ? (
+                {signupMutation.isPending ? (
                   <div className="flex items-center gap-2">
                     <svg
                       className="animate-spin h-4 w-4"
@@ -877,10 +894,10 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                         d="M4 12a8 8 0 018-8v8z"
                       ></path>
                     </svg>
-                    {t("continue")}
+                    {t("signingUp")}
                   </div>
                 ) : (
-                  t("continue")
+                  t("signUp")
                 )}
               </Button>
             </div>
@@ -916,28 +933,26 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               className="flex flex-col items-center gap-6"
               onSubmit={async (e) => {
                 e.preventDefault();
-                setResetLoading(true);
                 setResetError("");
-                try {
-                  const response =
-                    await authService.sendResetPasswordVerificationCode(
-                      { email: resetEmail },
-                      locale
-                    );
-                  setResetStep("verify");
-                  toast.success(
-                    t("verificationCode", { code: response.data.code })
-                  );
-                } catch (err) {
-                  setResetError(
-                    err instanceof Error ? err.message : t("signupFailed")
-                  );
-                  toast.error(
-                    err instanceof Error ? err.message : t("signupFailed")
-                  );
-                } finally {
-                  setResetLoading(false);
-                }
+                sendResetPasswordVerificationCodeMutation.mutate(
+                  { data: { email: resetEmail }, lang: locale },
+                  {
+                    onSuccess: (response) => {
+                      setResetStep("verify");
+                      toast.success(
+                        t("verificationCode", { code: response.data.code })
+                      );
+                    },
+                    onError: (err) => {
+                      setResetError(
+                        err instanceof Error ? err.message : t("signupFailed")
+                      );
+                      toast.error(
+                        err instanceof Error ? err.message : t("signupFailed")
+                      );
+                    },
+                  }
+                );
               }}
             >
               <div className="w-full">
@@ -956,9 +971,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 <Button
                   type="submit"
                   className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
-                  disabled={resetLoading}
+                  disabled={sendResetPasswordVerificationCodeMutation.isPending}
                 >
-                  {resetLoading ? t("sendingSms") : t("sendResetPasswordLink")}
+                  {sendResetPasswordVerificationCodeMutation.isPending ? t("sendingSms") : t("sendResetPasswordLink")}
                 </Button>
               </div>
               {resetError && (
@@ -972,45 +987,45 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               className="flex flex-col items-center gap-6"
               onSubmit={async (e) => {
                 e.preventDefault();
-                setResetLoading(true);
                 setResetError("");
                 if (!resetOtp || !resetNewPassword || !resetConfirmPassword) {
                   setResetError(t("fillAllFields"));
-                  setResetLoading(false);
                   return;
                 }
                 if (resetNewPassword !== resetConfirmPassword) {
                   setResetError(t("passwordsDoNotMatch"));
-                  setResetLoading(false);
                   return;
                 }
-                try {
-                  await authService.resetPassword(
-                    {
+                resetPasswordMutation.mutate(
+                  {
+                    data: {
                       email: resetEmail,
                       password: resetNewPassword,
                       verification_code: resetOtp,
                     },
-                    locale
-                  );
-                  toast.success(t("passwordResetSuccessful"));
-                  setView("email");
-                  setResetStep("request");
-                  setResetEmail("");
-                  setResetOtp("");
-                  setResetNewPassword("");
-                  setResetConfirmPassword("");
-                  setResetError("");
-                } catch (err) {
-                  setResetError(
-                    err instanceof Error ? err.message : t("signupFailed")
-                  );
-                  toast.error(
-                    err instanceof Error ? err.message : t("signupFailed")
-                  );
-                } finally {
-                  setResetLoading(false);
-                }
+                    lang: locale,
+                  },
+                  {
+                    onSuccess: () => {
+                      toast.success(t("passwordResetSuccessful"));
+                      setView("email");
+                      setResetStep("request");
+                      setResetEmail("");
+                      setResetOtp("");
+                      setResetNewPassword("");
+                      setResetConfirmPassword("");
+                      setResetError("");
+                    },
+                    onError: (err) => {
+                      setResetError(
+                        err instanceof Error ? err.message : t("signupFailed")
+                      );
+                      toast.error(
+                        err instanceof Error ? err.message : t("signupFailed")
+                      );
+                    },
+                  }
+                );
               }}
             >
               <div className="w-full">
@@ -1101,9 +1116,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 <Button
                   type="submit"
                   className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
-                  disabled={resetLoading}
+                  disabled={resetPasswordMutation.isPending}
                 >
-                  {resetLoading ? t("verifying") : t("sendResetPasswordLink")}
+                  {resetPasswordMutation.isPending ? t("verifying") : t("sendResetPasswordLink")}
                 </Button>
               </div>
               {resetError && (
@@ -1130,25 +1145,24 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                     disabled={isResendingReset}
                     onClick={async () => {
                       setIsResendingReset(true);
-                      try {
-                        const response =
-                          await authService.sendResetPasswordVerificationCode(
-                            { email: resetEmail },
-                            locale
-                          );
-                        toast.success(
-                          t("verificationCode", { code: response.data.code })
-                        );
-                        setResetResendTimer(114);
-                      } catch (err) {
-                        const errorMessage =
-                          err instanceof Error
-                            ? err.message
-                            : t("signupFailed");
-                        toast.error(errorMessage);
-                      } finally {
-                        setIsResendingReset(false);
-                      }
+                      sendResetPasswordVerificationCodeMutation.mutate(
+                        { data: { email: resetEmail }, lang: locale },
+                        {
+                          onSuccess: (response) => {
+                            toast.success(
+                              t("verificationCode", { code: response.data.code })
+                            );
+                            setResetResendTimer(114);
+                          },
+                          onError: (err) => {
+                            const errorMessage =
+                              err instanceof Error
+                                ? err.message
+                                : t("signupFailed");
+                            toast.error(errorMessage);
+                          },
+                        }
+                      );
                     }}
                   >
                     {isResendingReset
@@ -1214,9 +1228,9 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               <Button
                 type="submit"
                 className="flex-1 rounded-full bg-[#E0522D] hover:bg-[#d34722] text-white text-base h-12"
-                disabled={isOtpLoading}
+                disabled={verifyEmailMutation.isPending || verifyPhoneMutation.isPending}
               >
-                {isOtpLoading ? (
+                {(verifyEmailMutation.isPending || verifyPhoneMutation.isPending) ? (
                   <div className="flex items-center gap-2">
                     <svg
                       className="animate-spin h-4 w-4"
@@ -1274,24 +1288,24 @@ const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 onClick={async () => {
                   if (!phoneForOtp) return; // Only support phone OTP resend for now
                   setIsResendingOtp(true);
-                  try {
-                    const response = await authService.sendVerificationSms(
-                      { phone: phoneForOtp },
-                      locale
-                    );
-                    toast.success(
-                      `${t("smsSentSuccessfully")} ${t("verificationCode", {
-                        code: response.data.code,
-                      })}`
-                    );
-                    setOtpTimer(114);
-                  } catch (err) {
-                    const errorMessage =
-                      err instanceof Error ? err.message : t("smsSendFailed");
-                    toast.error(errorMessage);
-                  } finally {
-                    setIsResendingOtp(false);
-                  }
+                  sendVerificationSmsMutation.mutate(
+                    { data: { phone: phoneForOtp }, lang: locale },
+                    {
+                      onSuccess: (response) => {
+                        toast.success(
+                          `${t("smsSentSuccessfully")} ${t("verificationCode", {
+                            code: response.data.code,
+                          })}`
+                        );
+                        setOtpTimer(114);
+                      },
+                      onError: (err) => {
+                        const errorMessage =
+                          err instanceof Error ? err.message : t("smsSendFailed");
+                        toast.error(errorMessage);
+                      },
+                    }
+                  );
                 }}
               >
                 {isResendingOtp ? t("sendingSms") : t("resendOtpCode")}

@@ -26,8 +26,8 @@ import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { GB, IR } from "country-flag-icons/react/3x2";
 import { deleteAccount, updateLanguage } from "@/lib/profile";
-import { upsertPhoneRequest, authService, upsertEmailRequest } from '@/lib/auth';
 import { useAuth } from "@/lib/auth-context";
+import { useChangePassword, useUpsertPhoneRequest, useUpsertEmailRequest, useVerifyUpsertPhone, useVerifyUpsertEmail } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -83,7 +83,6 @@ export default function SettingsPage() {
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpValue, setOtpValue] = useState('');
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
   // Track which OTP dialog is open
   const [otpType, setOtpType] = useState<'phone' | 'email' | null>(null);
@@ -113,8 +112,14 @@ export default function SettingsPage() {
   const [resetCurrentPassword, setResetCurrentPassword] = useState('');
   const [resetNewPassword, setResetNewPassword] = useState('');
   const [resetConfirmPassword, setResetConfirmPassword] = useState('');
-  const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState('');
+
+  // React Query hooks
+  const changePasswordMutation = useChangePassword();
+  const upsertPhoneMutation = useUpsertPhoneRequest();
+  const upsertEmailMutation = useUpsertEmailRequest();
+  const verifyUpsertPhoneMutation = useVerifyUpsertPhone();
+  const verifyUpsertEmailMutation = useVerifyUpsertEmail();
 
   // Handler to start password change
   const handleStartPasswordReset = () => {
@@ -128,57 +133,51 @@ export default function SettingsPage() {
 
   // Handler to change password
   const handleChangePassword = async () => {
-    setResetLoading(true);
-    setResetError('');
-    
     if (!resetCurrentPassword || !resetNewPassword || !resetConfirmPassword) {
       setResetError('Please fill all fields');
-      setResetLoading(false);
       return;
     }
     
     if (resetNewPassword !== resetConfirmPassword) {
       setResetError('Passwords do not match');
-      setResetLoading(false);
       return;
     }
     
-    try {
-      if (!token) throw new Error('Authentication required');
-      
-      console.log('Token exists:', !!token);
-      console.log('Token length:', token?.length);
-      console.log('Token starts with:', token?.substring(0, 20) + '...');
-      console.log('Current locale:', currentLocale);
-      console.log('Request data:', {
-        current_password: resetCurrentPassword,
-        new_password: resetNewPassword,
-      });
-      
-      const result = await authService.changePassword({
-        current_password: resetCurrentPassword,
-        new_password: resetNewPassword,
-      }, token, currentLocale);
-      
-      console.log('Change password result:', result);
-      
-      toast.success(t('password.changePasswordSuccess'));
-      setIsEditingPassword(false);
-      setResetCurrentPassword('');
-      setResetNewPassword('');
-      setResetConfirmPassword('');
-      setResetError('');
-      
-      // Logout user and navigate to main URL after successful password change
-      logout();
-      intlRouter.replace("/");
-    } catch (err: any) {
-      console.error('Change password error:', err);
-      setResetError(err.message || 'Failed to change password');
-      toast.error(err.message || 'Failed to change password');
-    } finally {
-      setResetLoading(false);
+    if (!token) {
+      setResetError('Authentication required');
+      return;
     }
+
+    changePasswordMutation.mutate(
+      {
+        data: {
+          current_password: resetCurrentPassword,
+          new_password: resetNewPassword,
+        },
+        token,
+        lang: currentLocale,
+      },
+      {
+        onSuccess: (result) => {
+          console.log('Change password result:', result);
+          toast.success(t('password.changePasswordSuccess'));
+          setIsEditingPassword(false);
+          setResetCurrentPassword('');
+          setResetNewPassword('');
+          setResetConfirmPassword('');
+          setResetError('');
+          
+          // Logout user and navigate to main URL after successful password change
+          logout();
+          intlRouter.replace("/");
+        },
+        onError: (err: any) => {
+          console.error('Change password error:', err);
+          setResetError(err.message || 'Failed to change password');
+          toast.error(err.message || 'Failed to change password');
+        },
+      }
+    );
   };
 
 
@@ -230,67 +229,106 @@ export default function SettingsPage() {
 
   const handleSavePhone = async () => {
     setIsEditingPhone(false);
-    try {
-      if (!token) throw new Error('Authentication required');
-      const res = await upsertPhoneRequest({ newPhone: formData.phone, lang: currentLocale, token });
-      toast.success(`OTP code: ${res.data}`);
-      setOtpSent(true);
-      setOtpValue('');
-      setOtpType('phone');
-      setIsOtpDialogOpen(true);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update phone number');
+    if (!token) {
+      toast.error('Authentication required');
+      return;
     }
+
+    upsertPhoneMutation.mutate(
+      { newPhone: formData.phone, lang: currentLocale, token },
+      {
+        onSuccess: (res) => {
+          toast.success(`OTP code: ${res.data}`);
+          setOtpSent(true);
+          setOtpValue('');
+          setOtpType('phone');
+          setIsOtpDialogOpen(true);
+        },
+        onError: (err: any) => {
+          toast.error(err.message || 'Failed to update phone number');
+        },
+      }
+    );
   };
 
   const handleVerifyPhone = async () => {
-    setVerifyingOtp(true);
-    try {
-      if (!token) throw new Error('Authentication required');
-      const res = await authService.verifyUpsertPhone({ new_phone: formData.phone, verification_code: otpValue }, token, currentLocale);
-      login({ ...res.data, email: res.data.email || '' }, res.data.token);
-      toast.success(res.message || 'Phone number verified!');
-      setOtpSent(false);
-      setOtpValue('');
-      setIsOtpDialogOpen(false);
-      setOtpType(null);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to verify phone number');
-    } finally {
-      setVerifyingOtp(false);
+    if (!token) {
+      toast.error('Authentication required');
+      return;
     }
+
+    verifyUpsertPhoneMutation.mutate(
+      {
+        data: { new_phone: formData.phone, verification_code: otpValue },
+        token,
+        lang: currentLocale,
+      },
+      {
+        onSuccess: (res) => {
+          login({ ...res.data, email: res.data.email || '' }, res.data.token);
+          toast.success(res.message || 'Phone number verified!');
+          setOtpSent(false);
+          setOtpValue('');
+          setIsOtpDialogOpen(false);
+          setOtpType(null);
+        },
+        onError: (err: any) => {
+          toast.error(err.message || 'Failed to verify phone number');
+        },
+      }
+    );
   };
+
   const handleVerifyEmail = async () => {
-    setVerifyingOtp(true);
-    try {
-      if (!token) throw new Error('Authentication required');
-      const res = await authService.verifyUpsertEmail({ new_email: formData.email, verification_code: otpValue }, token, currentLocale);
-      login({ ...res.data, email: res.data.email || '' }, res.data.token);
-      toast.success(res.message || 'Email verified!');
-      setOtpSent(false);
-      setOtpValue('');
-      setIsOtpDialogOpen(false);
-      setOtpType(null);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to verify email number');
-    } finally {
-      setVerifyingOtp(false);
+    if (!token) {
+      toast.error('Authentication required');
+      return;
     }
+
+    verifyUpsertEmailMutation.mutate(
+      {
+        data: { new_email: formData.email, verification_code: otpValue },
+        token,
+        lang: currentLocale,
+      },
+      {
+        onSuccess: (res) => {
+          login({ ...res.data, email: res.data.email || '' }, res.data.token);
+          toast.success(res.message || 'Email verified!');
+          setOtpSent(false);
+          setOtpValue('');
+          setIsOtpDialogOpen(false);
+          setOtpType(null);
+        },
+        onError: (err: any) => {
+          toast.error(err.message || 'Failed to verify email number');
+        },
+      }
+    );
   };
 
   const handleSaveEmail = async () => {
     setIsEditingEmail(false);
-    try {
-      if (!token) throw new Error('Authentication required');
-      const res = await upsertEmailRequest({ newEmail: formData.email, lang: currentLocale, token });
-      toast.success(`OTP code: ${res.data}`);
-      setOtpSent(true);
-      setOtpValue('');
-      setOtpType('email');
-      setIsOtpDialogOpen(true);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update email address');
+    if (!token) {
+      toast.error('Authentication required');
+      return;
     }
+
+    upsertEmailMutation.mutate(
+      { newEmail: formData.email, lang: currentLocale, token },
+      {
+        onSuccess: (res) => {
+          toast.success(`OTP code: ${res.data}`);
+          setOtpSent(true);
+          setOtpValue('');
+          setOtpType('email');
+          setIsOtpDialogOpen(true);
+        },
+        onError: (err: any) => {
+          toast.error(err.message || 'Failed to update email address');
+        },
+      }
+    );
   };
 
   // const handleSavePassword = () => {
@@ -564,7 +602,7 @@ export default function SettingsPage() {
                     <Button
                       variant="outline"
                       onClick={() => handleCancelEdit('password')}
-                      disabled={resetLoading}
+                      disabled={changePasswordMutation.isPending}
                     >
                       {t("password.cancel")}
                     </Button>
@@ -573,9 +611,9 @@ export default function SettingsPage() {
                         if (resetNewPassword !== resetConfirmPassword) return;
                         handleChangePassword();
                       }} 
-                      disabled={resetLoading}
+                      disabled={changePasswordMutation.isPending}
                     >
-                      {resetLoading ? t("password.changing") : t("password.changePassword")}
+                      {changePasswordMutation.isPending ? t("password.changing") : t("password.changePassword")}
                     </Button>
                   </DialogFooter>
                   {resetError && <div className="text-red-500 text-sm">{resetError}</div>}
@@ -667,9 +705,9 @@ export default function SettingsPage() {
                       </Button>
                       <Button
                         onClick={handleVerifyPhone}
-                        disabled={verifyingOtp || otpValue.length !== 5}
+                        disabled={verifyUpsertPhoneMutation.isPending || otpValue.length !== 5}
                       >
-                        {verifyingOtp ? 'Verifying...' : 'Verify'}
+                        {verifyUpsertPhoneMutation.isPending ? 'Verifying...' : 'Verify'}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -746,9 +784,9 @@ export default function SettingsPage() {
                       </Button>
                       <Button
                         onClick={handleVerifyEmail}
-                        disabled={verifyingOtp || otpValue.length !== 5}
+                        disabled={verifyUpsertEmailMutation.isPending || otpValue.length !== 5}
                       >
-                        {verifyingOtp ? 'Verifying...' : 'Verify'}
+                        {verifyUpsertEmailMutation.isPending ? 'Verifying...' : 'Verify'}
                       </Button>
                     </DialogFooter>
                   </DialogContent>

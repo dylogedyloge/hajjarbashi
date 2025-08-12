@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -12,6 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { SearchProvider } from "@/lib/search-context";
 import { getMessages } from "next-intl/server";
+import QueryClientWrapper from "@/components/providers/query-client-provider";
 
 const poppins = localFont({
   src: "../../public/fonts/Lexend-Regular.ttf",
@@ -62,17 +64,19 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className={`${font.className} ${isRTL ? "rtl" : ""}`}>
-        <NextIntlClientProvider messages={messages}>
+                <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <AuthProvider>
-              <SearchProvider>
-                <Header />
-                {children}
-                <Footer />
-                <MobileBottomNav />
-                <Toaster />
-              </SearchProvider>
-            </AuthProvider>
+            <QueryClientWrapper>
+              <AuthProvider>
+                <SearchProvider>
+                  <Header />
+                  {children}
+                  <Footer />
+                  <MobileBottomNav />
+                  <Toaster />
+                </SearchProvider>
+              </AuthProvider>
+            </QueryClientWrapper>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

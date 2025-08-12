@@ -115,4 +115,15 @@ export interface ResetPasswordResponse {
   timestamp: string;
 }
 
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+  timestamp: string;
+}
+
 

@@ -284,6 +284,9 @@ export interface Ticket {
   assigned_to_avatar: string | null;
   reported_name: string | null;
   reported_avatar: string | null;
+  creator_id?: string;
+  creator_name?: string;
+  creator_avatar?: string | null;
 }
 
 export interface TicketsResponse {
@@ -436,7 +439,7 @@ export async function createTicket(
   
   // Add attachments if provided
   if (data.attachments && data.attachments.length > 0) {
-    data.attachments.forEach((file) => {
+    data.attachments.forEach((file) => { 
       formData.append('attachments', file);
 
     });
@@ -458,4 +461,115 @@ export async function createTicket(
   }
 
   return response.json();
-} 
+}
+
+// Ticket Message Types
+export interface TicketMessage {
+  id: number;
+  message: string;
+  attachments: string[] | null;
+  created_at: number;
+  sender_id: string;
+  sender_name: string;
+  sender_avatar_thumb: string | null;
+}
+
+export interface TicketMessagesResponse {
+  success: boolean;
+  message: string;
+  data: {
+    ticket: Ticket & {
+      creator_id: string;
+      creator_name: string;
+      creator_avatar: string | null;
+    };
+    messages: TicketMessage[];
+  };
+  timestamp: string;
+}
+
+export async function fetchTicketMessages(
+  ticketId: string,
+  token: string,
+  lang: string
+): Promise<TicketMessagesResponse> {
+  const response = await fetch(`${API_BASE_URL}/ticket_messages/${ticketId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'x-lang': lang,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Failed to fetch ticket messages: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
+}
+
+// Send Ticket Message Types
+export interface SendTicketMessageRequest {
+  ticket_id: string;
+  message: string;
+  attachments?: File[];
+}
+
+export interface SendTicketMessageResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    ticket_id: string;
+    sender_id: string;
+    message: string;
+    attachments: string[] | null;
+    created_at: number;
+  };
+  timestamp: string;
+}
+
+export async function sendTicketMessage(
+  data: SendTicketMessageRequest,
+  token: string,
+  lang: string
+): Promise<SendTicketMessageResponse> {
+  const formData = new FormData();
+  formData.append('ticket_id', data.ticket_id);
+  formData.append('message', data.message);
+  
+  // Add attachments if provided
+  if (data.attachments && data.attachments.length > 0) {
+    console.log('Adding attachments to FormData:', data.attachments.map(f => ({ name: f.name, size: f.size, type: f.type })));
+    data.attachments.forEach((file) => {
+      formData.append('attachments', file);
+    });
+    
+    // Debug: Log FormData contents
+    for (let [key, value] of formData.entries()) {
+      console.log('FormData entry:', key, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+    }
+  }
+
+  const response = await fetch(`${API_BASE_URL}/ticket_messages`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'x-lang': lang,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `Failed to send message: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  const result = await response.json();
+  console.log('API Response:', result);
+  return result;
+}

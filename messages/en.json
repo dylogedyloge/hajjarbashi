@@ -709,7 +709,20 @@
       "savePassword": "Save Password",
       "cancel": "Cancel",
       "email": "Email",
-      "phone": "Phone"
+      "phone": "Phone",
+      "dialogDescription": "Enter your new password and we'll send a verification code to your email",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "sending": "Sending...",
+      "sendCode": "Send Code",
+      "enterOtp": "Enter OTP",
+      "otpDescription": "Please enter the 6-digit code sent to your email to reset your password",
+      "verifying": "Verifying...",
+      "verify": "Verify",
+      "resendTimer": "Resend code in {minutes}:{seconds}",
+      "resending": "Resending...",
+      "resendCode": "Resend Code",
+      "changing": "Changing...",
+      "changePasswordSuccess": "Password changed successfully"
     },
     "preferences": {
       "title": "Preferences",
@@ -897,6 +910,25 @@
       "topic": "Topic",
       "category": "Category",
       "status": "Status"
+    },
+    "chatView": {
+      "close": "Close",
+      "department": "Department",
+      "topic": "Topic",
+      "loadingMessages": "Loading messages...",
+      "error": "Error",
+      "noMessages": "No messages yet",
+      "typeMessage": "Type your message",
+      "attachment": "Attachment",
+      "fileSelected": "file(s) selected",
+      "fileTooLarge": "File {fileName} is too large. Maximum size is 10MB.",
+      "messageSent": "Message sent successfully!",
+      "messageSentWithWarning": "Message sent, but attachments may not have been processed correctly",
+      "failedToSendMessage": "Failed to send message",
+      "failedToFetchMessages": "Failed to fetch messages",
+      "now": "Now",
+      "hour": "h",
+      "attachmentNumber": "Attachment {number}"
     }
   }
 }

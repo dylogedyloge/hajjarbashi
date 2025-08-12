@@ -8,12 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "next-themes";
-import { 
-  Phone, 
-  Lock, 
-  Palette,  
-  Link, 
-  Eye, 
+import {
+  Phone,
+  Lock,
+  Palette,
+  Link,
+  Eye,
   EyeOff,
   Edit3,
   Check,
@@ -75,10 +75,11 @@ export default function SettingsPage() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
+
   // const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
@@ -109,117 +110,86 @@ export default function SettingsPage() {
     }
   }, [user]);
 
-  // Add state for password reset flow (moved after formData)
-  const [resetStep, setResetStep] = useState<'request' | 'verify'>('request');
+  // Add state for password change flow
   const [resetEmail, setResetEmail] = useState(formData.email || '');
-  const [resetOtp, setResetOtp] = useState('');
+  const [resetCurrentPassword, setResetCurrentPassword] = useState('');
   const [resetNewPassword, setResetNewPassword] = useState('');
   const [resetConfirmPassword, setResetConfirmPassword] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState('');
-  const [resetResendTimer, setResetResendTimer] = useState(114);
-  const [isResendingReset, setIsResendingReset] = useState(false);
-  const [isPasswordOtpDialogOpen, setIsPasswordOtpDialogOpen] = useState(false);
 
-  // Timer effect for resend
-  useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
-    if (isPasswordOtpDialogOpen && resetResendTimer > 0) {
-      interval = setInterval(() => {
-        setResetResendTimer((prev) => prev - 1);
-      }, 1000);
-    }
-    if (!isPasswordOtpDialogOpen) {
-      setResetResendTimer(114);
-    }
-    return () => interval && clearInterval(interval);
-  }, [isPasswordOtpDialogOpen, resetResendTimer]);
-
-  // Handler to start password reset
+  // Handler to start password change
   const handleStartPasswordReset = () => {
     setIsEditingPassword(true);
-    setResetStep('request');
     setResetEmail(formData.email || '');
-    setResetOtp('');
+    setResetCurrentPassword('');
     setResetNewPassword('');
     setResetConfirmPassword('');
     setResetError('');
   };
 
-  // Handler to request code
-  const handleRequestPasswordResetCode = async () => {
+  // Handler to change password
+  const handleChangePassword = async () => {
     setResetLoading(true);
     setResetError('');
-    try {
-      const response = await authService.sendResetPasswordVerificationCode({ email: resetEmail }, currentLocale);
-      toast.success(`OTP code: ${response.data.code}`);
-      setResetStep('verify');
-      setIsPasswordOtpDialogOpen(true);
-    } catch (err: any) {
-      setResetError(err.message || 'Failed to send code');
-      toast.error(err.message || 'Failed to send code');
-    } finally {
-      setResetLoading(false);
-    }
-  };
-
-  // Handler to verify and reset password
-  const handleVerifyResetPassword = async () => {
-    setResetLoading(true);
-    setResetError('');
-    if (!resetOtp || !resetNewPassword || !resetConfirmPassword) {
+    
+    if (!resetCurrentPassword || !resetNewPassword || !resetConfirmPassword) {
       setResetError('Please fill all fields');
       setResetLoading(false);
       return;
     }
+    
     if (resetNewPassword !== resetConfirmPassword) {
       setResetError('Passwords do not match');
       setResetLoading(false);
       return;
     }
+    
     try {
-      await authService.resetPassword({
-        email: resetEmail,
-        password: resetNewPassword,
-        verification_code: resetOtp,
-      }, currentLocale);
-      toast.success('Password reset successful');
-      logout();
-      intlRouter.replace('/');
+      if (!token) throw new Error('Authentication required');
+      
+      console.log('Token exists:', !!token);
+      console.log('Token length:', token?.length);
+      console.log('Token starts with:', token?.substring(0, 20) + '...');
+      console.log('Current locale:', currentLocale);
+      console.log('Request data:', {
+        current_password: resetCurrentPassword,
+        new_password: resetNewPassword,
+      });
+      
+      const result = await authService.changePassword({
+        current_password: resetCurrentPassword,
+        new_password: resetNewPassword,
+      }, token, currentLocale);
+      
+      console.log('Change password result:', result);
+      
+      toast.success(t('password.changePasswordSuccess'));
       setIsEditingPassword(false);
-      setIsPasswordOtpDialogOpen(false);
-      setResetStep('request');
-      setResetOtp('');
+      setResetCurrentPassword('');
       setResetNewPassword('');
       setResetConfirmPassword('');
       setResetError('');
+      
+      // Logout user and navigate to main URL after successful password change
+      logout();
+      intlRouter.replace("/");
     } catch (err: any) {
-      setResetError(err.message || 'Failed to reset password');
-      toast.error(err.message || 'Failed to reset password');
+      console.error('Change password error:', err);
+      setResetError(err.message || 'Failed to change password');
+      toast.error(err.message || 'Failed to change password');
     } finally {
       setResetLoading(false);
     }
   };
 
-  // Handler to resend code
-  const handleResendPasswordResetCode = async () => {
-    setIsResendingReset(true);
-    try {
-      const response = await authService.sendResetPasswordVerificationCode({ email: resetEmail }, currentLocale);
-      toast.success(`OTP code: ${response.data.code}`);
-      setResetResendTimer(114);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to resend code');
-    } finally {
-      setIsResendingReset(false);
-    }
-  };
 
-  const [linkedAccounts] = useState([
-    { provider: "Google", email: "user@gmail.com", connected: true },
-    { provider: "Facebook", email: "user@facebook.com", connected: true },
-    { provider: "Apple", email: "user@apple.com", connected: false },
-  ]);
+
+  // const [linkedAccounts] = useState([
+  //   { provider: "Google", email: "user@gmail.com", connected: true },
+  //   { provider: "Facebook", email: "user@facebook.com", connected: true },
+  //   { provider: "Apple", email: "user@apple.com", connected: false },
+  // ]);
 
   // Update language state when locale changes
   useEffect(() => {
@@ -232,7 +202,7 @@ export default function SettingsPage() {
     setLanguage(newLanguage);
     const locale = newLanguage.toLowerCase();
     intlRouter.replace(pathname, { locale });
-    
+
     // Then, try to save the preference to the server (don't block the UI)
     if (!token) {
       // If no token, just change the language locally without showing error
@@ -241,7 +211,7 @@ export default function SettingsPage() {
 
     // Convert language code to API format (EN -> en, FA -> fa)
     const apiLanguage = newLanguage.toLowerCase();
-    
+
     // Call API to update language preference (fire and forget)
     updateLanguage({ language: apiLanguage, token: token || undefined }).catch((error) => {
       console.error("Failed to update language on server:", error);
@@ -369,7 +339,7 @@ export default function SettingsPage() {
         locale: currentLocale,
         token,
       });
-      
+
       toast.success("Account deleted successfully");
       logout(); // Logout the user after successful deletion
       intlRouter.replace("/"); // Redirect to home page
@@ -393,6 +363,231 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6">
+        {/* Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              {t("preferences.title")}
+            </CardTitle>
+            <CardDescription>
+              {t("preferences.description")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Theme */}
+            <div className="space-y-2">
+              <Label htmlFor="theme">{t("preferences.theme")}</Label>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {resolvedTheme === "dark" ? t("preferences.dark") : t("preferences.light")}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Toggle theme"
+                    onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                    className="rounded-full"
+                  >
+                    {resolvedTheme === "dark" ? (
+                      <Sun className="size-5" />
+                    ) : (
+                      <Moon className="size-5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Language */}
+            <div className="space-y-2">
+              <Label htmlFor="language">{t("preferences.language")}</Label>
+              <Select value={language} onValueChange={handleLanguageChange}>
+                <SelectTrigger>
+                  <SelectValue>
+                    <div className="flex items-center gap-2">
+                      {language === "EN" ? (
+                        <>
+                          <GB className="w-4 h-4" />
+                          {t("preferences.english")}
+                        </>
+                      ) : (
+                        <>
+                          <IR className="w-4 h-4" />
+                          {t("preferences.persian")}
+                        </>
+                      )}
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EN">
+                    <div className="flex items-center gap-2">
+                      <GB className="w-4 h-4" />
+                      {t("preferences.english")}
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="FA">
+                    <div className="flex items-center gap-2">
+                      <IR className="w-4 h-4" />
+                      {t("preferences.persian")}
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+
+        {/* Password */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              {t("password.title")}
+            </CardTitle>
+            <CardDescription>
+              {t("password.description")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              onClick={handleStartPasswordReset}
+            >
+              {t("password.changePassword")}
+            </Button>
+            
+            {/* Password Change Dialog */}
+            <Dialog open={isEditingPassword} onOpenChange={setIsEditingPassword}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{t("password.changePassword")}</DialogTitle>
+                  <DialogDescription>
+                    {t("password.dialogDescription")}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="resetEmail">{t("password.email")}</Label>
+                    <Input
+                      id="resetEmail"
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      disabled
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="resetCurrentPassword">{t("password.currentPassword")}</Label>
+                    <div className="relative">
+                      <Input
+                        id="resetCurrentPassword"
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={resetCurrentPassword}
+                        onChange={(e) => setResetCurrentPassword(e.target.value)}
+                        placeholder={t("password.currentPasswordPlaceholder")}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      >
+                        {showCurrentPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="resetNewPassword">{t("password.newPassword")}</Label>
+                    <div className="relative">
+                      <Input
+                        id="resetNewPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        value={resetNewPassword}
+                        onChange={(e) => setResetNewPassword(e.target.value)}
+                        placeholder={t("password.newPasswordPlaceholder")}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="resetConfirmPassword">{t("password.confirmPassword")}</Label>
+                    <div className="relative">
+                      <Input
+                        id="resetConfirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={resetConfirmPassword}
+                        onChange={(e) => setResetConfirmPassword(e.target.value)}
+                        placeholder={t("password.confirmPasswordPlaceholder")}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Passwords do not match error */}
+                  {resetNewPassword && resetConfirmPassword && resetNewPassword !== resetConfirmPassword && (
+                    <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded w-full">
+                      {t("password.passwordsDoNotMatch")}
+                    </div>
+                  )}
+                  <DialogFooter className="gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleCancelEdit('password')}
+                      disabled={resetLoading}
+                    >
+                      {t("password.cancel")}
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        if (resetNewPassword !== resetConfirmPassword) return;
+                        handleChangePassword();
+                      }} 
+                      disabled={resetLoading}
+                    >
+                      {resetLoading ? t("password.changing") : t("password.changePassword")}
+                    </Button>
+                  </DialogFooter>
+                  {resetError && <div className="text-red-500 text-sm">{resetError}</div>}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+
+          </CardContent>
+        </Card>
         {/* Contact Information */}
         <Card>
           <CardHeader>
@@ -565,307 +760,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Password */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              {t("password.title")}
-            </CardTitle>
-            <CardDescription>
-              {t("password.description")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!isEditingPassword ? (
-              <Button
-                variant="outline"
-                onClick={handleStartPasswordReset}
-              >
-                {t("password.changePassword")}
-              </Button>
-            ) : (
-              <div className="space-y-4">
-                {resetStep === 'request' && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="resetEmail">{t("password.email")}</Label>
-                      <Input
-                        id="resetEmail"
-                        type="email"
-                        value={resetEmail}
-                        onChange={(e) => setResetEmail(e.target.value)}
-                        disabled
-                        className="flex-1"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="resetNewPassword">{t("password.newPassword")}</Label>
-                      <div className="relative">
-                        <Input
-                          id="resetNewPassword"
-                          type={showNewPassword ? "text" : "password"}
-                          value={resetNewPassword}
-                          onChange={(e) => setResetNewPassword(e.target.value)}
-                          placeholder={t("password.newPasswordPlaceholder")}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                        >
-                          {showNewPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="resetConfirmPassword">{t("password.confirmPassword")}</Label>
-                      <div className="relative">
-                        <Input
-                          id="resetConfirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={resetConfirmPassword}
-                          onChange={(e) => setResetConfirmPassword(e.target.value)}
-                          placeholder={t("password.confirmPasswordPlaceholder")}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                    {/* Passwords do not match error (shown in settings page, not dialog) */}
-                    {resetNewPassword && resetConfirmPassword && resetNewPassword !== resetConfirmPassword && (
-                      <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded w-full">
-                        Passwords do not match
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <Button onClick={() => {
-                        if (resetNewPassword !== resetConfirmPassword) return;
-                        handleRequestPasswordResetCode();
-                      }} disabled={resetLoading}>
-                        {resetLoading ? 'Sending...' : 'Send Code'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleCancelEdit('password')}
-                        disabled={resetLoading}
-                      >
-                        {t("password.cancel")}
-                      </Button>
-                    </div>
-                    {resetError && <div className="text-red-500 text-sm">{resetError}</div>}
-                  </>
-                )}
-                {/* OTP Dialog for password reset */}
-                <Dialog open={isPasswordOtpDialogOpen} onOpenChange={setIsPasswordOtpDialogOpen}>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Enter OTP</DialogTitle>
-                      <DialogDescription>
-                        Please enter the 6-digit code sent to your email to reset your password.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-2 mt-2">
-                      <InputOTP
-                        value={resetOtp}
-                        onChange={setResetOtp}
-                        maxLength={5}
-                        containerClassName="gap-2"
-                        render={renderOtpSlots}
-                      />
-                    </div>
-                    <div className="space-y-2 mt-2">
-                      <Label htmlFor="resetNewPasswordDialog">{t("password.newPassword")}</Label>
-                      <div className="relative">
-                        <Input
-                          id="resetNewPasswordDialog"
-                          type={showNewPassword ? "text" : "password"}
-                          value={resetNewPassword}
-                          onChange={(e) => setResetNewPassword(e.target.value)}
-                          placeholder={t("password.newPasswordPlaceholder")}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                        >
-                          {showNewPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="resetConfirmPasswordDialog">{t("password.confirmPassword")}</Label>
-                      <div className="relative">
-                        <Input
-                          id="resetConfirmPasswordDialog"
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={resetConfirmPassword}
-                          onChange={(e) => setResetConfirmPassword(e.target.value)}
-                          placeholder={t("password.confirmPasswordPlaceholder")}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                    {/* Passwords do not match error */}
-                    {resetNewPassword && resetConfirmPassword && resetNewPassword !== resetConfirmPassword && (
-                      <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded w-full">
-                        Passwords do not match
-                      </div>
-                    )}
-                    <DialogFooter className="gap-2 mt-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsPasswordOtpDialogOpen(false)}
-                        disabled={resetLoading}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleVerifyResetPassword}
-                        disabled={resetLoading || resetOtp.length !== 5}
-                      >
-                        {resetLoading ? 'Verifying...' : 'Verify'}
-                      </Button>
-                    </DialogFooter>
-                    <div className="flex flex-col items-center mt-2">
-                      {resetResendTimer > 0 ? (
-                        <span className="text-sm text-muted-foreground">
-                          Resend code in {Math.floor(resetResendTimer / 60)}:{(resetResendTimer % 60).toString().padStart(2, '0')}
-                        </span>
-                      ) : (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="underline text-base mt-2 cursor-pointer p-0 h-auto min-h-0 min-w-0"
-                          disabled={isResendingReset}
-                          onClick={handleResendPasswordResetCode}
-                        >
-                          {isResendingReset ? 'Resending...' : 'Resend Code'}
-                        </Button>
-                      )}
-                    </div>
-                    {resetError && <div className="text-red-500 text-sm mt-2">{resetError}</div>}
-                  </DialogContent>
-                </Dialog>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              {t("preferences.title")}
-            </CardTitle>
-            <CardDescription>
-              {t("preferences.description")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Theme */}
-            <div className="space-y-2">
-              <Label htmlFor="theme">{t("preferences.theme")}</Label>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {resolvedTheme === "dark" ? t("preferences.dark") : t("preferences.light")}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    aria-label="Toggle theme"
-                    onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                    className="rounded-full"
-                  >
-                    {resolvedTheme === "dark" ? (
-                      <Sun className="size-5" />
-                    ) : (
-                      <Moon className="size-5" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Language */}
-            <div className="space-y-2">
-              <Label htmlFor="language">{t("preferences.language")}</Label>
-              <Select value={language} onValueChange={handleLanguageChange}>
-                <SelectTrigger>
-                  <SelectValue>
-                    <div className="flex items-center gap-2">
-                      {language === "EN" ? (
-                        <>
-                          <GB className="w-4 h-4" />
-                          {t("preferences.english")}
-                        </>
-                      ) : (
-                        <>
-                          <IR className="w-4 h-4" />
-                          {t("preferences.persian")}
-                        </>
-                      )}
-                    </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EN">
-                    <div className="flex items-center gap-2">
-                      <GB className="w-4 h-4" />
-                      {t("preferences.english")}
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="FA">
-                    <div className="flex items-center gap-2">
-                      <IR className="w-4 h-4" />
-                      {t("preferences.persian")}
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Linked Accounts */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Link className="h-5 w-5" />
@@ -900,7 +796,7 @@ export default function SettingsPage() {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Delete Account */}
         <Card className="border-destructive/20 bg-destructive/5">
@@ -928,13 +824,14 @@ export default function SettingsPage() {
                   </ul>
                 </div>
               </div>
-              
+
               <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="destructive" className="w-full sm:w-auto">
+                  <div className="flex justify-end"><Button variant="destructive" className="w-full sm:w-auto ">
                     <Trash2 className="h-4 w-4 mr-2" />
                     {t("deleteAccount.deleteButton")}
-                  </Button>
+                  </Button></div>
+                  
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
@@ -966,8 +863,8 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <DialogFooter className="gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => {
                         setIsDeleteDialogOpen(false);
                         setConfirmText("");
@@ -975,8 +872,8 @@ export default function SettingsPage() {
                     >
                       {t("deleteAccount.cancel")}
                     </Button>
-                    <Button 
-                      variant="destructive" 
+                    <Button
+                      variant="destructive"
                       disabled={confirmText !== "DELETE" || isDeletingAccount}
                       onClick={handleDeleteAccount}
                     >

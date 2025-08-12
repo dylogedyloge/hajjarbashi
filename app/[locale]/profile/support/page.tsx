@@ -145,13 +145,7 @@ const Support = () => {
     setSelectedTicket(null);
   };
 
-  // Handle send message
-  const handleSendMessage = (message: string) => {
-    // Here you would typically send the message to the API
-    // For now, we'll just show a toast
-    toast.success('Message sent successfully!');
-    console.log(message);
-  };
+
 
   // Handle form submission
   const handleSubmit = async (formData: any, attachments: File[]) => {
@@ -258,7 +252,6 @@ const Support = () => {
       <SupportChatView
         ticket={selectedTicket}
         onBackToList={handleBackToList}
-        onSendMessage={handleSendMessage}
       />
     );
   }

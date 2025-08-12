@@ -672,7 +672,20 @@
       "savePassword": "ذخیره رمز عبور",
       "cancel": "لغو",
       "email": "ایمیل",
-      "phone": "شماره تلفن"
+      "phone": "شماره تلفن",
+      "dialogDescription": "رمز عبور جدید خود را وارد کنید و ما کد تایید را به ایمیل شما ارسال خواهیم کرد",
+      "passwordsDoNotMatch": "رمزهای عبور مطابقت ندارند",
+      "sending": "در حال ارسال...",
+      "sendCode": "ارسال کد",
+      "enterOtp": "کد تایید را وارد کنید",
+      "otpDescription": "لطفاً کد ۶ رقمی ارسال شده به ایمیل شما را برای بازنشانی رمز عبور وارد کنید",
+      "verifying": "در حال تایید...",
+      "verify": "تایید",
+      "resendTimer": "ارسال مجدد کد تا {minutes}:{seconds}",
+      "resending": "در حال ارسال مجدد...",
+      "resendCode": "ارسال مجدد کد",
+      "changing": "در حال تغییر...",
+      "changePasswordSuccess": "رمز عبور با موفقیت تغییر یافت"
     },
     "preferences": {
       "title": "ترجیحات",
@@ -900,6 +913,25 @@
       "topic": "موضوع",
       "category": "دسته‌بندی",
       "status": "وضعیت"
+    },
+    "chatView": {
+      "close": "بستن",
+      "department": "بخش",
+      "topic": "موضوع",
+      "loadingMessages": "در حال بارگذاری پیام‌ها...",
+      "error": "خطا",
+      "noMessages": "هنوز پیامی وجود ندارد",
+      "typeMessage": "پیام خود را بنویسید",
+      "attachment": "پیوست",
+      "fileSelected": "فایل انتخاب شد",
+      "fileTooLarge": "فایل {fileName} خیلی بزرگ است. حداکثر اندازه ۱۰ مگابایت است.",
+      "messageSent": "پیام با موفقیت ارسال شد!",
+      "messageSentWithWarning": "پیام ارسال شد، اما ممکن است پیوست‌ها به درستی پردازش نشده باشند",
+      "failedToSendMessage": "ارسال پیام ناموفق بود",
+      "failedToFetchMessages": "بارگذاری پیام‌ها ناموفق بود",
+      "now": "اکنون",
+      "hour": "ساعت",
+      "attachmentNumber": "پیوست {number}"
     }
   }
 }

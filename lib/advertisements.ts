@@ -366,8 +366,36 @@ export async function fetchAdById({ id, locale, token }: { id: string; locale: s
   return response.json();
 } 
 
-export async function fetchUserAds({ limit, page, locale, token }: { limit: number; page: number; locale: string; token: string }) {
-  const response = await fetch(`${API_BASE_URL}/ads?limit=${limit}&page=${page}`, {
+export async function fetchUserAds({ 
+  limit, 
+  page, 
+  locale, 
+  token, 
+  status 
+}: { 
+  limit: number; 
+  page: number; 
+  locale: string; 
+  token: string; 
+  status?: string;
+}) {
+  const params = new URLSearchParams({
+    limit: limit.toString(),
+    page: page.toString(),
+  });
+
+  // Add status parameter if provided
+  if (status && status !== 'all') {
+    params.append('status', status);
+    console.log('🔍 Fetching user ads with status filter:', status);
+  } else {
+    console.log('🔍 Fetching all user ads (no status filter)');
+  }
+
+  const url = `${API_BASE_URL}/ads?${params.toString()}`;
+  console.log('📡 API URL:', url);
+
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       'x-lang': locale,

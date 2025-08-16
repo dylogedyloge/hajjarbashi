@@ -99,8 +99,12 @@ export default function ViewYourAdsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
 
+  // Debug: Log filter changes
+  console.log('🎯 ViewYourAds - Current filter:', selectedFilter);
+  console.log('🎯 ViewYourAds - Current page:', currentPage);
+
   // React Query hook for user ads
-  const userAdsQuery = useUserAds(token, locale, currentPage, itemsPerPage);
+  const userAdsQuery = useUserAds(token, locale, currentPage, itemsPerPage, selectedFilter);
 
   // Extract data from query
   const ads: UserAd[] = userAdsQuery.data?.data || [];
@@ -238,10 +242,8 @@ export default function ViewYourAdsPage() {
     return null;
   };
 
-  const filteredAds = ads.filter(ad => {
-    if (selectedFilter === "all") return true;
-    return String(ad.status) === selectedFilter;
-  });
+  // No need for client-side filtering since we're using server-side filtering
+  const filteredAds = ads;
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -344,37 +346,62 @@ export default function ViewYourAdsPage() {
           <Button
             variant={selectedFilter === "all" ? "default" : "outline"}
             size="sm"
-            onClick={() => setSelectedFilter("all")}
+            onClick={() => {
+              setSelectedFilter("all");
+              setCurrentPage(1);
+            }}
           >
             All
           </Button>
           <Button
             variant={selectedFilter === "1" ? "default" : "outline"}
             size="sm"
-            onClick={() => setSelectedFilter("1")}
+            onClick={() => {
+              setSelectedFilter("1");
+              setCurrentPage(1);
+            }}
           >
             Published
           </Button>
           <Button
             variant={selectedFilter === "2" ? "default" : "outline"}
             size="sm"
-            onClick={() => setSelectedFilter("2")}
+            onClick={() => {
+              setSelectedFilter("2");
+              setCurrentPage(1);
+            }}
           >
             Rejected
           </Button>
           <Button
             variant={selectedFilter === "3" ? "default" : "outline"}
             size="sm"
-            onClick={() => setSelectedFilter("3")}
+            onClick={() => {
+              setSelectedFilter("3");
+              setCurrentPage(1);
+            }}
           >
             Review
           </Button>
           <Button
             variant={selectedFilter === "0" ? "default" : "outline"}
             size="sm"
-            onClick={() => setSelectedFilter("0")}
+            onClick={() => {
+              setSelectedFilter("0");
+              setCurrentPage(1);
+            }}
           >
             Draft
+          </Button>
+          <Button
+            variant={selectedFilter === "5" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSelectedFilter("5");
+              setCurrentPage(1);
+            }}
+          >
+            Expired
           </Button>
         </div>
 
@@ -589,6 +616,19 @@ export default function ViewYourAdsPage() {
               : `No ${getStatusText(selectedFilter).toLowerCase()} ads found`
             }
           </p>
+          {selectedFilter !== "all" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedFilter("all");
+                setCurrentPage(1);
+              }}
+              className="mt-2"
+            >
+              View All Ads
+            </Button>
+          )}
         </div>
       )}
     </div>

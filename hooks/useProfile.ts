@@ -56,14 +56,15 @@ export function useMyProfile(token: string | null, locale: string) {
 
 // Fetch user ads hook
 export function useUserAds(
-  token: string | null, 
+  token: string | null,
   locale: string, 
   page: number = 1, 
-  limit: number = 12
+  limit: number = 12,
+  status: string = 'all'
 ) {
   return useQuery({
-    queryKey: ['userAds', token, locale, page, limit],
-    queryFn: () => fetchUserAds({ limit, page, locale, token: token! }),
+    queryKey: ['userAds', token, locale, page, limit, status],
+    queryFn: () => fetchUserAds({ limit, page, locale, token: token!, status }),
     enabled: !!token, // Only run query if token exists
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes

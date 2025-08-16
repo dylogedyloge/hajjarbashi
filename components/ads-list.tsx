@@ -154,7 +154,7 @@ const AdsList = ({
       </div>
       
       {/* Pagination Mode Toggle */}
-      <div className="flex justify-center gap-2">
+      {/* <div className="flex justify-center gap-2">
         <button
           onClick={() => setPaginationMode('pagination')}
           className={`px-3 py-1 text-sm rounded-md ${
@@ -175,7 +175,7 @@ const AdsList = ({
         >
           Infinite Scroll
         </button>
-      </div>
+      </div> */}
 
       {/* Ads Container */}
       {ads.length > 0 ? (

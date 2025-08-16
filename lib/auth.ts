@@ -192,7 +192,7 @@ export const authService = {
   },
 
   async sendResetPasswordVerificationCode(data: SendResetPasswordVerificationCodeRequest, lang: string = 'en'): Promise<SendResetPasswordVerificationCodeResponse> {
-    const response = await fetch(`${API_BASE_URL}/users/send_reset_password_verificaton_code`, {
+    const response = await fetch(`${API_BASE_URL}/users/send_forget_password_verificaton_code`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -136,9 +136,6 @@ const AdsList = ({
     return items;
   };
 
-  if (isLoading) return <div className="text-center py-8">Loading ads...</div>;
-  if (isError) return <div className="text-center text-destructive py-8">{(error as Error)?.message || "Failed to load ads"}</div>;
-
   return (
     <div className="flex flex-col gap-8 w-full px-4">
       {/* Mobile: Search and Badge Filters */}
@@ -187,149 +184,190 @@ const AdsList = ({
         </button>
       </div>
 
-      {/* Ads Container */}
-      {ads.length > 0 ? (
-        <>
-          <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'flex flex-col gap-8'}>
-            {ads.map((ad: Ad) => (
-              <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
-                <AdCard ad={ad} isGrid={layout === 'grid'} />
-              </Link>
-            ))}
+      {/* Loading State - Only for Ads Content */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
           </div>
-          
-          {/* Pagination Mode */}
-          {paginationMode === 'pagination' && data?.pages[0]?.data?.total && (
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            Loading ads...
+          </h3>
+          <p className="text-muted-foreground">
+            Please wait while we fetch the latest advertisements.
+          </p>
+        </div>
+      )}
+
+      {/* Error State - Only for Ads Content */}
+      {isError && !isLoading && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+            <Filter className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            Failed to load ads
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            {(error as Error)?.message || "An error occurred while loading advertisements."}
+          </p>
+          <button 
+            onClick={() => refetch()}
+            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {/* Ads Content Area */}
+      {!isLoading && !isError && (
+        <>
+          {/* Ads Container */}
+          {ads.length > 0 ? (
             <>
-              {/* Pagination Controls */}
-              {generatePaginationItems().length > 1 && (
-                <div className="flex justify-center mt-8">
-                  <div className="flex flex-col items-center gap-4">
-                    <Pagination>
-                      <PaginationContent>
-                        {/* Previous Button */}
-                        <PaginationItem>
-                          <PaginationPrevious 
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (currentPage > 1) {
-                                handlePageChange(currentPage - 1);
-                              }
-                            }}
-                            className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                          />
-                        </PaginationItem>
-                        
-                        {/* Page Numbers */}
-                        {generatePaginationItems().map((item, index) => (
-                          <PaginationItem key={index}>
-                            {item === 'ellipsis1' || item === 'ellipsis2' ? (
-                              <PaginationEllipsis />
-                            ) : (
-                              <PaginationLink
+              <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'flex flex-col gap-8'}>
+                {ads.map((ad: Ad) => (
+                  <Link key={ad.id} href={`/ads/${ad.id}`} className="block">
+                    <AdCard ad={ad} isGrid={layout === 'grid'} />
+                  </Link>
+                ))}
+              </div>
+              
+              {/* Pagination Mode */}
+              {paginationMode === 'pagination' && data?.pages[0]?.data?.total && (
+                <>
+                  {/* Pagination Controls */}
+                  {generatePaginationItems().length > 1 && (
+                    <div className="flex justify-center mt-8">
+                      <div className="flex flex-col items-center gap-4">
+                        <Pagination>
+                          <PaginationContent>
+                            {/* Previous Button */}
+                            <PaginationItem>
+                              <PaginationPrevious 
                                 href="#"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  handlePageChange(item as number);
+                                  if (currentPage > 1) {
+                                    handlePageChange(currentPage - 1);
+                                  }
                                 }}
-                                isActive={currentPage === item}
-                                className="cursor-pointer"
-                              >
-                                {item}
-                              </PaginationLink>
-                            )}
-                          </PaginationItem>
-                        ))}
-                        
-                        {/* Next Button */}
-                        <PaginationItem>
-                          <PaginationNext 
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const totalPages = Math.ceil((data.pages[0].data.total || 0) / 2);
-                              if (currentPage < totalPages) {
-                                handlePageChange(currentPage + 1);
-                              }
-                            }}
-                            className={currentPage >= Math.ceil((data.pages[0].data.total || 0) / 2) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
+                                className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                              />
+                            </PaginationItem>
+                            
+                            {/* Page Numbers */}
+                            {generatePaginationItems().map((item, index) => (
+                              <PaginationItem key={index}>
+                                {item === 'ellipsis1' || item === 'ellipsis2' ? (
+                                  <PaginationEllipsis />
+                                ) : (
+                                  <PaginationLink
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handlePageChange(item as number);
+                                    }}
+                                    isActive={currentPage === item}
+                                    className="cursor-pointer"
+                                  >
+                                    {item}
+                                  </PaginationLink>
+                                )}
+                              </PaginationItem>
+                            ))}
+                            
+                            {/* Next Button */}
+                            <PaginationItem>
+                              <PaginationNext 
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  const totalPages = Math.ceil((data.pages[0].data.total || 0) / 2);
+                                  if (currentPage < totalPages) {
+                                    handlePageChange(currentPage + 1);
+                                  }
+                                }}
+                                className={currentPage >= Math.ceil((data.pages[0].data.total || 0) / 2) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              
+              {/* Infinite Scroll Mode */}
+              {paginationMode === 'infinite' && hasNextPage && (
+                <div className="flex justify-center mt-8 py-4">
+                  {isFetchingNextPage ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Loading more ads...
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => fetchNextPage()}
+                      className="px-4 py-2 text-sm border rounded-md hover:bg-muted transition-colors"
+                    >
+                      Load More
+                    </button>
+                  )}
+                </div>
+              )}
+              
+              {/* Results Info */}
+              {data?.pages[0]?.data?.total && (
+                <div className="text-center text-sm text-muted-foreground mt-4">
+                  {paginationMode === 'pagination' ? (
+                    t("showingResults", { 
+                      current: ads.length, 
+                      total: data.pages[0].data.total 
+                    })
+                  ) : (
+                    t("showingResults", { 
+                      current: allAds.length, 
+                      total: data.pages[0].data.total 
+                    })
+                  )}
+                  {paginationMode === 'infinite' && !hasNextPage && data.pages[0].data.total > allAds.length && (
+                    <span className="ml-2 text-green-600">{t("allAdsLoaded")}</span>
+                  )}
                 </div>
               )}
             </>
-          )}
-          
-          {/* Infinite Scroll Mode */}
-          {paginationMode === 'infinite' && hasNextPage && (
-            <div className="flex justify-center mt-8 py-4">
-              {isFetchingNextPage ? (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Loading more ads...
-                </div>
-              ) : (
-                <button
-                  onClick={() => fetchNextPage()}
-                  className="px-4 py-2 text-sm border rounded-md hover:bg-muted"
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                {hasActiveFilters ? (
+                  <Filter className="w-8 h-8 text-muted-foreground" />
+                ) : (
+                  <Search className="w-8 h-8 text-muted-foreground" />
+                )}
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {hasActiveFilters ? t("noMatchingAds") : t("noAdsAvailable")}
+              </h3>
+              <p className="text-muted-foreground max-w-md">
+                {hasActiveFilters 
+                  ? t("tryAdjustingFilters")
+                  : t("checkBackLater")
+                }
+              </p>
+              {hasActiveFilters && (
+                <button 
+                  onClick={() => refetch()}
+                  className="mt-4 text-sm text-primary hover:text-primary/80 underline"
                 >
-                  Load More
+                  {t("clearAllFilters")}
                 </button>
               )}
             </div>
           )}
-          
-          {/* Results Info */}
-          {data?.pages[0]?.data?.total && (
-            <div className="text-center text-sm text-muted-foreground mt-4">
-              {paginationMode === 'pagination' ? (
-                t("showingResults", { 
-                  current: ads.length, 
-                  total: data.pages[0].data.total 
-                })
-              ) : (
-                t("showingResults", { 
-                  current: allAds.length, 
-                  total: data.pages[0].data.total 
-                })
-              )}
-              {paginationMode === 'infinite' && !hasNextPage && data.pages[0].data.total > allAds.length && (
-                <span className="ml-2 text-green-600">{t("allAdsLoaded")}</span>
-              )}
-            </div>
-          )}
         </>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-            {hasActiveFilters ? (
-              <Filter className="w-8 h-8 text-muted-foreground" />
-            ) : (
-              <Search className="w-8 h-8 text-muted-foreground" />
-            )}
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            {hasActiveFilters ? t("noMatchingAds") : t("noAdsAvailable")}
-          </h3>
-          <p className="text-muted-foreground max-w-md">
-            {hasActiveFilters 
-              ? t("tryAdjustingFilters")
-              : t("checkBackLater")
-            }
-          </p>
-          {hasActiveFilters && (
-            <button 
-              onClick={() => refetch()}
-              className="mt-4 text-sm text-primary hover:text-primary/80 underline"
-            >
-              {t("clearAllFilters")}
-            </button>
-          )}
-        </div>
       )}
     </div>
   );

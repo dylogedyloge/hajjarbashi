@@ -44,6 +44,17 @@ export function useLogin() {
   });
 }
 
+// Logout hook
+export function useLogout() {
+  return useMutation({
+    mutationFn: ({ token, lang = 'en' }: { token: string; lang?: string }) =>
+      authService.logout(token, lang),
+    onError: (error) => {
+      console.error('Logout error:', error);
+    },
+  });
+}
+
 // Send verification SMS hook
 export function useSendVerificationSms() {
   return useMutation({

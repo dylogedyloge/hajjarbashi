@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { fetchUserAds } from "@/lib/advertisements";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -27,6 +26,7 @@ import {
   Grid,
   List
 } from "lucide-react";
+import { useUserAds } from "@/hooks/useProfile";
 
 type UserAd = {
   id: string;
@@ -92,63 +92,24 @@ export default function ViewYourAdsPage() {
   const { token, isAuthenticated } = useAuth();
   const locale = useLocale();
   const t = useTranslations("ViewYourAds");
-  const [ads, setAds] = useState<UserAd[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage] = useState(12);
 
-  useEffect(() => {
-    if (!isAuthenticated || !token) {
-      setError("Please sign in to view your ads");
-      setLoading(false);
-      return;
-    }
+  // React Query hook for user ads
+  const userAdsQuery = useUserAds(token, locale, currentPage, itemsPerPage);
 
-    const fetchUserAdsData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetchUserAds({ 
-          limit: itemsPerPage, 
-          page: currentPage, 
-          locale, 
-          token 
-        });
-        
-        setAds(response.data || []);
-        
-        // Set pagination data
-        if (response.data && response.data.length > 0) {
-          // If we get a full page, there might be more
-          if (response.data.length === itemsPerPage) {
-            setTotalPages(Math.max(currentPage + 1, totalPages));
-            setTotalItems((currentPage * itemsPerPage) + response.data.length);
-          } else {
-            // This is likely the last page
-            setTotalPages(currentPage);
-            setTotalItems((currentPage - 1) * itemsPerPage + response.data.length);
-          }
-        } else {
-          setTotalPages(1);
-          setTotalItems(0);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load your ads");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Extract data from query
+  const ads: UserAd[] = userAdsQuery.data?.data || [];
+  const loading = userAdsQuery.isLoading;
+  const error = userAdsQuery.error?.message || null;
 
-    fetchUserAdsData();
-  }, [isAuthenticated, token, locale, currentPage, itemsPerPage]);
+  // Calculate pagination data
+  const totalItems = userAdsQuery.data?.total || 0;
+  const totalPages = userAdsQuery.data?.total_pages || 1;
 
   const getStatusIcon = (status?: string | number) => {
     switch (status) {

@@ -1,20 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { 
-  fetchTickets, 
-  fetchTicketCategories, 
-  fetchTicketTopics,
-  createTicket,
   type Ticket,
   type TicketCategory,
   type TicketTopic
 } from "@/lib/profile";
+import { 
+  useTickets, 
+  useTicketCategories, 
+  useTicketTopics,
+  useCreateTicket
+} from "@/hooks/useProfile";
 
 // Import components
 import SupportHeader from "@/components/support/SupportHeader";
@@ -27,11 +29,7 @@ const Support = () => {
   const { token, isAuthenticated } = useAuth();
   const locale = useLocale();
   
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage] = useState(10);
   
   // Form state
@@ -41,97 +39,24 @@ const Support = () => {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [showTicketDetail, setShowTicketDetail] = useState(false);
   
-  // Categories and topics state
-  const [categories, setCategories] = useState<TicketCategory[]>([]);
-  const [topics, setTopics] = useState<TicketTopic[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
-  const [loadingTopics, setLoadingTopics] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  // Category selection state
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
-  // Fetch ticket categories
-  const fetchCategories = async () => {
-    if (!token) return;
-    
-    try {
-      setLoadingCategories(true);
-      const data = await fetchTicketCategories(token, locale);
-      if (data.success) {
-        setCategories(data.data || []);
-      }
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
+  // React Query hooks
+  const ticketsQuery = useTickets(token, locale, currentPage, itemsPerPage);
+  const categoriesQuery = useTicketCategories(token, locale);
+  const topicsQuery = useTicketTopics(token, locale, selectedCategoryId);
+  const createTicketMutation = useCreateTicket();
 
-  // Fetch topics for selected category
-  const fetchTopics = async (categoryId: number) => {
-    if (!token || !categoryId) return;
-    
-    try {
-      setLoadingTopics(true);
-      const data = await fetchTicketTopics(token, locale, categoryId);
-      if (data.success) {
-        setTopics(data.data || []);
-      }
-    } catch (err) {
-      console.error('Error fetching topics:', err);
-    } finally {
-      setLoadingTopics(false);
-    }
-  };
-
-  // Fetch tickets from API
-  const fetchTicketsData = async (page: number = 1) => {
-    if (!token || !isAuthenticated) {
-      setError("Authentication required");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await fetchTickets(token, locale, page, itemsPerPage);
-      
-      if (data.success) {
-        setTickets(data.data);
-        setCurrentPage(page);
-        
-        // Calculate pagination info
-        if (data.data.length > 0) {
-          // If we get a full page, there might be more
-          if (data.data.length === itemsPerPage) {
-            setTotalPages(Math.max(page + 1, totalPages));
-          } else {
-            // This is likely the last page
-            setTotalPages(page);
-          }
-        } else {
-          setTotalPages(1);
-        }
-      } else {
-        throw new Error(data.message || 'Failed to fetch tickets');
-      }
-    } catch (err) {
-      console.error('Error fetching tickets:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch tickets');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTicketsData(currentPage);
-    fetchCategories(); // Fetch categories on mount
-  }, [token, isAuthenticated, locale]);
-
-  // Handle page change
-  // const handlePageChange = (page: number) => {
-  //   fetchTicketsData(page);
-  // };
+  // Extract data from queries
+  const tickets: Ticket[] = ticketsQuery.data?.data || [];
+  const loading = ticketsQuery.isLoading;
+  const error = ticketsQuery.error?.message || null;
+  const categories: TicketCategory[] = categoriesQuery.data?.data || [];
+  const topics: TicketTopic[] = topicsQuery.data?.data || [];
+  const loadingCategories = categoriesQuery.isLoading;
+  const loadingTopics = topicsQuery.isLoading;
+  const submitting = createTicketMutation.isPending;
 
   // Handle ticket selection
   const handleTicketClick = (ticket: Ticket) => {
@@ -145,8 +70,6 @@ const Support = () => {
     setSelectedTicket(null);
   };
 
-
-
   // Handle form submission
   const handleSubmit = async (formData: any, attachments: File[]) => {
     try {
@@ -155,28 +78,37 @@ const Support = () => {
         return;
       }
       
-      setSubmitting(true);
-      const data = await createTicket({
-        category_id: parseInt(formData.department),
-        topic_id: parseInt(formData.topic),
-        subject: formData.subject,
-        message: formData.description,
-        priority: parseInt(formData.priority),
-        attachments: attachments
-      }, token, locale);
-
-      if (data.success) {
-        toast.success('Ticket created successfully!');
-        setShowCreateForm(false);
-        fetchTicketsData(currentPage); // Refresh tickets
-      } else {
-        toast.error('Failed to create ticket: ' + (data.message || 'Unknown error'));
-      }
+      createTicketMutation.mutate(
+        {
+          data: {
+            category_id: parseInt(formData.department),
+            topic_id: parseInt(formData.topic),
+            subject: formData.subject,
+            message: formData.description,
+            priority: parseInt(formData.priority),
+            attachments: attachments
+          },
+          token,
+          locale
+        },
+        {
+          onSuccess: (response) => {
+            if (response.success) {
+              toast.success('Ticket created successfully!');
+              setShowCreateForm(false);
+            } else {
+              toast.error('Failed to create ticket: ' + (response.message || 'Unknown error'));
+            }
+          },
+          onError: (error) => {
+            console.error('Error creating ticket:', error);
+            toast.error('Failed to create ticket: ' + (error instanceof Error ? error.message : 'Unknown error'));
+          },
+        }
+      );
     } catch (err) {
       console.error('Error creating ticket:', err);
       toast.error('Failed to create ticket: ' + (err instanceof Error ? err.message : 'Unknown error'));
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -188,9 +120,9 @@ const Support = () => {
   // Handle category change
   const handleCategoryChange = (categoryId: string) => {
     if (categoryId) {
-      fetchTopics(parseInt(categoryId));
+      setSelectedCategoryId(parseInt(categoryId));
     } else {
-      setTopics([]);
+      setSelectedCategoryId(null);
     }
   };
 
@@ -222,7 +154,7 @@ const Support = () => {
         <div className="text-center py-12">
           <h2 className="text-2xl font-semibold">{t("createTicket.title")}</h2>
           <p className="text-destructive">{error}</p>
-          <Button onClick={() => fetchTicketsData(currentPage)} className="mt-4">
+          <Button onClick={() => ticketsQuery.refetch()} className="mt-4">
             Retry
           </Button>
         </div>

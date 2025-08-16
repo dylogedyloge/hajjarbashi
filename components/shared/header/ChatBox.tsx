@@ -5,7 +5,15 @@ import { Button } from "@/components/ui/button";
 
 import { useTranslations } from 'next-intl';
 import { useParams } from "next/navigation";
-import { getChatList, deleteChat as deleteChatApi, getMessages, uploadAttachment, blockUser, unblockUser } from "@/lib/chat";
+import { useAuth } from "@/lib/auth-context";
+import { 
+  useChatList, 
+  useDeleteChat, 
+  useMessages, 
+  useUploadAttachment, 
+  useBlockUser, 
+  useUnblockUser 
+} from "@/hooks/useChat";
 import socket from "@/utils/socket";
 import { Conversation, InitialSelectedUser, Message } from "@/types/chat";
 import ChatList from "@/components/chat/ChatList/ChatList";
@@ -22,17 +30,11 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   const t = useTranslations('ChatBox');
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
+  const { token } = useAuth();
+  
   const [selected, setSelected] = useState<Conversation | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [chatList, setChatList] = useState<any[]>([]);
-  const [loadingChats, setLoadingChats] = useState(false);
-  const [chatListError, setChatListError] = useState<string | null>(null);
-  const [deletingChatId, setDeletingChatId] = useState<number | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [loadingMessages, setLoadingMessages] = useState(false);
-  const [messagesError, setMessagesError] = useState<string | null>(null);
-  const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   // Real-time chat state
@@ -45,32 +47,55 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
   const [userBlockedYou, setUserBlockedYou] = useState(false);
   const [blockError, setBlockError] = useState<string | null>(null);
 
+  // React Query hooks
+  const chatListQuery = useChatList(token, locale);
+  const deleteChatMutation = useDeleteChat();
+  const messagesQuery = useMessages(selected?.id || null, token, locale);
+  const uploadAttachmentMutation = useUploadAttachment();
+  const blockUserMutation = useBlockUser();
+  const unblockUserMutation = useUnblockUser();
+
   // Block/unblock handlers
   const handleBlockUser = async () => {
     setBlockError(null);
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const lang = locale;
-      const userId = selected?.userId;
-      if (!userId) throw new Error('No user selected');
-      await blockUser({ userId, token: token || '', lang });
-      setYouBlockedUser(true);
-    } catch (err: any) {
-      setBlockError(err.message || 'Failed to block user');
+    const userId = selected?.userId;
+    if (!userId || !token) {
+      setBlockError('No user selected or not authenticated');
+      return;
     }
+    
+    blockUserMutation.mutate(
+      { userId, token, locale },
+      {
+        onSuccess: () => {
+          setYouBlockedUser(true);
+        },
+        onError: (error) => {
+          setBlockError(error instanceof Error ? error.message : 'Failed to block user');
+        },
+      }
+    );
   };
+
   const handleUnblockUser = async () => {
     setBlockError(null);
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const lang = locale;
-      const userId = selected?.userId;
-      if (!userId) throw new Error('No user selected');
-      await unblockUser({ userId, token: token || '', lang });
-      setYouBlockedUser(false);
-    } catch (err: any) {
-      setBlockError(err.message || 'Failed to unblock user');
+    const userId = selected?.userId;
+    if (!userId || !token) {
+      setBlockError('No user selected or not authenticated');
+      return;
     }
+    
+    unblockUserMutation.mutate(
+      { userId, token, locale },
+      {
+        onSuccess: () => {
+          setYouBlockedUser(false);
+        },
+        onError: (error) => {
+          setBlockError(error instanceof Error ? error.message : 'Failed to unblock user');
+        },
+      }
+    );
   };
 
   // Helper to get current user id from localStorage
@@ -86,34 +111,19 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
     }
   };
 
-  // Fetch chat list from API
-  const fetchChatList = async () => {
-    setLoadingChats(true);
-    setChatListError(null);
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const chats = await getChatList({ token: token || '', lang: locale });
-      setChatList(chats);
-    } catch (e: any) {
-      setChatListError(e.message || 'Failed to fetch chats');
-    } finally {
-      setLoadingChats(false);
-    }
-  };
-
-  // Fetch chat list on mount and whenever returning to chat list (when selected is null)
-  useEffect(() => {
-    if (!selected) {
-      fetchChatList();
-    }
-  }, [selected]);
+  // Extract data from React Query hooks
+  const chatList = chatListQuery.data || [];
+  const loadingChats = chatListQuery.isLoading;
+  const chatListError = chatListQuery.error?.message || null;
+  const deleteError = deleteChatMutation.error?.message || null;
+  const deletingChatId = deleteChatMutation.isPending ? selected?.id || null : null;
 
   // Select initial user if provided (from AdCreatorCard) ONLY on first mount
   useEffect(() => {
-    if (initialSelectedUser) {
+    if (initialSelectedUser && chatList.length > 0) {
       // Try to find the user in chatList
       const found = chatList.find(
-        (c) => c.user_id === initialSelectedUser.userId || c.name === initialSelectedUser.name
+        (c:any) => c.user_id === initialSelectedUser.userId || c.name === initialSelectedUser.name
       );
       if (found) {
         setSelected({
@@ -131,8 +141,7 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
         setSelected(null);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialSelectedUser, chatList]);
 
   // Track selected state changes for debugging
   useEffect(() => {
@@ -213,53 +222,39 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
-  // Fetch message history when a chat is selected
+  // Process messages from React Query
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (!selected) {
-        return;
+    if (messagesQuery.data?.data && selected) {
+      const myUserId = getMyUserId();
+      const msgs = messagesQuery.data;
+      
+      // Handle blocked user states from API response
+      if (msgs?.data) {
+        const { you_blocked_user, user_blocked_you } = msgs.data;
+        setYouBlockedUser(!!you_blocked_user);
+        setUserBlockedYou(!!user_blocked_you);
       }
-      setLoadingMessages(true);
-      setMessagesError(null);
-      try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        const myUserId = getMyUserId();
-        const msgs = await getMessages({ chatId: selected.id, token: token || '', lang: locale, limit: 50, page: 1, search: '' });
-        
-        // Handle blocked user states from API response
-        if (msgs?.data) {
-          const { you_blocked_user, user_blocked_you } = msgs.data;
-          setYouBlockedUser(!!you_blocked_user);
-          setUserBlockedYou(!!user_blocked_you);
-        }
-        
-        // Ensure messages is an array before mapping
-        const messagesArray = Array.isArray(msgs?.data?.messages) ? msgs.data.messages : [];
-        
-        setMessages(
-          messagesArray.map((msg: any) => ({
-            id: msg.id,
-            chat_id: selected.id,
-            sender: msg.maker_id === myUserId ? "me" : "them",
-            text: msg.message,
-            time: msg.time
-              ? msg.time
-              : msg.created_at
-                ? new Date(typeof msg.created_at === 'number' ? msg.created_at : parseInt(msg.created_at)).toISOString()
-                : new Date().toISOString(),
-            attachments: msg.attachments,
-            seen: msg.seen,
-          }))
-        );
-      } catch (e: any) {
-        setMessagesError(e.message || 'Failed to fetch messages');
-      } finally {
-        setLoadingMessages(false);
-      }
-    };
-    fetchMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected?.id]);
+      
+      // Ensure messages is an array before mapping
+      const messagesArray = Array.isArray(msgs?.data?.messages) ? msgs.data.messages : [];
+      
+      setMessages(
+        messagesArray.map((msg: any) => ({
+          id: msg.id,
+          chat_id: selected.id,
+          sender: msg.maker_id === myUserId ? "me" : "them",
+          text: msg.message,
+          time: msg.time
+            ? msg.time
+            : msg.created_at
+              ? new Date(typeof msg.created_at === 'number' ? msg.created_at : parseInt(msg.created_at)).toISOString()
+              : new Date().toISOString(),
+          attachments: msg.attachments,
+          seen: msg.seen,
+        }))
+      );
+    }
+  }, [messagesQuery.data, selected]);
 
   // Send message handler (real-time)
   const handleSend = (e?: React.FormEvent) => {
@@ -290,17 +285,23 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
 
   // Delete chat handler
   const handleDeleteChat = async (chatId: number) => {
-    setDeletingChatId(chatId);
-    setDeleteError(null);
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      await deleteChatApi({ chatId, token: token || '', lang: locale });
-      setChatList((prev) => prev.filter((c) => c.id !== chatId));
-    } catch (e: any) {
-      setDeleteError(e.message || 'Failed to delete chat');
-    } finally {
-      setDeletingChatId(null);
-    }
+    if (!token) return;
+    
+    deleteChatMutation.mutate(
+      { chatId, token, locale },
+      {
+        onSuccess: () => {
+          // If we're deleting the currently selected chat, go back to list
+          if (selected?.id === chatId) {
+            setSelected(null);
+            setMessages([]);
+          }
+        },
+        onError: (error) => {
+          console.error('Failed to delete chat:', error);
+        },
+      }
+    );
   };
 
   const handleBackToList = () => {
@@ -368,8 +369,8 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
           <MessageList
             messages={messages}
             selected={selected}
-            loadingMessages={loadingMessages}
-            messagesError={messagesError}
+            loadingMessages={messagesQuery.isLoading}
+            messagesError={messagesQuery.error?.message || null}
             messagesEndRef={messagesEndRef}
           />
           
@@ -385,74 +386,81 @@ export default function ChatBox({ onClose, initialSelectedUser }: ChatBoxProps) 
               {blockError && <span className="text-xs text-red-500 mt-2">{blockError}</span>}
             </div>
           ) : (
-            <ChatInput
-              input={input}
-              onInputChange={setInput}
-              onSend={handleSend}
-              onAttachFile={async (file) => {
-                setUploadingAttachment(true);
-                setAttachmentError(null);
-                try {
-                  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-                  const data = await uploadAttachment({ chatId: selected.id, file, token: token || '', lang: locale });
-                  const attachmentMsg = {
-                    chat_id: selected.id,
-                    message: '',
-                    attachments: [data.media_path],
-                  };
-                  socket.emit("sendMessage", attachmentMsg);
-                  setMessages((prev) => [
-                    ...prev,
-                    {
-                      id: Date.now(),
+                      <ChatInput
+            input={input}
+            onInputChange={setInput}
+            onSend={handleSend}
+            onAttachFile={async (file) => {
+              setAttachmentError(null);
+              if (!token || !selected) return;
+              
+              uploadAttachmentMutation.mutate(
+                { chatId: selected.id, file, token, locale },
+                {
+                  onSuccess: (data) => {
+                    const attachmentMsg = {
                       chat_id: selected.id,
-                      sender: "me",
-                      text: '',
-                      time: new Date().toISOString(),
+                      message: '',
                       attachments: [data.media_path],
-                    },
-                  ]);
-                } catch (err: any) {
-                  setAttachmentError(err.message || 'Failed to upload attachment');
-                  console.error('[ChatBox] Attachment upload error:', err);
-                } finally {
-                  setUploadingAttachment(false);
+                    };
+                    socket.emit("sendMessage", attachmentMsg);
+                    setMessages((prev) => [
+                      ...prev,
+                      {
+                        id: Date.now(),
+                        chat_id: selected.id,
+                        sender: "me",
+                        text: '',
+                        time: new Date().toISOString(),
+                        attachments: [data.media_path],
+                      },
+                    ]);
+                  },
+                  onError: (error) => {
+                    setAttachmentError(error instanceof Error ? error.message : 'Failed to upload attachment');
+                    console.error('[ChatBox] Attachment upload error:', error);
+                  },
                 }
-              }}
-              onSendVoice={async (audioBlob) => {
-                setAttachmentError(null);
-                try {
-                  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-                  const file = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: audioBlob.type });
-                  const data = await uploadAttachment({ chatId: selected.id, file, token: token || '', lang: locale });
-                  const voiceMsg = {
-                    chat_id: selected.id,
-                    message: '',
-                    attachments: [data.media_path],
-                  };
-                  socket.emit("sendMessage", voiceMsg);
-                  setMessages((prev) => [
-                    ...prev,
-                    {
-                      id: Date.now(),
+              );
+            }}
+            onSendVoice={async (audioBlob) => {
+              setAttachmentError(null);
+              if (!token || !selected) return;
+              
+              const file = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: audioBlob.type });
+              uploadAttachmentMutation.mutate(
+                { chatId: selected.id, file, token, locale },
+                {
+                  onSuccess: (data) => {
+                    const voiceMsg = {
                       chat_id: selected.id,
-                      sender: "me",
-                      text: '',
-                      time: new Date().toISOString(),
+                      message: '',
                       attachments: [data.media_path],
-                    },
-                  ]);
-                } catch (err: any) {
-                  setAttachmentError(err.message || 'Failed to upload voice message');
-                  console.error('[ChatBox] Voice message upload error:', err);
-                } finally {
-                  // setSendingVoice(false); // Removed as per edit hint
+                    };
+                    socket.emit("sendMessage", voiceMsg);
+                    setMessages((prev) => [
+                      ...prev,
+                      {
+                        id: Date.now(),
+                        chat_id: selected.id,
+                        sender: "me",
+                        text: '',
+                        time: new Date().toISOString(),
+                        attachments: [data.media_path],
+                      },
+                    ]);
+                  },
+                  onError: (error) => {
+                    setAttachmentError(error instanceof Error ? error.message : 'Failed to upload voice message');
+                    console.error('[ChatBox] Voice message upload error:', error);
+                  },
                 }
-              }}
-              uploadingAttachment={uploadingAttachment}
-              attachmentError={attachmentError}
-              connected={connected}
-            />
+              );
+            }}
+            uploadingAttachment={uploadAttachmentMutation.isPending}
+            attachmentError={attachmentError}
+            connected={connected}
+          />
           )}
         </>
       )}

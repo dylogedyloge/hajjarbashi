@@ -1,4 +1,5 @@
 import type { Country, City } from './common';
+import type { ContactInfoItem } from './user';
 
 export interface UpdateProfileImageResponse {
   success: boolean;
@@ -33,7 +34,7 @@ export interface MyProfileResponse {
     rate: number;
     avatar: string;
     avatar_thumb: string;
-    contact_info: string | null;
+    contact_info: ContactInfoItem[] | null;
     show_contact_info: boolean;
     bio: string;
     company_name: string;

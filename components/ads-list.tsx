@@ -44,7 +44,7 @@ const AdsList = ({
   const [layout, setLayout] = useState<'list' | 'grid'>('grid');
   const [sort, setSort] = useState<string>("latest");
   const [currentPage, setCurrentPage] = useState(1);
-  const [paginationMode, setPaginationMode] = useState<'pagination' | 'infinite'>('pagination');
+  const [paginationMode, setPaginationMode] = useState<'pagination' | 'infinite'>('infinite');
   
   // Use React Query for fetching ads
   const {

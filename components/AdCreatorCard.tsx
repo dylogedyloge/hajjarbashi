@@ -3,8 +3,6 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Phone, MessageCircle, ChevronRight } from "lucide-react";
-// Remove ChatBox import
-// import { ChatBox } from "./ChatBox";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +11,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { openChat } from "@/lib/chat";
+import { useAuth } from "@/lib/auth-context";
+import { useOpenChat } from "@/hooks/useChat";
+import { useParams } from "next/navigation";
 
 interface AdCreatorCardProps {
   avatarUrl: string;
@@ -43,15 +43,10 @@ export function AdCreatorCard({
   contactInfo = [],
 }: AdCreatorCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  // Remove chat-related state
-  // const [chatOpen, setChatOpen] = useState(false);
-  // const [chatId, setChatId] = useState<number | null>(null);
-  // const [otherUserId, setOtherUserId] = useState<string>("");
-
-  // const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-
-  // Remove handleOpenChat function
-  // const handleOpenChat = async () => { ... }
+  const { token } = useAuth();
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+  const openChatMutation = useOpenChat();
 
   return (
     <Card className="bg-background rounded-xl p-4 flex flex-col gap-3 w-full max-w-md shadow-md">
@@ -80,17 +75,30 @@ export function AdCreatorCard({
         <Button
           variant="destructive"
           className="flex-1 flex gap-2 items-center cursor-pointer"
-          onClick={async () => {
-            const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-            await openChat({ adId, token: token || '', lang: 'en' });
-            window.dispatchEvent(new CustomEvent('open-chatbox', {
-              detail: {
-                userId: adCreatorUserId,
-                name,
-                avatarUrl,
-                company,
-              },
-            }));
+          onClick={() => {
+            if (!token) {
+              console.error('No authentication token available');
+              return;
+            }
+
+            openChatMutation.mutate(
+              { adId, token, locale },
+              {
+                onSuccess: () => {
+                  window.dispatchEvent(new CustomEvent('open-chatbox', {
+                    detail: {
+                      userId: adCreatorUserId,
+                      name,
+                      avatarUrl,
+                      company,
+                    },
+                  }));
+                },
+                onError: (error) => {
+                  console.error('Failed to open chat:', error);
+                },
+              }
+            );
           }}
           disabled={!isChatEnabled}
         >

@@ -20,6 +20,13 @@ import type {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.hajjardevs.ir';
 // const API_BASE_URL = 'http://192.168.10.6:3001';
 
+// Logout response type
+export interface LogoutResponse {
+  success: boolean;
+  message: string;
+  timestamp: string;
+}
+
 export const authService = {
   async signup(data: SignupRequest, lang: string = 'en'): Promise<SignupResponse> {
     const response = await fetch(`${API_BASE_URL}/users/sign_up`, {
@@ -72,6 +79,25 @@ export const authService = {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || errorData.error || `Login failed: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  async logout(token: string, lang: string = 'en'): Promise<LogoutResponse> {
+    const response = await fetch(`${API_BASE_URL}/users/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-lang': lang,
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Logout failed: ${response.status}`;
       throw new Error(errorMessage);
     }
 

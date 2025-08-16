@@ -9,7 +9,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { openChat } from "@/lib/chat";
+import { useAuth } from "@/lib/auth-context";
+import { useOpenChat } from "@/hooks/useChat";
+import { useParams } from "next/navigation";
 
 interface ActionButtonsProps {
   adId: string;
@@ -35,22 +37,39 @@ export default function ActionButtons({
   isExpressEnabled = true,
 }: ActionButtonsProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { token } = useAuth();
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+  const openChatMutation = useOpenChat();
 
   const handleContactInfo = () => {
     setDialogOpen(true);
   };
 
   const handleChat = async () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    await openChat({ adId, token: token || '', lang: 'en' });
-    window.dispatchEvent(new CustomEvent('open-chatbox', {
-      detail: {
-        userId: adCreatorUserId,
-        name: creatorName,
-        avatarUrl: creatorAvatar,
-        company: creatorCompany,
-      },
-    }));
+    if (!token) {
+      console.error('No authentication token available');
+      return;
+    }
+
+    openChatMutation.mutate(
+      { adId, token, locale },
+      {
+        onSuccess: () => {
+          window.dispatchEvent(new CustomEvent('open-chatbox', {
+            detail: {
+              userId: adCreatorUserId,
+              name: creatorName,
+              avatarUrl: creatorAvatar,
+              company: creatorCompany,
+            },
+          }));
+        },
+        onError: (error) => {
+          console.error('Failed to open chat:', error);
+        },
+      }
+    );
   };
 
   const handleExpress = () => {

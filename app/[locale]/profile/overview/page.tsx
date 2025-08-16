@@ -1,17 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from "next-intl";
-import {
-  fetchCountries,
-  fetchCities,
-  updateProfile,
-  getMyProfile,
-  saveContactInfo,
-} from "@/lib/profile";
-import type { Country, City } from "@/types/common";
 import type { ContactInfoItem } from "@/types/user";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { AccountInfoForm } from "@/components/profile/AccountInfoForm";
@@ -24,6 +16,13 @@ import type { ContactInfoFormValues } from "@/components/profile/ContactInfoForm
 import { Form } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
+import { 
+  useCountries, 
+  useCities, 
+  useMyProfile, 
+  useUpdateProfile, 
+  useSaveContactInfo 
+} from "@/hooks/useProfile";
 
 // Zod schemas
 const accountInfoSchema = z.object({
@@ -49,19 +48,13 @@ const contactInfoSchema = z.object({
 const Profile = () => {
   const t = useTranslations("Profile");
   const { user, token, login } = useAuth();
-  // Removed isUploading, showCrop, selectedImage, and related avatar upload logic
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [countriesLoading, setCountriesLoading] = useState(false);
-  const [countriesError, setCountriesError] = useState<string | null>(null);
-  const [cities, setCities] = useState<City[]>([]);
-  const [citiesLoading, setCitiesLoading] = useState(false);
-  const [citiesError, setCitiesError] = useState<string | null>(null);
-  const [accountInfoLoading, setAccountInfoLoading] = useState(false);
-  const [accountInfoError, setAccountInfoError] = useState<string | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileError, setProfileError] = useState<string | null>(null);
-  const [contactInfoLoading, setContactInfoLoading] = useState(false);
-  const [contactInfoError, setContactInfoError] = useState<string | null>(null);
+  const locale = useLocale();
+
+  // React Query hooks
+  const countriesQuery = useCountries(locale);
+  const profileQuery = useMyProfile(token, locale);
+  const updateProfileMutation = useUpdateProfile();
+  const saveContactInfoMutation = useSaveContactInfo();
 
   // react-hook-form for account info
   const accountInfoForm = useForm<AccountInfoFormValues>({
@@ -86,103 +79,57 @@ const Profile = () => {
     },
   });
 
-  // Get current locale from next-intl
-  const locale = useLocale();
-
   // Watch country field for changes
   const watchedCountry = accountInfoForm.watch("country");
 
-  useEffect(() => {
-    setCountriesLoading(true);
-    setCountriesError(null);
-    fetchCountries(locale)
-      .then((data) => setCountries(data))
-      .catch((err) =>
-        setCountriesError(err.message || "Failed to load countries")
-      )
-      .finally(() => setCountriesLoading(false));
-  }, [locale]);
+  // Get country ID for cities query
+  const countryObj = countriesQuery.data?.find((c) => c.name === watchedCountry);
+  const countryId = countryObj?.id || "";
 
-  // Fetch user profile and populate fields
-  useEffect(() => {
-    if (!token) return;
-    setProfileLoading(true);
-    setProfileError(null);
-    getMyProfile(token, locale)
-      .then((resp) => {
-        const data = resp.data;
-        accountInfoForm.reset({
-          name: data.name || "",
-          preferredLanguage: locale,
-          company: data.company_name || "",
-          position: data.position || "",
-          country: data.country_name || "",
-          city: data.city_name || "",
-          bio: data.bio || "",
-        });
-        contactInfoForm.reset({
-          contactInfos:
-            Array.isArray(data.contact_info) && data.contact_info.length > 0
-              ? data.contact_info.map((item: ContactInfoItem) => ({
-                  title: item.title || "",
-                  value: item.value || "",
-                  type:
-                    item.value &&
-                    typeof item.value === "string" &&
-                    item.value.includes("@")
-                      ? "email"
-                      : "phone",
-                }))
-              : [{ title: "", type: "phone", value: "" }],
-          showContactInfo: !!data.show_contact_info,
-        });
-      })
-      .catch((err) => setProfileError(err.message || "Failed to load profile"))
-      .finally(() => setProfileLoading(false));
-  }, [token, locale]);
+  // Cities query - only runs when countryId exists
+  const citiesQuery = useCities(countryId, locale);
 
-  // Handle crop complete from ImageCropper
-  // Avatar upload and crop logic is now handled in AvatarUploader
-
+  // Populate forms when profile data is loaded
   useEffect(() => {
-    return () => {
-      // No longer needed as selectedImage is removed
-    };
-  }, []);
-
-  // Fetch cities when watchedCountry changes
-  useEffect(() => {
-    if (!watchedCountry) {
-      setCities([]);
-      return;
+    if (profileQuery.data?.data) {
+      const data = profileQuery.data.data;
+      accountInfoForm.reset({
+        name: data.name || "",
+        preferredLanguage: locale,
+        company: data.company_name || "",
+        position: data.position || "",
+        country: data.country_name || "",
+        city: data.city_name || "",
+        bio: data.bio || "",
+      });
+      contactInfoForm.reset({
+        contactInfos:
+          Array.isArray(data.contact_info) && data.contact_info.length > 0
+            ? data.contact_info.map((item: ContactInfoItem) => ({
+                title: item.title || "",
+                value: item.value || "",
+                type:
+                  item.value &&
+                  typeof item.value === "string" &&
+                  item.value.includes("@")
+                    ? "email"
+                    : "phone",
+              }))
+            : [{ title: "", type: "phone", value: "" }],
+        showContactInfo: !!data.show_contact_info,
+      });
     }
-    setCitiesLoading(true);
-    setCitiesError(null);
-    // Find the selected country id
-    const countryObj = countries.find((c) => c.name === watchedCountry);
-    const countryId = countryObj?.id || "";
-    if (!countryId) {
-      setCities([]);
-      setCitiesLoading(false);
-      return;
-    }
-    fetchCities(countryId, locale)
-      .then((data) => setCities(data))
-      .catch((err) => setCitiesError(err.message || "Failed to load cities"))
-      .finally(() => setCitiesLoading(false));
-  }, [watchedCountry, countries, locale]);
+  }, [profileQuery.data, locale, accountInfoForm, contactInfoForm]);
 
   return (
     <>
-      {/* Crop Modal using ImageCropper */}
-      {/* Avatar upload and crop logic is now handled in AvatarUploader */}
-      {profileLoading ? (
+      {profileQuery.isLoading ? (
         <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12 text-center text-muted-foreground py-12">
           {t("loading")}
         </div>
-      ) : profileError ? (
+      ) : profileQuery.error ? (
         <div className="w-full max-w-3xl mx-auto flex flex-col gap-8 mb-12 text-center text-destructive py-12">
-          {profileError}
+          {profileQuery.error.message || "Failed to load profile"}
         </div>
       ) : (
         <div className="w-full flex flex-col lg:flex-row gap-6">
@@ -200,31 +147,31 @@ const Profile = () => {
                 {/* Account Information */}
                 <AccountInfoForm
                   form={accountInfoForm}
-                  countries={countries}
-                  countriesLoading={countriesLoading}
-                  countriesError={countriesError}
-                  cities={cities}
-                  citiesLoading={citiesLoading}
-                  citiesError={citiesError}
-                  accountInfoLoading={accountInfoLoading}
-                  accountInfoError={accountInfoError}
+                  countries={countriesQuery.data || []}
+                  countriesLoading={countriesQuery.isLoading}
+                  countriesError={countriesQuery.error?.message || null}
+                  cities={citiesQuery.data || []}
+                  citiesLoading={citiesQuery.isLoading}
+                  citiesError={citiesQuery.error?.message || null}
+                  accountInfoLoading={updateProfileMutation.isPending}
+                  accountInfoError={updateProfileMutation.error?.message || null}
                   onSubmit={async (values) => {
-                    setAccountInfoLoading(true);
-                    setAccountInfoError(null);
                     try {
                       // Find country and city IDs
-                      const countryObj = countries.find(
+                      const countryObj = countriesQuery.data?.find(
                         (c) => c.name === values.country
                       );
-                      const cityObj = cities.find((c) => c.name === values.city);
+                      const cityObj = citiesQuery.data?.find((c) => c.name === values.city);
                       if (!countryObj || !cityObj)
                         throw new Error("Please select a valid country and city");
+                      
                       // Map preferredLanguage to language code
                       let languageCode = "en";
                       if (values.preferredLanguage === "Persian")
                         languageCode = "fa";
                       else if (values.preferredLanguage === "Chinese")
                         languageCode = "zh";
+                      
                       const req = {
                         country_id: countryObj.id,
                         bio: values.bio,
@@ -236,21 +183,27 @@ const Profile = () => {
                           contactInfoForm.getValues("showContactInfo"),
                         language: languageCode,
                       };
+                      
                       if (!token) throw new Error("Not authenticated");
-                      const resp = await updateProfile(req, token, locale);
-                      if (resp.success) {
-                        toast.success(t("profileUpdated") || "Profile updated!");
-                      } else {
-                        throw new Error(resp.message || "Failed to update profile");
-                      }
-                    } catch (err: unknown) {
-                      setAccountInfoError(
-                        err instanceof Error
-                          ? err.message
-                          : "Failed to update profile"
+                      
+                      updateProfileMutation.mutate(
+                        { data: req, token, locale },
+                        {
+                          onSuccess: (response) => {
+                            if (response.success) {
+                              toast.success(t("profileUpdated") || "Profile updated!");
+                            } else {
+                              throw new Error(response.message || "Failed to update profile");
+                            }
+                          },
+                          onError: (error) => {
+                            toast.error(error.message || "Failed to update profile");
+                          },
+                        }
                       );
-                    } finally {
-                      setAccountInfoLoading(false);
+                    } catch (err: unknown) {
+                      const errorMessage = err instanceof Error ? err.message : "Failed to update profile";
+                      toast.error(errorMessage);
                     }
                   }}
                   t={t}
@@ -258,11 +211,9 @@ const Profile = () => {
                 {/* Contact Information */}
                 <ContactInfoForm
                   form={contactInfoForm}
-                  contactInfoLoading={contactInfoLoading}
-                  contactInfoError={contactInfoError}
+                  contactInfoLoading={saveContactInfoMutation.isPending}
+                  contactInfoError={saveContactInfoMutation.error?.message || null}
                   onSubmit={async (values) => {
-                    setContactInfoLoading(true);
-                    setContactInfoError(null);
                     try {
                       if (
                         values.contactInfos.some(
@@ -270,33 +221,39 @@ const Profile = () => {
                         )
                       )
                         throw new Error(t("errors.fillAllFields"));
+                      
                       if (!token) throw new Error("Not authenticated");
-                      const resp = await saveContactInfo(
-                        values.contactInfos.map((info) => ({
-                          title: info.title,
-                          value: info.value,
-                        })),
-                        token,
-                        values.showContactInfo
+                      
+                      saveContactInfoMutation.mutate(
+                        {
+                          contactInfo: values.contactInfos.map((info) => ({
+                            title: info.title,
+                            value: info.value,
+                          })),
+                          token,
+                          showContactInfo: values.showContactInfo,
+                        },
+                        {
+                          onSuccess: (response) => {
+                            if (response.success) {
+                              toast.success(
+                                t("contactInformationUpdated") ||
+                                  "Contact information updated!"
+                              );
+                            } else {
+                              throw new Error(
+                                response.message || "Failed to update contact info"
+                              );
+                            }
+                          },
+                          onError: (error) => {
+                            toast.error(error.message || "Failed to update contact info");
+                          },
+                        }
                       );
-                      if (resp.success) {
-                        toast.success(
-                          t("contactInformationUpdated") ||
-                            "Contact information updated!"
-                        );
-                      } else {
-                        throw new Error(
-                          resp.message || "Failed to update contact info"
-                        );
-                      }
                     } catch (err: unknown) {
-                      setContactInfoError(
-                        err instanceof Error
-                          ? err.message
-                          : "Failed to update contact info"
-                      );
-                    } finally {
-                      setContactInfoLoading(false);
+                      const errorMessage = err instanceof Error ? err.message : "Failed to update contact info";
+                      toast.error(errorMessage);
                     }
                   }}
                   t={t}

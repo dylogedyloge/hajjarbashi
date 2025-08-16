@@ -487,6 +487,31 @@
       "percentage": "+10%"
     }
   },
+  "SignOut": {
+    "title": "Sign Out",
+    "description": "Manage your session and sign out options.",
+    "currentSession": "Current Session",
+    "currentSessionDescription": "You are currently signed in on this device.",
+    "signOutOptions": "Sign Out Options",
+    "signOutOptionsDescription": "Choose how you want to sign out.",
+    "signOutFromThisDevice": "Sign Out from This Device",
+    "signOutFromThisDeviceDescription": "Sign out from this device only. You'll remain signed in on other devices.",
+    "signOutFromAllDevices": "Sign Out from All Devices",
+    "signOutFromAllDevicesDescription": "Sign out from all devices and invalidate all sessions.",
+    "confirmSignOut": "Confirm Sign Out",
+    "confirmSignOutDescription": "Are you sure you want to sign out?",
+    "cancel": "Cancel",
+    "signOut": "Sign Out",
+    "signingOut": "Signing out...",
+    "signOutSuccess": "Successfully signed out!",
+    "signOutError": "Failed to sign out. Please try again.",
+    "sessionInfo": "Session Information",
+    "lastActive": "Last Active",
+    "deviceInfo": "Device Information",
+    "browser": "Browser",
+    "location": "Location",
+    "ipAddress": "IP Address"
+  },
   "CreateAd": {
     "advertisementCost": "Advertisement Cost:",
     "usd": "USD",

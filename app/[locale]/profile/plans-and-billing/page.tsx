@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +28,8 @@ import { Wallet, Gift, Plus, Minus, Loader2, AlertCircle, Check } from "lucide-r
 import { useAuth } from "@/lib/auth-context";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
-import { fetchPaymentReceipts, type PaymentReceipt, type Payable } from "@/lib/profile";
+import { type PaymentReceipt, type Payable } from "@/lib/profile";
+import { usePaymentReceipts } from "@/hooks/useProfile";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
@@ -37,75 +38,24 @@ export default function PlansAndBillingPage() {
   const { token } = useAuth();
   const locale = useLocale();
   const t = useTranslations("PlansAndBilling");
-  const [data, setData] = useState<PaymentReceipt[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [topUpAmount, setTopUpAmount] = useState<number>(15);
   const [dialogStep, setDialogStep] = useState<"amount" | "review">("amount");
   const [selectedPayment, setSelectedPayment] = useState<"wallet" | "paypal">("paypal");
   const [promoCode, setPromoCode] = useState<string>("");
   const [discount, setDiscount] = useState<number>(24.25);
-  // const walletBalance = 24.25;
 
-  // Fetch payment receipts data
-  const fetchData = async (page: number = 1) => {
-    if (!token) return;
+  // React Query hook for payment receipts
+  const paymentReceiptsQuery = usePaymentReceipts(token, locale, currentPage, 10);
 
-    setLoading(true);
-    setError(null);
+  // Extract data from query
+  const data: PaymentReceipt[] = paymentReceiptsQuery.data?.data || [];
+  const loading = paymentReceiptsQuery.isLoading;
+  const error = paymentReceiptsQuery.error?.message || null;
 
-    try {
-      const result = await fetchPaymentReceipts(token, locale, page, 10);
-
-      if (result.success) {
-        setData(result.data);
-
-        console.log('API Response:', result);
-        console.log('Data length:', result.data.length);
-        console.log('Current page:', page);
-
-        // Check if we have pagination metadata from API
-        if (result.pagination) {
-          setCurrentPage(result.pagination.current_page);
-          setTotalPages(result.pagination.total_pages);
-          setTotalItems(result.pagination.total_items);
-        } else {
-          // If no pagination metadata, check if we have a full page of data
-          // If we get exactly 10 items, there might be more pages
-          // If we get less than 10 items, this is the last page
-          const itemsPerPage = 10;
-          const hasMorePages = result.data.length === itemsPerPage;
-
-          if (hasMorePages) {
-            // Assume there are more pages if we got a full page
-            // This is a fallback - ideally the API should provide pagination metadata
-            setTotalPages(Math.max(currentPage + 1, totalPages));
-            setTotalItems((currentPage * itemsPerPage) + result.data.length);
-          } else {
-            // This is likely the last page
-            setTotalPages(currentPage);
-            setTotalItems((currentPage - 1) * itemsPerPage + result.data.length);
-          }
-
-          setCurrentPage(page);
-        }
-      } else {
-        throw new Error(result.message || 'Failed to fetch data');
-      }
-    } catch (err) {
-      console.error('Error fetching payment receipts:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage, token, locale]);
+  // Calculate pagination data
+  const totalItems = paymentReceiptsQuery.data?.pagination?.total_items || 0;
+  const totalPages = paymentReceiptsQuery.data?.pagination?.total_pages || 1;
 
   // Helper functions
   const getStatusText = (receiptStatus: number, transactionStatus: number | null) => {
@@ -233,7 +183,7 @@ export default function PlansAndBillingPage() {
               <p className="text-red-600 mb-2">{t("error")}</p>
               <p className="text-sm text-gray-600">{error}</p>
               <Button
-                onClick={() => fetchData(currentPage)}
+                onClick={() => paymentReceiptsQuery.refetch()}
                 className="mt-2"
               >
                 {t("retry")}

@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Paperclip } from "lucide-react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
-import { type Ticket, type TicketMessage, fetchTicketMessages, sendTicketMessage } from "@/lib/profile";
+import { type Ticket, type TicketMessage } from "@/lib/profile";
+import { useTicketMessages, useSendTicketMessage } from "@/hooks/useProfile";
 import { useAuth } from "@/lib/auth-context";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -24,39 +25,20 @@ const SupportChatView: React.FC<SupportChatViewProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [messageText, setMessageText] = useState('');
-  const [messages, setMessages] = useState<TicketMessage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const { token, user } = useAuth();
   const locale = useLocale();
   const t = useTranslations('Support.chatView');
 
-  // Fetch ticket messages
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!token || !ticket.id) return;
-      
-      try {
-        setLoading(true);
-        setError(null);
-                 const response = await fetchTicketMessages(ticket.id, token, locale);
-         if (response.success) {
-           setMessages(response.data.messages || []);
-         } else {
-           throw new Error(response.message || t('failedToFetchMessages'));
-         }
-       } catch (err) {
-         console.error('Error fetching ticket messages:', err);
-         setError(err instanceof Error ? err.message : t('failedToFetchMessages'));
-      } finally {
-        setLoading(false);
-      }
-    };
+  // React Query hooks
+  const ticketMessagesQuery = useTicketMessages(ticket.id, token, locale);
+  const sendTicketMessageMutation = useSendTicketMessage();
 
-    fetchMessages();
-  }, [ticket.id, token, locale]);
+  // Extract data from queries
+  const messages: TicketMessage[] = ticketMessagesQuery.data?.data.messages || [];
+  const loading = ticketMessagesQuery.isLoading;
+  const error = ticketMessagesQuery.error?.message || null;
+  const sending = sendTicketMessageMutation.isPending;
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -74,18 +56,18 @@ const SupportChatView: React.FC<SupportChatViewProps> = ({
       
       // Validate file sizes (max 10MB per file)
       const maxSize = 10 * 1024 * 1024; // 10MB
-             const validFiles = fileArray.filter(file => {
-         if (file.size > maxSize) {
-           toast.error(t('fileTooLarge', { fileName: file.name }));
-           return false;
-         }
-         return true;
-       });
-       
-       if (validFiles.length > 0) {
-         setSelectedFiles(prev => [...prev, ...validFiles]);
-         toast.success(`${validFiles.length} ${t('fileSelected')}`);
-       }
+      const validFiles = fileArray.filter(file => {
+        if (file.size > maxSize) {
+          toast.error(t('fileTooLarge', { fileName: file.name }));
+          return false;
+        }
+        return true;
+      });
+      
+      if (validFiles.length > 0) {
+        setSelectedFiles(prev => [...prev, ...validFiles]);
+        toast.success(`${validFiles.length} ${t('fileSelected')}`);
+      }
       
       // Reset the input
       if (fileInputRef.current) {
@@ -99,82 +81,63 @@ const SupportChatView: React.FC<SupportChatViewProps> = ({
   };
 
   const handleSendMessage = async () => {
-    if (!messageText.trim() || sending) return;
+    if (!messageText.trim() || sending || !token) return;
     
-    setSending(true);
-    
-    try {
-      // Debug logging
-      console.log('Sending message with files:', {
-        ticket_id: ticket.id,
-        message: messageText,
-        attachments: selectedFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))
-      });
-      
-      // Send the message via API
-      const response = await sendTicketMessage(
-        {
+    sendTicketMessageMutation.mutate(
+      {
+        data: {
           ticket_id: ticket.id,
           message: messageText,
           attachments: selectedFiles.length > 0 ? selectedFiles : undefined,
         },
-        token!,
+        token,
         locale
-      );
-      
-      if (response.success) {
-        console.log('Message sent successfully. Response attachments:', response.data.attachments);
-        
-        // Add the new message to the local state immediately
-        const newMessage: TicketMessage = {
-          id: response.data.id,
-          message: response.data.message,
-          attachments: response.data.attachments,
-          created_at: response.data.created_at,
-          sender_id: response.data.sender_id,
-          sender_name: user?.name || 'You',
-          sender_avatar_thumb: user?.avatar_thumb || null,
-        };
-        
-        setMessages(prev => [...prev, newMessage]);
-        setMessageText('');
-        setSelectedFiles([]);
-        
-                 // Show different success message if attachments were sent
-         if (selectedFiles.length > 0 && !response.data.attachments) {
-           toast.success(t('messageSentWithWarning'));
-         } else {
-           toast.success(t('messageSent'));
-         }
-       } else {
-         throw new Error(response.message || t('failedToSendMessage'));
-       }
-     } catch (err) {
-       console.error('Error sending message:', err);
-       toast.error(err instanceof Error ? err.message : t('failedToSendMessage'));
-    } finally {
-      setSending(false);
-    }
+      },
+      {
+        onSuccess: (response) => {
+          if (response.success) {
+            console.log('Message sent successfully. Response attachments:', response.data.attachments);
+            
+            // Clear form
+            setMessageText('');
+            setSelectedFiles([]);
+            
+            // Show different success message if attachments were sent
+            if (selectedFiles.length > 0 && !response.data.attachments) {
+              toast.success(t('messageSentWithWarning'));
+            } else {
+              toast.success(t('messageSent'));
+            }
+          } else {
+            throw new Error(response.message || t('failedToSendMessage'));
+          }
+        },
+        onError: (error) => {
+          console.error('Error sending message:', error);
+          toast.error(error instanceof Error ? error.message : t('failedToSendMessage'));
+        },
+      }
+    );
   };
 
-     // Helper function to format date
-   const formatMessageDate = (timestamp: number) => {
-     const date = new Date(timestamp);
-     const now = new Date();
-     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-     
-     if (diffInHours < 1) {
-       return t('now');
-     } else if (diffInHours < 24) {
-       return `${Math.floor(diffInHours)}${t('hour')}`;
-     } else {
-       return date.toLocaleDateString('en-US', { 
-         month: 'short', 
-         day: 'numeric',
-         year: 'numeric'
-       });
-     }
-   };
+  // Helper function to format date
+  const formatMessageDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    
+    if (diffInHours < 1) {
+      return t('now');
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)}${t('hour')}`;
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+  };
 
   // Helper function to get attachment URL
   const getAttachmentUrl = (attachment: string) => {
@@ -216,6 +179,9 @@ const SupportChatView: React.FC<SupportChatViewProps> = ({
             ) : error ? (
               <div className="flex items-center justify-center h-64">
                 <div className="text-red-600">{t('error')}: {error}</div>
+                <Button onClick={() => ticketMessagesQuery.refetch()} className="mt-2 ml-2">
+                  Retry
+                </Button>
               </div>
             ) : messages.length === 0 ? (
               <div className="flex items-center justify-center h-64">

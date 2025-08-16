@@ -25,9 +25,9 @@ import { useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { GB, IR } from "country-flag-icons/react/3x2";
-import { deleteAccount, updateLanguage } from "@/lib/profile";
 import { useAuth } from "@/lib/auth-context";
 import { useChangePassword, useUpsertPhoneRequest, useUpsertEmailRequest, useVerifyUpsertPhone, useVerifyUpsertEmail } from "@/hooks/useAuth";
+import { useDeleteAccount, useUpdateLanguage } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -70,7 +70,6 @@ export default function SettingsPage() {
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
   const [mounted, setMounted] = useState(false);
   const { token, logout, user, login } = useAuth();
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -120,6 +119,8 @@ export default function SettingsPage() {
   const upsertEmailMutation = useUpsertEmailRequest();
   const verifyUpsertPhoneMutation = useVerifyUpsertPhone();
   const verifyUpsertEmailMutation = useVerifyUpsertEmail();
+  const deleteAccountMutation = useDeleteAccount();
+  const updateLanguageMutation = useUpdateLanguage();
 
   // Handler to start password change
   const handleStartPasswordReset = () => {
@@ -209,12 +210,17 @@ export default function SettingsPage() {
     // Convert language code to API format (EN -> en, FA -> fa)
     const apiLanguage = newLanguage.toLowerCase();
 
-    // Call API to update language preference (fire and forget)
-    updateLanguage({ language: apiLanguage, token: token || undefined }).catch((error) => {
-      console.error("Failed to update language on server:", error);
-      // Don't show error toast to avoid disrupting the user experience
-      // The language change still worked locally
-    });
+    // Use React Query mutation for language update
+    updateLanguageMutation.mutate(
+      { language: apiLanguage, token },
+      {
+        onError: (error) => {
+          console.error("Failed to update language on server:", error);
+          // Don't show error toast to avoid disrupting the user experience
+          // The language change still worked locally
+        },
+      }
+    );
   };
 
   useEffect(() => {
@@ -369,24 +375,23 @@ export default function SettingsPage() {
       return;
     }
 
-    try {
-      setIsDeletingAccount(true);
-      await deleteAccount({
+    deleteAccountMutation.mutate(
+      {
         locale: currentLocale,
         token,
-      });
-
-      toast.success("Account deleted successfully");
-      logout(); // Logout the user after successful deletion
-      intlRouter.replace("/"); // Redirect to home page
-    } catch (error) {
-      console.error("Failed to delete account:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to delete account");
-    } finally {
-      setIsDeletingAccount(false);
-      setIsDeleteDialogOpen(false);
-      setConfirmText("");
-    }
+      },
+      {
+        onSuccess: () => {
+          toast.success("Account deleted successfully");
+          logout(); // Logout the user after successful deletion
+          intlRouter.replace("/"); // Redirect to home page
+        },
+        onError: (error) => {
+          console.error("Failed to delete account:", error);
+          toast.error(error instanceof Error ? error.message : "Failed to delete account");
+        },
+      }
+    );
   };
 
   return (
@@ -910,10 +915,10 @@ export default function SettingsPage() {
                     </Button>
                     <Button
                       variant="destructive"
-                      disabled={confirmText !== "DELETE" || isDeletingAccount}
+                      disabled={confirmText !== "DELETE" || deleteAccountMutation.isPending}
                       onClick={handleDeleteAccount}
                     >
-                      {isDeletingAccount ? (
+                      {deleteAccountMutation.isPending ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                           {t("deleteAccount.deleting")}

@@ -62,7 +62,7 @@ export function ContactInfoForm({
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="bg-gray-800 text-white hover:bg-gray-700">
+                  <Button variant="default" className="bg-gray-800 text-white hover:bg-gray-700">
                     + Add
                   </Button>
                 </DropdownMenuTrigger>

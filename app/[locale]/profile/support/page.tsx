@@ -29,8 +29,7 @@ const Support = () => {
   const { token, isAuthenticated } = useAuth();
   const locale = useLocale();
   
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+
   
   // Form state
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -43,7 +42,7 @@ const Support = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
   // React Query hooks
-  const ticketsQuery = useTickets(token, locale, currentPage, itemsPerPage);
+  const ticketsQuery = useTickets(token, locale, 1, 10);
   const categoriesQuery = useTicketCategories(token, locale);
   const topicsQuery = useTicketTopics(token, locale, selectedCategoryId);
   const createTicketMutation = useCreateTicket();

@@ -58,10 +58,14 @@ export default function Home() {
     console.log('⭐ Featured filter changed:', featured);
     setFeaturedFilter(featured);
     // Update filters with promoted parameter
-    setFilters(prev => ({
-      ...prev,
-      promoted: featured
-    }));
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        promoted: featured
+      };
+      console.log('🔄 Updated filters object:', newFilters);
+      return newFilters;
+    });
   };
 
   const handleSearchChange = useCallback((search: string) => {
@@ -79,6 +83,7 @@ export default function Home() {
     setFilters(prev => {
       const newFilters = { ...prev };
       delete newFilters.category_ids;
+      console.log('🔄 Updated filters after clearing category:', newFilters);
       return newFilters;
     });
     // Clear selected category and subcategories
@@ -92,23 +97,57 @@ export default function Home() {
     console.log('🔄 Toggling subcategory:', subcategory);
     setSelectedSubcategories(prev => {
       const isSelected = prev.some(sub => sub.id === subcategory.id);
+      let updated;
+      
       if (isSelected) {
         // Remove subcategory
-        const updated = prev.filter(sub => sub.id !== subcategory.id);
+        updated = prev.filter(sub => sub.id !== subcategory.id);
         console.log('❌ Removed subcategory:', subcategory.name, 'Updated list:', updated);
-        return updated;
       } else {
         // Add subcategory
-        const updated = [...prev, subcategory];
+        updated = [...prev, subcategory];
         console.log('✅ Added subcategory:', subcategory.name, 'Updated list:', updated);
-        return updated;
       }
+      
+      // Update filters with subcategory IDs
+      const subcategoryIds = updated.map(sub => sub.id);
+      setFilters(prev => {
+        const newFilters = { ...prev };
+        if (subcategoryIds.length > 0) {
+          newFilters.category_ids = subcategoryIds;
+        } else {
+          // If no subcategories selected, remove category_ids from filters
+          delete newFilters.category_ids;
+        }
+        console.log('🔄 Updated filters with subcategory IDs:', newFilters);
+        return newFilters;
+      });
+      
+      return updated;
     });
   }, []);
 
   const handleClearSubcategoryFilter = useCallback((subcategoryId: string) => {
     console.log('❌ Clearing subcategory filter:', subcategoryId);
-    setSelectedSubcategories(prev => prev.filter(sub => sub.id !== subcategoryId));
+    setSelectedSubcategories(prev => {
+      const updated = prev.filter(sub => sub.id !== subcategoryId);
+      
+      // Update filters with remaining subcategory IDs
+      const subcategoryIds = updated.map(sub => sub.id);
+      setFilters(prev => {
+        const newFilters = { ...prev };
+        if (subcategoryIds.length > 0) {
+          newFilters.category_ids = subcategoryIds;
+        } else {
+          // If no subcategories selected, remove category_ids from filters
+          delete newFilters.category_ids;
+        }
+        console.log('🔄 Updated filters after clearing subcategory:', newFilters);
+        return newFilters;
+      });
+      
+      return updated;
+    });
   }, []);
 
   return (
@@ -234,6 +273,8 @@ function HomeContent({
   setSearchHandler(handleSearchChange);
 
   console.log('🎨 Current selectedCategory state:', selectedCategory);
+  console.log('🎨 Current selectedSubcategories state:', selectedSubcategories);
+  console.log('🎨 Current filters state:', filters);
 
   return (
     <div
@@ -321,7 +362,10 @@ function HomeContent({
                     <div
                       key={subcategory.id}
                       className="flex items-center gap-3 p-3 rounded-full border border-gray-200 hover:border-orange-300 transition-colors cursor-pointer"
-                      onClick={() => handleSubcategoryToggle(subcategory)}
+                      onClick={() => {
+                        console.log('🖱️ Subcategory clicked:', subcategory);
+                        handleSubcategoryToggle(subcategory);
+                      }}
                     >
                       <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                         {subcategory.image ? (
@@ -366,7 +410,10 @@ function HomeContent({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleClearSubcategoryFilter(subcategory.id)}
+                            onClick={() => {
+                              console.log('🖱️ Clear subcategory clicked:', subcategory.id);
+                              handleClearSubcategoryFilter(subcategory.id);
+                            }}
                             className="h-4 w-4 p-4 hover:bg-orange-200 rounded-full text-orange-600 hover:text-orange-800"
                             aria-label={t("clearSubcategoryFilter")}
                             title={t("clearSubcategoryFilter")}

@@ -17,17 +17,30 @@ export function useAds({
   token, 
   itemsPerPage = 2 
 }: UseAdsParams) {
+  console.log('🔍 useAds hook called with filters:', filters);
+  console.log('🔍 useAds hook called with sort:', sort);
+  
   return useInfiniteQuery({
     queryKey: ['ads', filters, sort, locale, token],
-    queryFn: ({ pageParam = 1 }) => 
-      fetchAds({ 
+    queryFn: ({ pageParam = 1 }) => {
+      console.log('🚀 fetchAds being called with:', { 
         limit: itemsPerPage, 
         page: pageParam, 
         locale, 
         token: token || undefined,
         sort,
         ...filters
-      }),
+      });
+      return fetchAds({ 
+        limit: itemsPerPage, 
+        page: pageParam, 
+        locale, 
+        token: token || undefined,
+        sort,
+        ...filters
+      });
+    },
+    enabled: true, // Ensure query is always enabled
     getNextPageParam: (lastPage, allPages) => {
       const currentPage = allPages.length;
       const totalItems = lastPage.data?.total || 0;

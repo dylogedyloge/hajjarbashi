@@ -3,7 +3,7 @@ import AdCard from "./ad-card";
 // import DesktopFilters from "./sortSearchFilters/desktop/desktop-filters";
 import DesktopSortAndCheckboxFilters from "./sortSearchFilters/desktop/desktop-sort-and-checkbox-filters";
 import { useLocale } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MobileSearchAndFilter from "./sortSearchFilters/mobile/mobile-search-and-filter";
 import MobileCategoryFilters from "./sortSearchFilters/mobile/mobile-category-filters";
 import Link from "next/link";
@@ -63,6 +63,16 @@ const AdsList = ({
     token: token || undefined,
     itemsPerPage: 2
   });
+
+  // Debug: Log when filters change
+  console.log('📋 AdsList received filters:', filters);
+  console.log('📋 AdsList featuredFilter:', featuredFilter);
+
+  // Refetch when filters change
+  useEffect(() => {
+    console.log('🔄 Filters changed, triggering refetch');
+    refetch();
+  }, [filters, refetch]);
 
   // Flatten all pages data into a single array for infinite scroll
   const allAds = data?.pages.flatMap(page => page.data?.list || page.data || []) || [];

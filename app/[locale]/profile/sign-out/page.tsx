@@ -21,7 +21,7 @@ import {
   MapPin, 
   Clock, 
   AlertTriangle,
-  CheckCircle,
+  // CheckCircle,
   XCircle,
   Loader2
 } from "lucide-react";

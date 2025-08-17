@@ -15,10 +15,11 @@ import { fetchUserProfile } from "@/lib/profile";
 import { Button } from "@/components/ui/button";
 // import Zap from "@/components/icons/Gemini";
 import Star from "@/components/icons/LightningBolt2";
-import {  AlertTriangle, Share2 } from "lucide-react";
+import {  AlertTriangle } from "lucide-react";
 import { getCountryFlag } from "@/utils/country-utils";
 import ActionButtons from "@/components/ActionButtons";
 import BookmarkButton from "@/components/BookmarkButton";
+import ShareButton from "@/components/ShareButton";
 import { useTranslations } from "next-intl";
 import { formatRelativeTime } from "@/utils/time";
 import OtherSellersCarousel from "@/components/OtherSellersCarousel";
@@ -173,9 +174,7 @@ function AdDetailContent({
                 </h1>
                 <div className="flex gap-2">
                   <BookmarkButton adId={ad.id} isBookmarked={ad.bookmarked || false} />
-                  <Button variant="outline" size="icon" className="bg-white border h-9 w-9 p-0">
-                    <Share2 className="w-4 h-4" />
-                  </Button>
+                  <ShareButton />
                   <Button variant="outline" size="icon" className="bg-white border h-9 w-9 p-0">
                     <AlertTriangle className="w-4 h-4" />
                   </Button>

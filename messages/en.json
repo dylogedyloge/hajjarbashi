@@ -316,7 +316,10 @@
     "unknownCompany": "Unknown Company",
     "otherSellers": "Other Sellers",
     "pros": "Pros",
-    "cons": "Cons"
+    "cons": "Cons",
+    "share": "Share",
+    "linkCopied": "Link copied to clipboard!",
+    "copyFailed": "Failed to copy link"
   },
   "MobileBottomNav": {
     "home": "home",

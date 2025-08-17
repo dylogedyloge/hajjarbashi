@@ -834,7 +834,10 @@
     "unknownCompany": "شرکت نامشخص",
     "otherSellers": "تامین کنندگان دیگر",
     "pros": "مزایا",
-    "cons": "معایب"
+    "cons": "معایب",
+    "share": "اشتراک‌گذاری",
+    "linkCopied": "لینک در کلیپ‌بورد کپی شد!",
+    "copyFailed": "کپی کردن لینک ناموفق بود"
   },
   "AdsList": {
     "showingResults": "نمایش {current} از {total} نتیجه",

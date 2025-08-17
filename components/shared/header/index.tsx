@@ -412,58 +412,51 @@ const Header = () => {
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" align="end">
                 <div className="space-y-1">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9"
-                    onClick={() => {
-                      intlRouter.push("/profile/overview");
-                    }}
-                  >
-                    {/* <UserIcon size={16} /> */}
-                    <User  />
-                    
-                    Profile
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9"
-                    onClick={() => {
-                      // TODO: Navigate to balance page
-                    }}
-                  >
-                    <Wallet size={16} />
-                    Balance
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9"
-                    onClick={() => {
-                      // TODO: Navigate to my ads page
-                    }}
-                  >
-                    <FileText size={16} />
-                    My Ads
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9"
-                    onClick={() => {
-                      // TODO: Navigate to settings page
-                    }}
-                  >
-                    <Settings size={16} />
-                    Settings
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9"
-                    onClick={() => {
-                      // TODO: Navigate to support page
-                    }}
-                  >
-                    <HelpCircle size={16} />
-                    Support
-                  </Button>
+                  <Link href="/profile/overview">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2 h-9"
+                    >
+                      <User />
+                      {t("profile")}
+                    </Button>
+                  </Link>
+                  <Link href="/profile/view-your-ads">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2 h-9"
+                    >
+                      <FileText size={16} />
+                      {t("myAds")}
+                    </Button>
+                  </Link>
+                  <Link href="/profile/plans-and-billing">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2 h-9"
+                    >
+                      <Wallet size={16} />
+                      {t("plansAndBilling")}
+                    </Button>
+                  </Link>
+                  <Link href="/profile/support">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2 h-9"
+                    >
+                      <HelpCircle size={16} />
+                      {t("support")}
+                    </Button>
+                  </Link>
+                  <Link href="/profile/settings">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-2 h-9"
+                    >
+                      <Settings size={16} />
+                      {t("settings")}
+                    </Button>
+                  </Link>
                     <ThemeToggler />
                     <span className="text-sm font-medium">{t("theme")}</span>
                   <Button
@@ -472,7 +465,7 @@ const Header = () => {
                     onClick={logout}
                   >
                     <LogOut size={16} />
-                    Logout
+                    {t("logout")}
                   </Button>
                 </div>
               </PopoverContent>

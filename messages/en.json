@@ -13,6 +13,11 @@
     "logout": "Logout",
     "completeProfile": "Complete Profile",
     "theme": "Theme",
+    "profile": "Profile",
+    "myAds": "My Ads",
+    "plansAndBilling": "Plans & Billing",
+    "support": "Support",
+    "settings": "Settings",
     "navigation": {
       "categories": "Categories",
       "stoneCategories": "Stone Categories",

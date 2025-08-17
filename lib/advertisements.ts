@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 // const API_BASE_URL = 'http://192.168.10.6:3001';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '${process.env.NEXT_PUBLIC_API_BASE_URL}';
 
@@ -46,7 +48,8 @@ export async function uploadAdMedia({
     body: formData,
   });
   if (!response.ok) {
-    throw new Error(`Failed to upload ad media: ${response.statusText}`);
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to upload ad media: ${response.statusText}`);
   }
   return response.json();
 }

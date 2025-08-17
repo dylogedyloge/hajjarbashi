@@ -30,6 +30,8 @@ export default function Home() {
     if (selectedCategoryInfo) {
       console.log('✅ Setting selected category:', selectedCategoryInfo);
       setSelectedCategory(selectedCategoryInfo);
+      // Clear selected subcategories when a new category is selected
+      setSelectedSubcategories([]);
     } else if (newFilters.category_ids && newFilters.category_ids.length > 0) {
       // Fallback: if we have category IDs but no category info, create a placeholder
       console.log('⚠️ No category info provided, creating placeholder for:', newFilters.category_ids[0]);
@@ -38,9 +40,13 @@ export default function Home() {
         name: "Selected Category", // This should come from your API
         description: "This is a description of the selected category. It provides information about the type of stone and its characteristics."
       });
+      // Clear selected subcategories when a new category is selected
+      setSelectedSubcategories([]);
     } else {
       console.log('❌ No category selected, clearing selectedCategory');
       setSelectedCategory(null);
+      // Clear selected subcategories when no category is selected
+      setSelectedSubcategories([]);
     }
   };
 

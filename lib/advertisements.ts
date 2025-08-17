@@ -410,11 +410,11 @@ export async function fetchUserAds({
 
 export async function createBookmark({ adId, locale, token }: { adId: string; locale: string; token: string }) {
   console.log('🔖 Creating bookmark for ad:', adId);
-  console.log('📡 API URL:', `${API_BASE_URL}/ads/bookmarks`);
+  console.log('📡 API URL:', `${API_BASE_URL}/bookmarks`);
   console.log('🔑 Token:', token ? 'Present' : 'Missing');
   console.log('🌐 Locale:', locale);
   
-  const response = await fetch(`${API_BASE_URL}/ads/bookmarks`, {
+  const response = await fetch(`${API_BASE_URL}/bookmarks`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -440,11 +440,11 @@ export async function createBookmark({ adId, locale, token }: { adId: string; lo
 
 export async function deleteBookmark({ adId, locale, token }: { adId: string; locale: string; token: string }) {
   console.log('🗑️ Deleting bookmark for ad:', adId);
-  console.log('📡 API URL:', `${API_BASE_URL}/ads/bookmarks/${adId}`);
+  console.log('📡 API URL:', `${API_BASE_URL}/bookmarks/${adId}`);
   console.log('🔑 Token:', token ? 'Present' : 'Missing');
   console.log('🌐 Locale:', locale);
   
-  const response = await fetch(`${API_BASE_URL}/ads/bookmarks/${adId}`, {
+  const response = await fetch(`${API_BASE_URL}/bookmarks/${adId}`, {
     method: 'DELETE',
     headers: {
       'x-lang': locale,
@@ -472,7 +472,7 @@ export async function fetchBookmarkedAds({ limit, page, locale, token }: { limit
     page: page.toString(),
   });
   
-  const response = await fetch(`${API_BASE_URL}/ads/bookmarks?${params.toString()}`, {
+  const response = await fetch(`${API_BASE_URL}/bookmarks?${params.toString()}`, {
     method: 'GET',
     headers: {
       'x-lang': locale,

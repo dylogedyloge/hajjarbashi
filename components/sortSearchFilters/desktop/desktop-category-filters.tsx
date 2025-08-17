@@ -71,13 +71,11 @@ const DesktopCategoryFilters = ({ onFiltersChange, onClearCategory }: DesktopCat
   // Listen for clear category event
   useEffect(() => {
     if (onClearCategory) {
-      // const handleClearCategory = () => {
-      //   setSelectedCategories("");
-      // };
-      
-      // We'll use a custom event to communicate between components
       const eventListener = () => {
         setSelectedCategories("");
+        // Also clear all other filters when category is cleared
+        console.log('🔍 Clearing category filter, applying remaining filters');
+        applyFiltersImmediately({ category_ids: undefined });
       };
       
       window.addEventListener('clearCategoryFilter', eventListener);
@@ -86,7 +84,7 @@ const DesktopCategoryFilters = ({ onFiltersChange, onClearCategory }: DesktopCat
         window.removeEventListener('clearCategoryFilter', eventListener);
       };
     }
-  }, [onClearCategory]);
+  }, [onClearCategory, onFiltersChange, priceRange]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -190,44 +188,58 @@ const DesktopCategoryFilters = ({ onFiltersChange, onClearCategory }: DesktopCat
   ];
 
   const handleColorToggle = (colorId: string) => {
-    setSelectedColors(prev =>
-      prev.includes(colorId)
-        ? prev.filter(c => c !== colorId)
-        : [...prev, colorId]
-    );
+    const newColors = selectedColors.includes(colorId)
+      ? selectedColors.filter(c => c !== colorId)
+      : [...selectedColors, colorId];
+    
+    setSelectedColors(newColors);
+    
+    // Immediately apply filters when colors change
+    applyFiltersImmediately({ colors: newColors.length > 0 ? newColors : undefined });
   };
 
   const clearColors = () => {
     setSelectedColors([]);
+    
+    // Immediately apply filters when colors are cleared
+    applyFiltersImmediately({ colors: undefined });
   };
 
   const handleSurfaceToggle = (surfaceId: string) => {
-    setSelectedSurfaces(prev =>
-      prev.includes(surfaceId)
-        ? prev.filter(s => s !== surfaceId)
-        : [...prev, surfaceId]
-    );
+    const newSurfaces = selectedSurfaces.includes(surfaceId)
+      ? selectedSurfaces.filter(s => s !== surfaceId)
+      : [...selectedSurfaces, surfaceId];
+    
+    setSelectedSurfaces(newSurfaces);
+    
+    // Immediately apply filters when surfaces change
+    applyFiltersImmediately({ surface_ids: newSurfaces.length > 0 ? newSurfaces : undefined });
   };
 
   const handleSizeToggle = (sizeId: string) => {
-    setSelectedSize(selectedSize === sizeId ? "" : sizeId);
+    const newSize = selectedSize === sizeId ? "" : sizeId;
+    setSelectedSize(newSize);
+    
+    // Immediately apply filters when size changes
+    applyFiltersImmediately({ size_range_type: newSize || undefined });
   };
 
   const handleGradeToggle = (gradeId: string) => {
-    setSelectedGrade(selectedGrade === gradeId ? "" : gradeId);
+    const newGrade = selectedGrade === gradeId ? "" : gradeId;
+    setSelectedGrade(newGrade);
+    
+    // Immediately apply filters when grade changes
+    applyFiltersImmediately({ grade: newGrade || undefined });
   };
 
   const formatPrice = (price: number) => {
     return price >= 1000 ? `$${(price / 1000).toFixed(0)}K` : `$${price}`;
   };
 
-  // const handlePriceRangeChange = (value: number[]) => {
-  //   setPriceRange([value[0], value[1]]);
-  // };
-
-  const handleApplyFilters = () => {
+  // Helper function to build filters object
+  const buildFilters = (overrides: Partial<AdsFilters> = {}) => {
     const filters: AdsFilters = {};
-
+    
     // Add price filters
     if (priceRange[0] > 0) {
       filters.min_price = priceRange[0];
@@ -239,56 +251,69 @@ const DesktopCategoryFilters = ({ onFiltersChange, onClearCategory }: DesktopCat
     // Add form filter (skip "all")
     if (selectedFormStone !== "all") {
       filters.form = selectedFormStone;
-      console.log('📦 Selected form for filter:', selectedFormStone);
     }
 
     // Add category filter
     if (selectedCategories) {
       filters.category_ids = [selectedCategories];
-      console.log('🎨 Selected category for filter:', selectedCategories);
     }
 
     // Add colors filter
     if (selectedColors.length > 0) {
       filters.colors = selectedColors;
-      console.log('🎨 Selected colors for filter:', selectedColors);
     }
 
     // Add surfaces filter
     if (selectedSurfaces.length > 0) {
       filters.surface_ids = selectedSurfaces;
-      console.log('🏗️ Selected surfaces for filter:', selectedSurfaces);
     }
 
     // Add size filter
     if (selectedSize) {
       filters.size_range_type = selectedSize;
-      console.log('📏 Selected size for filter:', selectedSize);
     }
 
     // Add port filter
     if (selectedReceivingPorts.length > 0) {
       filters.receiving_ports = selectedReceivingPorts;
-      console.log('🚢 Selected receiving ports for filter:', selectedReceivingPorts);
     }
 
     if (selectedExportPorts.length > 0) {
       filters.export_ports = selectedExportPorts;
-      console.log('🚢 Selected export ports for filter:', selectedExportPorts);
     }
 
     // Add origin filter
     if (selectedOriginCountries.length > 0) {
       filters.origin_country_ids = selectedOriginCountries;
-      console.log('🌎 Selected origin countries for filter:', selectedOriginCountries);
     }
 
     // Add grade filter
     if (selectedGrade) {
       filters.grade = selectedGrade;
-      console.log('⭐ Selected grade for filter:', selectedGrade);
     }
 
+    // Apply any overrides
+    return { ...filters, ...overrides };
+  };
+
+  // Helper function to apply filters immediately
+  const applyFiltersImmediately = (overrides: Partial<AdsFilters> = {}) => {
+    const filters = buildFilters(overrides);
+    const selectedCategoryInfo = selectedCategories 
+      ? categories.find(cat => cat.id === selectedCategories)
+      : undefined;
+    
+    console.log('🔍 Immediately applying filters:', filters);
+    onFiltersChange?.(filters, selectedCategoryInfo);
+  };
+
+  // const handlePriceRangeChange = (value: number[]) => {
+  //   setPriceRange([value[0], value[1]]);
+  // };
+
+  const handleApplyFilters = () => {
+    const filters = buildFilters();
+    
     console.log('🔍 Applying filters:', filters);
     console.log('🎨 Colors being sent:', filters.colors);
     console.log('📏 Size being sent:', filters.size_range_type);
@@ -325,7 +350,13 @@ const DesktopCategoryFilters = ({ onFiltersChange, onClearCategory }: DesktopCat
                           ? "border-orange-500"
                           : "border-muted"
                       )}
-                      onClick={() => setSelectedFormStone(option.id)}
+                      onClick={() => {
+                        setSelectedFormStone(option.id);
+                        // Immediately apply filters when form stone is selected
+                        applyFiltersImmediately({ 
+                          form: option.id !== "all" ? option.id : undefined 
+                        });
+                      }}
                     >
                       <IconComponent className="w-6 h-6" />
                       <span className="text-xs font-medium">{option.label}</span>
@@ -365,7 +396,20 @@ const DesktopCategoryFilters = ({ onFiltersChange, onClearCategory }: DesktopCat
                             : "border-muted hover:border-orange-200"
                         )}
                         onClick={() => {
-                          setSelectedCategories(category.id);
+                          // Toggle category selection
+                          if (selectedCategories === category.id) {
+                            // Deselect the category
+                            setSelectedCategories("");
+                            // Apply filters without category
+                            applyFiltersImmediately({ category_ids: undefined });
+                          } else {
+                            // Select the category
+                            setSelectedCategories(category.id);
+                            // Immediately apply filters when category is selected
+                            const filters = buildFilters({ category_ids: [category.id] });
+                            console.log('🔍 Immediately applying filters for category:', category.id);
+                            onFiltersChange?.(filters, category);
+                          }
                         }}
                       >
                         {category.image && !failedImages.has(category.id) ? (

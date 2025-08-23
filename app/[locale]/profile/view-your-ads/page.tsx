@@ -624,7 +624,8 @@ export default function ViewYourAdsPage() {
               View All Ads
             </Button>
           )}
-
+        </div>
+      )}
     </div>
   );
-} 
+}

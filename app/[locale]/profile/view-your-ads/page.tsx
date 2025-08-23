@@ -302,16 +302,8 @@ export default function ViewYourAdsPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="w-full space-y-6">
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-semibold">{t("title")}</h2>
-          <p className="text-muted-foreground">{t("loading")}</p>
-        </div>
-      </div>
-    );
-  }
+  // Don't show loading state for the entire page - only for the ads content
+  // The filters and view toggles should remain interactive
 
   if (error) {
     return (
@@ -426,7 +418,12 @@ export default function ViewYourAdsPage() {
       </div>
 
       {/* Ads Grid */}
-      {filteredAds.length > 0 && (
+      {loading ? (
+        // Loading state for ads content only
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">{t("loading")}</p>
+        </div>
+      ) : filteredAds.length > 0 ? (
         <>
           <div className={`grid gap-6 ${
             viewMode === "grid" 
@@ -605,10 +602,8 @@ export default function ViewYourAdsPage() {
             Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} ads
           </div>
         </>
-      )}
-
-      {/* Empty State */}
-      {filteredAds.length === 0 && (
+      ) : (
+        // Empty state when not loading and no ads
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             {selectedFilter === "all" 
@@ -629,8 +624,7 @@ export default function ViewYourAdsPage() {
               View All Ads
             </Button>
           )}
-        </div>
-      )}
+
     </div>
   );
 } 

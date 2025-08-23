@@ -28,7 +28,7 @@ import { GB, IR } from "country-flag-icons/react/3x2";
 import SearchInput from "./search-input";
 import CreateAdvertisementButton from "./create-advertisement-button";
 // import SignInSignUpButton from "./sign-in-sign-up-button";
-import ThemeToggler from "./theme-toggler";
+// import ThemeToggler from "./theme-toggler";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
 import Link from "next/link";
@@ -457,8 +457,8 @@ const Header = () => {
                       {t("settings")}
                     </Button>
                   </Link>
-                    <ThemeToggler />
-                    <span className="text-sm font-medium">{t("theme")}</span>
+                    {/* <ThemeToggler /> */}
+                    {/* <span className="text-sm font-medium">{t("theme")}</span> */}
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 h-9 text-destructive hover:text-destructive"

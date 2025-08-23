@@ -65,7 +65,7 @@ export default async function RootLayout({
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className={`${font.className} ${isRTL ? "rtl" : ""}`}>
                 <NextIntlClientProvider messages={messages}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <QueryClientWrapper>
               <AuthProvider>
                 <SearchProvider>

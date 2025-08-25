@@ -1,16 +1,23 @@
 variables:
   GIT_STRATEGY: clone
+  REGISTRY: 192.168.10.6:5000
+  APP_NAME: hajjar-next
+  IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
 
 stages:
   - build
   - deploy
+  - trigger_infra
 
+#deply dev
 build:
   stage: build
   tags:
     - shell 
   script:
     - docker compose build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"' 
 
 deploy:
   stage: deploy
@@ -22,3 +29,33 @@ deploy:
     - echo "📦 Starting Docker Compose...."
     - docker compose down || true
     - docker compose up -d
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"' 
+
+#deply prod
+build-prod:
+  stage: build
+  script:
+    - echo "$APP_NAME:$IMAGE_TAG" >> image_tags.txt
+    - docker login $REGISTRY -u "$REGISTRY_USERNAME" -p "$REGISTRY_PASSWORD"
+    - docker build -t $REGISTRY/$APP_NAME:$IMAGE_TAG .
+    - docker push $REGISTRY/$APP_NAME:$IMAGE_TAG
+  artifacts:
+    paths:
+      - image_tags.txt
+    expire_in: 1 year
+    when: always
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "production"' 
+
+trigger_infra:
+  stage: trigger_infra
+  image: curlimages/curl:8.9.1
+  script:
+    - >
+      curl --request POST \
+        --form token=$INFRA_TRIGGER_TOKEN \
+        --form ref=main \
+        http://192.168.10.7/api/v4/projects/$INFRA_PROJECT_ID/trigger/pipeline
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "production"' 

@@ -1,7 +1,7 @@
 variables:
   GIT_STRATEGY: clone
   REGISTRY: 192.168.10.6:5000
-  APP_NAME: hajjar-next
+  APP_NAME: hajjar-admin
   IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
 
 stages:

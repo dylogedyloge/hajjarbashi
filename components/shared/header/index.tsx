@@ -2,33 +2,16 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
-  // Bell,
-  // ChevronDown,
   Menu,
-  // User as UserIcon,
   Wallet,
   FileText,
   Settings,
   HelpCircle,
-  LogOut,
-  // MessageCircle,
-  // Search,
-  // Bookmark,
-  Gem,
-  // Box,
-  // Square,
-  // Grid3X3,
-  // MapPin,
-  // Truck,
-  // Package,
-  // Building,
-  // Factory,
+  LogOut
 } from "lucide-react";
 import { GB, IR } from "country-flag-icons/react/3x2";
 import SearchInput from "./search-input";
 import CreateAdvertisementButton from "./create-advertisement-button";
-// import SignInSignUpButton from "./sign-in-sign-up-button";
-// import ThemeToggler from "./theme-toggler";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter as useIntlRouter } from "@/i18n/navigation";
 import Link from "next/link";
@@ -67,6 +50,8 @@ import { SquareBookmarkTop, ChatBubbleRectangle, User } from "@/components/icons
 import AuthDialog from "./auth-dialog";
 import { cn } from "@/utils/cn";
 import { useSearch } from "@/lib/search-context";
+import { fetchCategories } from "@/lib/advertisements";
+import type { Category } from "@/types/ads";
 // import { useRef } from "react";
 
 const Header = () => {
@@ -78,10 +63,29 @@ const Header = () => {
   const [language, setLanguage] = useState(currentLocale.toUpperCase());
   const { user, isAuthenticated, logout, token } = useAuth();
   const [chatOpen, setChatOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [chatInitialUser, setChatInitialUser] = useState(null);
   const { isRTL } = useLocaleDirection();
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const searchContext = useSearch();
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const data = await fetchCategories(currentLocale);
+        setCategories(data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    loadCategories();
+  }, [currentLocale]);
 
   // Helper function to validate URL
   const isValidUrl = (url: string | null): boolean => {
@@ -216,130 +220,29 @@ const Header = () => {
               <NavigationMenuTrigger>{t("navigation.categories")}</NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-[.75fr_1fr] lg:w-[600px]">
-                  <li className="row-span-3">
-                    <NavigationMenuLink asChild>
-                      <Link
-                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                        href="/"
+                  
+                  {loadingCategories ? (
+                    // Loading skeleton for categories
+                    [...Array(6)].map((_, index) => (
+                      <li key={index} className="animate-pulse">
+                        <div className="h-4 bg-muted rounded mb-1" />
+                        <div className="h-3 bg-muted rounded w-3/4" />
+                      </li>
+                    ))
+                  ) : (
+                    categories.map((category) => (
+                      <ListItem 
+                        key={category.id} 
+                        href={`/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`} 
+                        title={category.name}
                       >
-                        <Gem className="h-6 w-6" />
-                        <div className="mb-2 mt-4 text-lg font-medium">
-                          {t("navigation.stoneCategories")}
-                        </div>
-                        <p className="text-sm leading-tight text-muted-foreground">
-                          {t("navigation.stoneCategoriesDescription")}
-                        </p>
-                      </Link>
-                    </NavigationMenuLink>
-                  </li>
-                  <ListItem href="/category/marble" title={t("navigation.marble")}>
-                    {t("navigation.marbleDescription")}
-                  </ListItem>
-                  <ListItem href="/category/granite" title={t("navigation.granite")}>
-                    {t("navigation.graniteDescription")}
-                  </ListItem>
-                  <ListItem href="/category/onyx" title={t("navigation.onyx")}>
-                    {t("navigation.onyxDescription")}
-                  </ListItem>
+                        {category.description || category.name}
+                      </ListItem>
+                    ))
+                  )}
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
-            {/* <NavigationMenuItem>
-              <NavigationMenuTrigger>{t("navigation.form")}</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-[.75fr_1fr] lg:w-[600px]">
-                  <li className="row-span-3">
-                    <NavigationMenuLink asChild>
-                      <Link
-                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                        href="/"
-                      >
-                        <Box className="h-6 w-6" />
-                        <div className="mb-2 mt-4 text-lg font-medium">
-                          {t("navigation.stoneForms")}
-                        </div>
-                        <p className="text-sm leading-tight text-muted-foreground">
-                          {t("navigation.stoneFormsDescription")}
-                        </p>
-                      </Link>
-                    </NavigationMenuLink>
-                  </li>
-                  <ListItem href="/form/blocks" title={t("navigation.blocks")}>
-                    {t("navigation.blocksDescription")}
-                  </ListItem>
-                  <ListItem href="/form/slabs" title={t("navigation.slabs")}>
-                    {t("navigation.slabsDescription")}
-                  </ListItem>
-                  <ListItem href="/form/tiles" title={t("navigation.tiles")}>
-                    {t("navigation.tilesDescription")}
-                  </ListItem>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>{t("navigation.location")}</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-[.75fr_1fr] lg:w-[600px]">
-                  <li className="row-span-3">
-                    <NavigationMenuLink asChild>
-                      <Link
-                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                        href="/"
-                      >
-                        <MapPin className="h-6 w-6" />
-                        <div className="mb-2 mt-4 text-lg font-medium">
-                          {t("navigation.locations")}
-                        </div>
-                        <p className="text-sm leading-tight text-muted-foreground">
-                          {t("navigation.locationsDescription")}
-                        </p>
-                      </Link>
-                    </NavigationMenuLink>
-                  </li>
-                  <ListItem href="/location/iran" title={t("navigation.iran")}>
-                    {t("navigation.iranDescription")}
-                  </ListItem>
-                  <ListItem href="/location/turkey" title={t("navigation.turkey")}>
-                    {t("navigation.turkeyDescription")}
-                  </ListItem>
-                  <ListItem href="/location/china" title={t("navigation.china")}>
-                    {t("navigation.chinaDescription")}
-                  </ListItem>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>{t("navigation.services")}</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-[.75fr_1fr] lg:w-[600px]">
-                  <li className="row-span-3">
-                    <NavigationMenuLink asChild>
-                      <Link
-                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                        href="/"
-                      >
-                        <Truck className="h-6 w-6" />
-                        <div className="mb-2 mt-4 text-lg font-medium">
-                          {t("navigation.services")}
-                        </div>
-                        <p className="text-sm leading-tight text-muted-foreground">
-                          {t("navigation.servicesDescription")}
-                        </p>
-                      </Link>
-                    </NavigationMenuLink>
-                  </li>
-                  <ListItem href="/services/transport" title={t("navigation.transport")}>
-                    {t("navigation.transportDescription")}
-                  </ListItem>
-                  <ListItem href="/services/processing" title={t("navigation.processing")}>
-                    {t("navigation.processingDescription")}
-                  </ListItem>
-                  <ListItem href="/services/installation" title={t("navigation.installation")}>
-                    {t("navigation.installationDescription")}
-                  </ListItem>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem> */}
           </NavigationMenuList>
         </NavigationMenu>
 

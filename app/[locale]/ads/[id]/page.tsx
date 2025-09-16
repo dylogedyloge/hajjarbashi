@@ -64,7 +64,7 @@ function AdStoneInfoSection({ ad }: { ad: any }) {
       <div className="w-full lg:w-[340px] flex flex-col gap-6">
         {/* Pros/Cons */}
         <div className="bg-white rounded-xl p-6 shadow flex flex-col gap-4">
-          <div className="font-semibold text-lg text-foreground mb-2">{t("pros")}</div>
+          <h2 className="font-semibold text-lg text-foreground mb-2">{t("pros")}</h2>
           <ul className="mb-4">
             <li className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <span className="inline-block w-1 h-4 bg-green-500 rounded-sm mr-2" />
@@ -75,7 +75,7 @@ function AdStoneInfoSection({ ad }: { ad: any }) {
               {ad.benefits?.[1]}
             </li>
           </ul>
-          <div className="font-semibold text-lg text-foreground mb-2">{t("cons")}</div>
+          <h2 className="font-semibold text-lg text-foreground mb-2">{t("cons")}</h2>
           <ul>
             <li className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <span className="inline-block w-1 h-4 bg-red-500 rounded-sm mr-2" />
@@ -269,9 +269,9 @@ function AdDetailContent({
             <div className="p-6 flex flex-col h-full">
               {/* Header: Title & Actions */}
               <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-extrabold text-foreground">
+                <h3 className="text-3xl font-extrabold text-foreground">
                   {ad.category?.name || ad.stone_type || "Product"}
-                </h1>
+                </h3>
                 <div className="flex gap-2">
                   <BookmarkButton adId={ad.id} isBookmarked={ad.bookmarked || false} />
                   <ShareButton />

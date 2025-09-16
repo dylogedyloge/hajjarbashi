@@ -107,7 +107,7 @@ function CategoryHeader({ category }: { category: Category }) {
         {/* Subcategories if available */}
         {category.children && category.children.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Subcategories</h3>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Subcategories</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {category.children.map((subcategory) => (
                 <Link

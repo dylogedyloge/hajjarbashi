@@ -53,6 +53,10 @@ async function fetchCategoryByName(name: string, locale: string) {
 
 function CategoryHeader({ category }: { category: Category }) {
   const t = useTranslations("HomePage");
+  const tagAlt = Array.isArray((category as any)?.tags)
+    ? (category as any).tags.find((t: string) => t.startsWith("imgalt:main="))?.split("=").slice(1).join("=").trim()
+    : undefined;
+  const mainAlt = tagAlt || category.name;
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-8">
       <div className="p-6">
@@ -68,7 +72,7 @@ function CategoryHeader({ category }: { category: Category }) {
           {category.image ? (
             <Image
               src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/${category.image}`}
-              alt={category.name}
+              alt={mainAlt}
               width={100}
               height={100}
               className="w-32 h-16 rounded-md overflow-hidden flex-shrink-0 object-cover"

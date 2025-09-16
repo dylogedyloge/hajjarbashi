@@ -42,7 +42,7 @@ export default function AdImageGallery({ mainImageUrl, galleryImages, alt }: Pro
                 {isImageValid(imgUrl) ? (
                   <Image
                     src={imgUrl}
-                    alt={`Gallery image ${i + 1}`}
+                    alt={`${alt} – image ${i + 1}`}
                     fill
                     className={`object-cover ${selectedImage === imgUrl ? "ring-2 ring-primary" : ""}`}
                     onError={() => handleImageError(imgUrl)}

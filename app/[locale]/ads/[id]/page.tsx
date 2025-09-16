@@ -249,7 +249,9 @@ function AdDetailContent({
             <AdImageGallery
               mainImageUrl={mainImageUrl}
               galleryImages={galleryImages}
-              alt={ad.category?.name || ad.stone_type || "Product image"}
+              alt={(Array.isArray((ad as any)?.tags)
+                ? (ad as any).tags.find((t: string) => typeof t === "string" && t.startsWith("imgalt:main="))?.split("=").slice(1).join("=").trim()
+                : undefined) || ad.category?.name || ad.stone_type || "Product image"}
             />
             {/* Featured Badge */}
             {ad.is_featured && (

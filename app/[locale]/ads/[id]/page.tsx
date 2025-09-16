@@ -1,4 +1,5 @@
-
+import type { Metadata } from "next";
+import Script from "next/script";
 
 import { fetchAdById } from "@/lib/advertisements";
 import { notFound } from "next/navigation";
@@ -87,7 +88,7 @@ function AdStoneInfoSection({ ad }: { ad: any }) {
           </ul>
         </div>
         {/* Stone Card */}
-        <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-3">
+        {/* <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-3">
           <div className="rounded-lg overflow-hidden mb-2">
             <img src="https://placehold.co/800.png?text=Hajjar+Bashi&font=poppins" alt="Negro Marquina" className="w-full h-32 object-cover" />
           </div>
@@ -96,10 +97,58 @@ function AdStoneInfoSection({ ad }: { ad: any }) {
             Verde Levanto Marble is characterized by its blend of Bordeaux and petroleum green tones, accented with white ...
           </div>
           <button className="bg-zinc-700 text-white rounded-lg px-4 py-2 font-medium">Lorem Ipsum</button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
+}
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const { id, locale } = await params;
+  const resolved = await searchParams;
+  const lang = Array.isArray(resolved?.lang) ? resolved.lang[0] : resolved?.lang || locale || "en";
+  const canonicalPath = `/${lang}/ads/${id}`;
+
+  let titleCore = `Ad #${id}`;
+  let description: string | undefined;
+  let imageUrl: string | undefined;
+
+  try {
+    const res = await fetchAdById({ id, locale: lang });
+    const ad = res?.data;
+    titleCore = ad?.category?.name || ad?.stone_type || titleCore;
+    description = ad?.description ? String(ad.description).slice(0, 160) : undefined;
+
+    const mediaArray = Array.isArray(ad?.media) ? ad.media : [];
+    const mainImage = mediaArray[0]?.media_thumb_path || mediaArray[0]?.media_path || ad?.cover_thumb || ad?.cover;
+    if (mainImage) {
+      imageUrl = String(mainImage).startsWith("http")
+        ? mainImage
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/${mainImage}`;
+    }
+  } catch {}
+
+  return {
+    title: titleCore,
+    description,
+    alternates: { canonical: canonicalPath },
+    openGraph: {
+      title: titleCore,
+      description,
+      url: canonicalPath,
+      images: imageUrl ? [{ url: imageUrl }] : undefined,
+      type: "website",
+      locale: lang === "fa" ? "fa_IR" : "en_US",
+      siteName: "HajjarBashi",
+    },
+    twitter: { card: "summary_large_image" },
+  };
 }
 
   function OtherSellersSection() {
@@ -112,13 +161,15 @@ function AdDetailContent({
   creatorProfile,
   mainImageUrl,
   galleryImages,
-  colorArray
+  colorArray,
+  pageLocale
 }: {
   ad: any;
   creatorProfile: any;
   mainImageUrl: string | null;
   galleryImages: string[];
   colorArray: string[];
+  pageLocale: string;
 }) {
   const t = useTranslations("AdDetailPage");
 
@@ -129,6 +180,55 @@ function AdDetailContent({
 
   return (
     <div className="py-8 px-4">
+      <Script
+        id={`ad-${ad.id}-product-ld`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: ad.category?.name || ad.stone_type || `Ad #${ad.id}`,
+            description: ad.description,
+            image: mainImageUrl ? [mainImageUrl] : undefined,
+            brand: creatorProfile?.company_name || undefined,
+            url: `/${pageLocale || "en"}/ads/${ad.id}`,
+            offers: ad.price
+              ? {
+                  "@type": "Offer",
+                  price: ad.price,
+                  priceCurrency: "USD",
+                  availability: "http://schema.org/InStock",
+                  url: `/${pageLocale || "en"}/ads/${ad.id}`,
+                }
+              : undefined,
+          }),
+        }}
+      />
+      <Script
+        id={`ad-${ad.id}-breadcrumb-ld`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: `/${pageLocale || "en"}` },
+              { "@type": "ListItem", position: 2, name: "Products", item: `/${pageLocale || "en"}/categories` },
+              ad.category?.name
+                ? {
+                    "@type": "ListItem",
+                    position: 3,
+                    name: ad.category.name,
+                    item: `/${pageLocale || "en"}/categories/${(ad.category.name || '')
+                      .toLowerCase()
+                      .replace(/[^a-z0-9\s-]/g, '')
+                      .replace(/\s+/g, '-')}`,
+                  }
+                : undefined,
+            ].filter(Boolean),
+          }),
+        }}
+      />
       {/* Breadcrumbs and Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="text-sm text-muted-foreground">
@@ -240,7 +340,7 @@ function AdDetailContent({
                 </div>
                 <div className="flex gap-2 ">
                   <span className="text-muted-foreground">{t("origin")}:</span>
-                  <div className="flex gap-2 items-center gap-1">
+                  <div className="flex gap-2 items-center">
                     {getCountryFlagComponent()}
                     <span className=" text-foreground">{ad.origin_country?.name}</span>
                   </div>
@@ -393,6 +493,7 @@ export default async function Page(props: unknown) {
       mainImageUrl={mainImageUrl}
       galleryImages={galleryImages}
       colorArray={colorArray}
+      pageLocale={locale}
     />
   );
 }

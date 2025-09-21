@@ -25,6 +25,15 @@ import { useTranslations } from "next-intl";
 import { formatRelativeTime } from "@/utils/time";
 import OtherSellersCarousel from "@/components/OtherSellersCarousel";
 import type { Media } from "@/types/ads";
+import Link from "next/link";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 
 // centralized in types/ads
@@ -231,13 +240,41 @@ function AdDetailContent({
       />
       {/* Breadcrumbs and Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="text-sm text-muted-foreground">
-          {t("home")} &gt; {t("products")} &gt; {ad.category?.name || t("products")}
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-sm text-muted-foreground">
-            {t("adsId")}: {ad.id}
-          </div>
+        <div>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href={`/${pageLocale}`}>{t("home")}</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href={`/${pageLocale}/categories`}>{t("products")}</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              {ad.category?.name ? (
+                <>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link href={`/${pageLocale}/categories/${(ad.category.name || "")
+                        .toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')}`}>
+                        {ad.category.name}
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                </>
+              ) : null}
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{`${t("adsId")}: ${ad.id}`}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
       </div>
 
